@@ -125,7 +125,11 @@
                 ax2 = axisx.p2c(x2) + xoffset,
                 ay2 = axisy.p2c(y2) + yoffset,
                 dashOffset;
-            
+
+            if (isNaN(ax1) || isNaN(ay1)) {
+                return;
+            }
+
             function lineSegmentOffset(segmentLength) {
               
               var c = Math.sqrt(Math.pow(ax2 - ax1, 2) + Math.pow(ay2 - ay1, 2));

@@ -127,7 +127,7 @@ Licensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-L
 
     function init(plot) {
         function onZoomClick(e, zoomOut) {
-            var c = plot.offset();
+            var c = plot.getPlaceholder().offset();
             c.left = e.pageX - c.left;
             c.top = e.pageY - c.top;
             if (zoomOut)
@@ -137,6 +137,13 @@ Licensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-L
         }
 
         function onMouseWheel(e, delta) {
+            if(!e.detail && !e.wheelDelta){
+                e = e.originalEvent;
+                if (e.wheelDelta)
+                    delta = e.wheelDelta;
+                else
+                    delta = e.detail * -1;
+            } 
             onZoomClick(e, delta < 0);
             return false;
         }

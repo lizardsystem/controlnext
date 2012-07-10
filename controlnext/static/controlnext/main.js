@@ -103,9 +103,9 @@ $(document).ready(function () {
             }
     
             // show spinners
-            var $spinner1 = $('<img width="32" />').attr('src', url_base + 'ajax-loader.gif');
+            var $spinner1 = $('<img width="32" height="32" />').attr('src', url_base + 'ajax-loader.gif');
             $('#right-img-container').empty().append($spinner1);
-            var $spinner2 = $('<img width="32" />').attr('src', url_base + 'ajax-loader.gif');
+            var $spinner2 = $('<img width="32" height="32" />').attr('src', url_base + 'ajax-loader.gif');
             $('#lower-img-container').empty().append($spinner2);
     
             currentTimeout = setTimeout(loadGraphs, 1000);
@@ -125,12 +125,68 @@ $(document).ready(function () {
         return val;
     };
     var build_spinner = function () {
-        var $spinner = $('<img width="32" />').attr('src', url_base + 'ajax-loader.gif');
+        var $spinner = $('<img width="32" height="32" />').attr('src', url_base + 'ajax-loader.gif');
         return $spinner;
     };
     var time_tick_formatter = function (number, axis) {
         var time = new Date(number);
-        return time.getUTCHours() + ':' + pad(time.getUTCMinutes(), 2);
+        return time.getUTCDate() + '-' + pad(time.getUTCMonth(), 2) + '<br/>' + time.getUTCHours() + ':' + pad(time.getUTCMinutes(), 2);
+    };
+    // show a tooltip
+    var addToolTip = function ($container, $graph, values) {
+        // build a tooltip element
+        var $tt = $('<div class="flot-tooltip"/>');
+        //$tt.offset({left: $fill_graph.offset().left + 60, top: $fill_graph.offset().top + 5});
+        $container.append($tt);
+        $graph.hover(
+            function () { $tt.show(); },
+            function () { $tt.hide(); }
+        );
+
+        // per-data point tooltips
+        // var previousPoint = null;
+        // var showTooltip = function (x, y, html) {
+            // $tt.css({
+                // display: 'block',
+                // top: y,
+                // left: x + 20
+            // }).html(html);
+        // };
+        $graph.bind("plothover", function (event, pos, item) {
+            var i;
+            // find the nearest points, x-wise
+            for (i = 0; i < values.length; ++i)
+                if (values[i][0] > pos.x)
+                    break;
+            var p1 = values[i - 1];
+            var p2 = values[i];
+            // now interpolate
+            var y;
+            if (p1 == null || p2 == null)
+                y = 0; //p2[1] || p1[1];
+            else
+                y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
+            var time = new Date(pos.x);
+            time = time.getUTCDate() + '-' + (time.getUTCMonth() + 1) + '-' + time.getUTCFullYear() + ' ' + time.getUTCHours() + ':00 uur';
+            var label = "vulgraad op " + time + ": " + y.toFixed() + ' %';
+            $tt.html(label);
+
+            // per-data point tooltips
+            // if (item) {
+                // if (previousPoint != item.dataIndex) {
+                    // previousPoint = item.dataIndex;
+                    // $tt.hide();
+                    // var x = item.datapoint[0].toFixed(2);
+                    // var y = item.datapoint[1].toFixed(2);
+                    // var label = "Vulgraad op " + x + " : " + y;
+                    // //showTooltip(item.pageX, item.pageY, label);
+                // }
+            // }
+            // else {
+                // $tt.hide();
+                // previousPoint = null;
+            // }
+        });
     };
     var plot_fill_graph = function (graph_info, $fill_graph_container) {
         // build a new element
@@ -140,9 +196,10 @@ $(document).ready(function () {
         var lines = [
             { id: 'abs_min', data: graph_info.data['abs_min'], dashes: { show: true, lineWidth: 2 }, color: "rgb(190,190,190)", shadowSize: 0, label: 'min. berging' },
             { id: 'abs_max', data: graph_info.data['abs_max'], dashes: { show: true, lineWidth: 2 }, color: "rgb(90,90,90)", shadowSize: 0, label: 'max. berging' },
-            { id: 'val', data: graph_info.data['val'], lines: { show: true, lineWidth: 7 }, color: "rgb(255,50,50)", label: 'vulgraad' },
-            { id: 'min', data: graph_info.data['min'], lines: { show: true, lineWidth: 0, fill: 0.4 }, color: "rgb(255,90,50)", fillBetween: 'val' },
-            { id: 'max', data: graph_info.data['max'], lines: { show: true, lineWidth: 0, fill: 0.4 }, color: "rgb(255,90,50)", fillBetween: 'val' }
+            { id: 't0',      data: graph_info.data['t0'],  dashes:  { show: true, lineWidth: 2 }, color: "rgb(50,205,50)", shadowSize: 0 },
+            { id: 'val',     data: graph_info.data['val'], lines: { show: true, lineWidth: 7 }, color: "rgb(255,50,50)", label: 'vulgraad' },
+            { id: 'min',     data: graph_info.data['min'], lines: { show: true, lineWidth: 0, fill: 0.4 }, color: "rgb(255,90,50)", fillBetween: 'val' },
+            { id: 'max',     data: graph_info.data['max'], lines: { show: true, lineWidth: 0, fill: 0.4 }, color: "rgb(255,90,50)", fillBetween: 'val' }
         ];
         var values = graph_info.data['val'];
         var options = {
@@ -159,8 +216,8 @@ $(document).ready(function () {
             },
             yaxis: {
                 min: 0,
-                max: 100,
-                panRange: [0, 100],
+                max: 120,
+                panRange: [0, 120],
                 tickFormatter: function (v) { return v + " %"; }
             },
             legend: { position: 'ne' },
@@ -169,90 +226,43 @@ $(document).ready(function () {
             pan: {
                 interactive: true
             }
+            // zoom: {
+                // interactive: true
+            // }
         };
         $.plot($fill_graph, lines, options);
-
-        // show a tooltip
-        {
-            // build a tooltip element
-            var $tt = $('<div/>').css({
-                //position: 'absolute',
-                display: 'none',
-                width: 240,
-                height: 20,
-                border: '1px solid #fdd',
-                padding: '2px'
-            });
-            //$tt.offset({left: $fill_graph.offset().left + 60, top: $fill_graph.offset().top + 5});
-            $fill_graph_container.append($tt);
-            $fill_graph.hover(
-                function () { $tt.show(); },
-                function () { $tt.hide(); }
-            );
-
-            // per-data point tooltips
-            // var previousPoint = null;
-            // var showTooltip = function (x, y, html) {
-                // $tt.css({
-                    // display: 'block',
-                    // top: y,
-                    // left: x + 20
-                // }).html(html);
-            // };
-            $fill_graph.bind("plothover", function (event, pos, item) {
-                var i;
-                // find the nearest points, x-wise
-                for (i = 0; i < values.length; ++i)
-                    if (values[i][0] > pos.x)
-                        break;
-                var p1 = values[i - 1];
-                var p2 = values[i];
-                // now interpolate
-                var y;
-                if (p1 == null || p2 == null)
-                    y = 0; //p2[1] || p1[1];
-                else
-                    y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
-                var time = new Date(pos.x);
-                time = time.getUTCDate() + '-' + (time.getUTCMonth() + 1) + '-' + time.getUTCFullYear() + ' ' + time.getUTCHours() + ':00 uur';
-                var label = "vulgraad op " + time + ": " + y.toFixed() + ' %';
-                $tt.html(label);
-
-                // per-data point tooltips
-                // if (item) {
-                    // if (previousPoint != item.dataIndex) {
-                        // previousPoint = item.dataIndex;
-                        // $tt.hide();
-                        // var x = item.datapoint[0].toFixed(2);
-                        // var y = item.datapoint[1].toFixed(2);
-                        // var label = "Vulgraad op " + x + " : " + y;
-                        // //showTooltip(item.pageX, item.pageY, label);
-                    // }
-                // }
-                // else {
-                    // $tt.hide();
-                    // previousPoint = null;
-                // }
-            });
-        }
+        addToolTip($fill_graph_container, $fill_graph, values);
     };
     var $fill_graph_container = $('#fill-graph-container');
-    var refresh_fill_graph = function () {
-        // clear the container
+    var $overflow_visualization_container = $('#overflow-visualization-container');
+    var $overflow_visualization = $('#overflow-visualization');
+    var refresh_prediction_data = function () {
+        // clear the graph container
         var $spinner = build_spinner();
         $fill_graph_container.empty().append($spinner);
+
+        // hide the 'bakjes' visualization
+        $overflow_visualization_container.hide();
+
         // build query string based on user input
         var query = {
             format: 'json',
             new_fill: $new_fill_slider.slider('value'),
             demand_diff: $demand_slider.slider('value')
         };
+
         // submit request to the server
         $.ajax({
             url: prediction_url + '?' + $.param(query),
             success: function (response) {
+                // clear the graph container (remove spinner)
                 $fill_graph_container.empty();
+
+                // plot the graph
                 plot_fill_graph(response.graph_info, $fill_graph_container);
+
+                // show the 'bakjes' visualization
+                draw_overflow_visualization(response.overflow);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 var $error = $('<p>Fout bij het laden van de grafiekdata: ' + errorThrown + '</p>');
@@ -261,10 +271,25 @@ $(document).ready(function () {
         });
     };
 
+    var draw_overflow_visualization = function (amount) {
+        $overflow_visualization.empty();
+        if (amount === 0) {
+            $('<p class="no-overflow">Geen</p>').appendTo($overflow_visualization);
+        }
+        else {
+            for (var i = 0; i < amount; i++) {
+                var $image = $('<img width="64" height="64" />').attr('src', url_base + 'bakje.jpg');
+                $overflow_visualization.append($image);
+            }
+        }
+        // show self
+        $overflow_visualization_container.show();
+    };
+
     // set up start button
     {
         $('#start-btn').click(function (event) {
-            refresh_fill_graph();
+            refresh_prediction_data();
         });
     }
 });

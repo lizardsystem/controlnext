@@ -126,9 +126,31 @@
     margin-top:8px;
 }
 
+#situation-image {
+    width:200px;
+    display:block;
+    margin:0 auto;
+}
+
+#overflow-visualization .no-overflow {
+    color:green;
+    font-weight:bold;
+}
+#overflow-visualization img {
+    margin-left:10px;
+}
+
 #fill-graph-container {
     width:700px;
     height:360px;
+}
+
+div.flot-tooltip {
+    display:none;
+    width:240px;
+    height:20px;
+    border:1px solid #fdd;
+    padding:2px;
 }
 
 /* keep this, otherwise flot can't determine graph sizes */
@@ -152,7 +174,7 @@ input[type="image"], input[type="checkbox"], input[type="radio"] {
 }
 
 .inner {
-    margin:20px;
+    margin:10px;
 }
 
 #upper {
