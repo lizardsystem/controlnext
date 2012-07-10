@@ -1,0 +1,119 @@
+{% extends "lizard_ui/realbase.html" %}
+
+{% block css %}
+{{ block.super }}
+<link rel="stylesheet"
+      type="text/css"
+      href="{{ STATIC_URL }}controlnext/main.css" />
+{% endblock css %}
+
+{% block map-javascript %}
+<script type="text/javascript"
+        src="{{ STATIC_URL }}controlnext/jquery.flot.fillbetween.js"></script>
+<script type="text/javascript"
+        src="{{ STATIC_URL }}controlnext/jquery.flot.crosshair.js"></script>
+<script type="text/javascript"
+        src="{{ STATIC_URL }}controlnext/jquery.flot.navigate.js"></script>
+<script type="text/javascript"
+        src="{{ STATIC_URL }}controlnext/jquery.flot.dashes.js"></script>
+<script type="text/javascript"
+        src="{{ STATIC_URL }}controlnext/main.js"></script>
+{% endblock map-javascript %}
+
+{% block head-extras %}
+{# Not working: should be on top #}
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+{% endblock head-extras %}
+
+{% block sidebar %}
+{% spaceless %}
+<div id="data-urls"
+     data-url-base="{{ STATIC_URL }}controlnext/"
+     data-prediction-url="{% url controlnext-prediction-data %}"
+     style="display:none;"></div>
+<div id="controls">
+<div>
+    <table class="table table-striped">
+        <tbody>
+            <tr>
+                <td>Lokatie</td>
+                <td>Delfland</td>
+            </tr>
+            <tr>
+                <td>Oppervlakte</td>
+                <td>2200 m<sup>2</sup></td>
+            </tr>
+            <tr>
+                <td>Maand</td>
+                <td>September</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="fill-container" class="has_popover_east" data-title="Nieuwe vulgraad" data-content="Selecteer hier de nieuwe vulgraad.">
+    <div id="current-fill-container" class="has_popover_east"
+         data-selector="#current-fill-label"
+         data-title="Huidige vulgraad"
+         data-content="Huidige vulgraad uit meetresultaten ControlNEXT.">
+        <div id="current-fill-label">67 % -</div>
+    </div>
+    <div id="new-fill-slider"></div>
+    <div id="new-fill-container" class="slider-label-container">
+        <div id="new-fill-label">- <span class="val"></span> %</div>
+    </div>
+</div>
+
+{% comment %}
+<div class="time-select-container has_popover_east" data-animated="false" data-title="Datum" data-content="Het tijdstip waar vanaf de nieuwe vulgraad geldt.">
+    <div class="time-select">
+        <label><input type="radio" name="date-radio" checked="checked" value="now" />Nu</label>
+        <label><input type="radio" name="date-radio" value="other" />Ander tijdstip</label>
+        <input type="text" id="time-select-date" name="date" />
+    </div>
+</div>
+{% endcomment %}
+
+<div id="demand-diff-container"
+     class="has_popover_east"
+     data-title="Correctie watervraag"
+     data-content="Correctiefactor op de normale watervraag voor deze periode.">
+    <div id="demand-diff-slider"></div>
+    <div id="demand-diff-label-container">
+        <div id="demand-diff-label"><span class="val"></span> %</div>
+    </div>
+</div>
+
+<div id="start-btn-container"
+     class="has_popover_east"
+     data-title="Start"
+     data-content="Start de berekening.">
+    <a id="start-btn" class="btn btn-success" href="#">
+        <span id="start-btn-label">Start</span>
+    </a>
+</div>
+</div>
+{% endspaceless %}
+{% endblock %}
+
+{% block content %}
+{% spaceless %}
+<div id="upper">
+<div id="left">
+    <div class="inner">
+        <img src="{{ STATIC_URL }}controlnext/left.jpg" width="220" height="100" style="width:220px;height:100px;" />
+    </div>
+</div>
+<div id="right">
+    <div id="right-img-container" class="inner">
+    </div>
+    <div id="fill-graph-container"></div>
+</div>
+</div>
+
+<div id="lower">
+    <div id="lower-img-container" class="inner">
+    </div>
+</div>
+{% endspaceless %}
+{% endblock %}

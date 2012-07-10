@@ -1,0 +1,181 @@
+#fill-container {
+    position:relative;
+    width:142px;
+    height:300px;
+    margin:40px auto 0 auto;
+}
+
+/* ************************ */
+
+#current-fill-container {
+    display:block;
+    position:absolute;
+    left:0;
+    top:0;
+    width:50px;
+    height:100%;
+}
+
+#current-fill-label {
+    display:block;
+    position:absolute;
+    bottom:65%;
+}
+
+/* ************************ */
+
+#new-fill-slider {
+    display:block;
+    position:absolute;
+    left:50px;
+    top:0;
+    width:40px;
+    height:100%;
+}
+
+#new-fill-slider .ui-slider-handle {
+    left:-4px;
+    width:46px;
+    height:10px;
+    margin-bottom:-12px;
+    border:1px solid rgba(0, 0, 0, 0.1);
+    background-color:#6BC76B;
+    background-image:none;
+}
+
+#new-fill-slider .ui-widget-header {
+    background:#33e;
+}
+
+/* ************************ */
+
+#new-fill-container {
+    display:block;
+    position:absolute;
+    left:100px;
+    top:0;
+    width:50px;
+    height:100%;
+}
+
+#new-fill-label {
+    display:block;
+    position:absolute;
+    left:3px;
+    font-weight:bold;
+}
+
+/* ************************ */
+
+.step {
+    position:absolute;
+    left:0;
+    bottom:8px;
+    font-weight:bold;
+    font-size:50px;
+    font-family:Helvetica, sans-serif;
+    color:#eee;
+}
+
+/*
+.time-select-container {
+    display:inline-block;
+    position:relative;
+    height:100%;
+    width:200px;
+}
+
+.time-select {
+    position:absolute;
+}
+*/
+
+#demand-diff-container {
+    width:200px;
+    margin:40px auto 0 auto;
+}
+
+#demand-diff-label-container {
+    text-align:center;
+}
+
+#demand-diff-label {
+}
+
+#demand-diff-slider {
+}
+
+#demand-diff-slider .ui-slider-handle {
+    border:1px solid rgba(0, 0, 0, 0.1);
+    background-color:#6BC76B;
+    background-image:none;
+}
+
+#start-btn-container {
+    width:130px;
+    margin:40px auto 0 auto;
+}
+
+#start-btn {
+    overflow:hidden;
+}
+
+#start-btn-label {
+    font-size:50px;
+    line-height:60px;
+    margin-top:8px;
+}
+
+#fill-graph-container {
+    width:700px;
+    height:360px;
+}
+
+/* keep this, otherwise flot can't determine graph sizes */
+#fill-graph {
+    width:700px;
+    height:300px;
+}
+
+/*override from bootstrap*/
+label {
+    margin:0 !important;
+    display:block;
+}
+label input {
+    display:inline !important;
+}
+input[type="image"], input[type="checkbox"], input[type="radio"] {
+    margin:0 !important;
+    height:inherit !important;
+    width:inherit !important;
+}
+
+.inner {
+    margin:20px;
+}
+
+#upper {
+    position:relative;
+    width:100%;
+    height:380px;
+}
+
+#lower {
+    border-top:1px solid #C0C0BC;
+    position:relative;
+    width:100%;
+}
+
+#left {
+    position:absolute;
+    height:100%;
+    width:280px;
+}
+
+#right {
+    position:absolute;
+    left:280px;
+    border-left:1px solid #C0C0BC;
+    height:100%;
+}
