@@ -13,7 +13,9 @@ install_requires = [
     'django-extensions',
     'django-nose',
     'lizard-ui >= 4.0',
-    'djangorestframework'
+    'djangorestframework',
+    'pandas',
+    'numpy'
     ],
 
 tests_require = [

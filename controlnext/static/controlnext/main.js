@@ -168,7 +168,7 @@ $(document).ready(function () {
                 y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
             var time = new Date(pos.x);
             time = time.getUTCDate() + '-' + (time.getUTCMonth() + 1) + '-' + time.getUTCFullYear() + ' ' + time.getUTCHours() + ':00 uur';
-            var label = "vulgraad op " + time + ": " + y.toFixed() + ' %';
+            var label = "waarde op " + time + ": " + y.toFixed() + ' %';
             $tt.html(label);
 
             // per-data point tooltips
@@ -194,14 +194,19 @@ $(document).ready(function () {
         $fill_graph_container.append($fill_graph);
         // order of following elements is also drawing order
         var lines = [
-            { id: 'abs_min', data: graph_info.data['abs_min'], dashes: { show: true, lineWidth: 2 }, color: "rgb(190,190,190)", shadowSize: 0, label: 'min. berging' },
-            { id: 'abs_max', data: graph_info.data['abs_max'], dashes: { show: true, lineWidth: 2 }, color: "rgb(90,90,90)", shadowSize: 0, label: 'max. berging' },
-            { id: 't0',      data: graph_info.data['t0'],  dashes:  { show: true, lineWidth: 2 }, color: "rgb(50,205,50)", shadowSize: 0 },
-            { id: 'val',     data: graph_info.data['val'], lines: { show: true, lineWidth: 7 }, color: "rgb(255,50,50)", label: 'vulgraad' },
-            { id: 'min',     data: graph_info.data['min'], lines: { show: true, lineWidth: 0, fill: 0.4 }, color: "rgb(255,90,50)", fillBetween: 'val' },
-            { id: 'max',     data: graph_info.data['max'], lines: { show: true, lineWidth: 0, fill: 0.4 }, color: "rgb(255,90,50)", fillBetween: 'val' }
+            //{ id: 'abs_min', data: graph_info.data['abs_min'], dashes: { show: true, lineWidth: 2 }, color: "rgb(190,190,190)", shadowSize: 0, label: 'min. berging' },
+            //{ id: 'abs_max', data: graph_info.data['abs_max'], dashes: { show: true, lineWidth: 2 }, color: "rgb(90,90,90)", shadowSize: 0, label: 'max. berging' },
+            //{ id: 't0',      data: graph_info.data['t0'],  dashes:  { show: true, lineWidth: 2 }, color: "rgb(50,205,50)", shadowSize: 0 },
+            { id: 'val',     data: graph_info.data['val'], lines: { show: true, lineWidth: 7 }, color: "#0026FF", label: 'vulgraad' },
+            { id: 'min',     data: graph_info.data['min'], lines: { show: true, lineWidth: 0, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'val' },
+            { id: 'max',     data: graph_info.data['max'], lines: { show: true, lineWidth: 0, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'val' }
         ];
         var values = graph_info.data['val'];
+        var markings = [
+            { color: '#12d', yaxis: { from: graph_info.y_marking_min, to: graph_info.y_marking_min } },
+            { color: '#e22', yaxis: { from: graph_info.y_marking_max, to: graph_info.y_marking_max } },
+            { color: '#000', lineWidth: 1, xaxis: { from: graph_info.xmin, to: graph_info.xmin } }
+        ];
         var options = {
             xaxis: {
                 min: graph_info.xmin,
@@ -221,7 +226,7 @@ $(document).ready(function () {
                 tickFormatter: function (v) { return v + " %"; }
             },
             legend: { position: 'ne' },
-            grid: { hoverable: true, autoHighlight: false },
+            grid: { hoverable: true, autoHighlight: false, markings: markings },
             //crosshair: { mode: 'x' },
             pan: {
                 interactive: true
@@ -230,8 +235,23 @@ $(document).ready(function () {
                 // interactive: true
             // }
         };
-        $.plot($fill_graph, lines, options);
+        var plot = $.plot($fill_graph, lines, options);
         addToolTip($fill_graph_container, $fill_graph, values);
+
+        // add marking labels
+        var addLabel = function (text, left, top) {
+            var $label = $('<div class="marking-label"/>').css({
+                left: left,
+                top: top
+            }).html(text);
+            $fill_graph_container.append($label);
+        };
+        var o;
+        o = plot.pointOffset({ x: graph_info.xmax, y: graph_info.y_marking_min});
+        addLabel('Min. berging', o.left, o.top);
+        o = plot.pointOffset({ x: graph_info.xmax, y: graph_info.y_marking_max});
+        addLabel('Max. berging', o.left, o.top);
+        return plot;
     };
     var $fill_graph_container = $('#fill-graph-container');
     var $overflow_visualization_container = $('#overflow-visualization-container');

@@ -145,6 +145,14 @@
     height:360px;
 }
 
+div.marking-label {
+    position:absolute;
+    color:#666;
+    font-size:smaller;
+    width:80px;
+    margin-left:7px;
+}
+
 div.flot-tooltip {
     display:none;
     width:240px;

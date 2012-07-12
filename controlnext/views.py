@@ -10,7 +10,7 @@ from djangorestframework.views import View as JsonView
 
 from lizard_ui.views import UiView
 from controlnext import models
-
+from controlnext import demand_table
 
 class MainView(UiView):
     template_name = 'controlnext/main.html'
@@ -20,6 +20,7 @@ class PredictionDataView(JsonView):
     _IGNORE_IE_ACCEPT_HEADER = False # Keep this, if you want IE to work
 
     def get(self, request, *args, **kwargs):
+        demand_table.test_demand_table()
         new_fill = request.GET.get('new_fill', None)
         # NOTE: times should be in UTC
         now = time.time() * 1000
@@ -34,9 +35,7 @@ class PredictionDataView(JsonView):
         data = {
             'val': vals,
             'min': mins,
-            'max': maxs,
-            'abs_min': [20] * len(vals),
-            'abs_max': [100] * len(vals)
+            'max': maxs
         }
         for k in data:
             data[k] = zip(times, data[k])
@@ -46,7 +45,9 @@ class PredictionDataView(JsonView):
         graph_info = {
             'data': data,
             'xmin': now,
-            'xmax': now + (24 * 60 * 60 * 1000)
+            'xmax': now + (24 * 60 * 60 * 1000),
+            'y_marking_min': 20, # fixed value
+            'y_marking_max': 100 # fixed value
         }
         overflow = random.randint(0, 4)
         return {
