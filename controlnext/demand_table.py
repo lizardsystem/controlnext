@@ -69,9 +69,9 @@ def get_demand_for_week(week):
     result = demand_table[week][0]
     return result
 
-def get_demand_on(date):
+def get_week_demand_on(date):
     '''
-    Returns the demand on the given date, in m^3. 
+    Returns the week demand on the given date, in m^3. 
     '''
     # determine week number for given date
     week = date.isocalendar()[1]
@@ -79,7 +79,6 @@ def get_demand_on(date):
 
 
 def test_demand_table():
-    pd_init_table()
     w28  = datetime.datetime(2012, 7, 9, 0, 0, 0)     # monday, 0:00, week 28 (d = 19000)
     w285 = datetime.datetime(2012, 7, 12, 11, 59, 59) # middle of week 28
     w289 = datetime.datetime(2012, 7, 15, 23, 59, 59) # sunday, 23:59, week 28
@@ -93,7 +92,10 @@ def test_demand_table():
 table_year = 2012
 ts = None
 
-def pd_init_table():
+def pd_init_ts():
+    '''
+    Initialize a global table instance.
+    '''
     global ts
     if ts is None:
         start = datetime.datetime(table_year, 1, 1)
@@ -104,9 +106,11 @@ def pd_init_table():
         ts = ts.resample('H', fill_method='pad')
         ts = np.true_divide(ts, 7 * 24) # hours in a week
 
-def pd_plot_table():
+pd_init_ts()
+
+def pd_plot_ts():
     '''
-    For debugging
+    For debugging.
     '''
     import matplotlib.pyplot as plt
     fig = plt.figure(figsize=(24, 6))
@@ -115,12 +119,12 @@ def pd_plot_table():
     fig.savefig('out.png')
     fig.close()
 
-def pd_get_hourly_demand(_from, to):
+def get_hourly_demand(_from, to):
     # set from and to to year 2012 (leap year Feb. 29 works as well)
     # as we only have a table for one year
     _from = datetime.datetime(table_year, _from.month, _from.day, _from.hour)
-    to =    datetime.datetime(table_year, to.month,    to.day,    to.hour)
+    to =    datetime.datetime(table_year, to.month, to.day, to.hour)
     return ts[_from:to]
 
-def pd_get_total_demand(_from, to):
-    return pd_get_hourly_demand(_from, to).sum()
+def get_total_demand(_from, to):
+    return get_hourly_demand(_from, to).sum()

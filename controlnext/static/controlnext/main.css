@@ -136,8 +136,13 @@
     color:green;
     font-weight:bold;
 }
+
 #overflow-visualization img {
     margin-left:10px;
+}
+
+#demand-value {
+    font-weight:bold;
 }
 
 #fill-graph-container {
@@ -188,7 +193,7 @@ input[type="image"], input[type="checkbox"], input[type="radio"] {
 #upper {
     position:relative;
     width:100%;
-    height:380px;
+    height:480px;
 }
 
 #lower {

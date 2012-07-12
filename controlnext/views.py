@@ -1,5 +1,6 @@
 # (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.rst.
 from __future__ import unicode_literals
+import datetime
 import time
 import operator
 import random
@@ -20,9 +21,9 @@ class PredictionDataView(JsonView):
     _IGNORE_IE_ACCEPT_HEADER = False # Keep this, if you want IE to work
 
     def get(self, request, *args, **kwargs):
-        demand_table.test_demand_table()
         new_fill = request.GET.get('new_fill', None)
         # NOTE: times should be in UTC
+        dtnow = datetime.datetime.now()
         now = time.time() * 1000
         times = [now + i * 2 * 60 * 60 * 1000 for i in range(72)]
         vals = [5, 50, 60, 20, 50, 60] * 36
@@ -40,7 +41,7 @@ class PredictionDataView(JsonView):
         for k in data:
             data[k] = zip(times, data[k])
         data['t0'] = [(data['val'][0][0], 0), (data['val'][0][0], 120)]
-        # history
+        # add some history
         data['val'][0:0] = [(now - (14 * 24 * 60 * 60 * 1000), 40)]
         graph_info = {
             'data': data,
@@ -52,5 +53,6 @@ class PredictionDataView(JsonView):
         overflow = random.randint(0, 4)
         return {
             'graph_info': graph_info,
-            'overflow': overflow
+            'overflow': overflow,
+            'demand24h': demand_table.get_total_demand(dtnow, dtnow + datetime.timedelta(hours=24))
         }

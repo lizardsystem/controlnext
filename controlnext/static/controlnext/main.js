@@ -268,7 +268,8 @@ $(document).ready(function () {
         var query = {
             format: 'json',
             new_fill: $new_fill_slider.slider('value'),
-            demand_diff: $demand_slider.slider('value')
+            demand_diff: $demand_slider.slider('value'),
+            date: new Date().getTime() // add dummy date to simulate REST like behaviour, but in reality the server-time is used
         };
 
         // submit request to the server
@@ -283,6 +284,9 @@ $(document).ready(function () {
 
                 // show the 'bakjes' visualization
                 draw_overflow_visualization(response.overflow);
+
+                // show the demand
+                $('#demand-value').html(Math.round(response.demand24h) + ' m<sup>3</sup>');
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 var $error = $('<p>Fout bij het laden van de grafiekdata: ' + errorThrown + '</p>');
