@@ -198,7 +198,7 @@ $(document).ready(function () {
             //{ id: 'abs_max', data: graph_info.data['abs_max'], dashes: { show: true, lineWidth: 2 }, color: "rgb(90,90,90)", shadowSize: 0, label: 'max. berging' },
             //{ id: 't0',      data: graph_info.data['t0'],  dashes:  { show: true, lineWidth: 2 }, color: "rgb(50,205,50)", shadowSize: 0 },
             { id: 'val',     data: graph_info.data['val'], lines: { show: true, lineWidth: 7 }, color: "#0026FF", label: 'vulgraad' },
-            { id: 'min',     data: graph_info.data['min'], lines: { show: true, lineWidth: 0, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'val' },
+            { id: 'min',     data: graph_info.data['min'], lines: { show: true, lineWidth: 0, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'val',},
             { id: 'max',     data: graph_info.data['max'], lines: { show: true, lineWidth: 0, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'val' }
         ];
         var values = graph_info.data['val'];
@@ -208,6 +208,11 @@ $(document).ready(function () {
             { color: '#000', lineWidth: 1, xaxis: { from: graph_info.xmin, to: graph_info.xmin } }
         ];
         var options = {
+            series: {
+                curvedLines: {
+                    active: false
+                }
+            },
             xaxis: {
                 min: graph_info.xmin,
                 max: graph_info.xmax,
@@ -254,6 +259,7 @@ $(document).ready(function () {
         return plot;
     };
     var $fill_graph_container = $('#fill-graph-container');
+    var $rain_graph_container = $('#rain-graph-container');
     var $overflow_visualization_container = $('#overflow-visualization-container');
     var $overflow_visualization = $('#overflow-visualization');
     var refresh_prediction_data = function () {
@@ -278,9 +284,11 @@ $(document).ready(function () {
             success: function (response) {
                 // clear the graph container (remove spinner)
                 $fill_graph_container.empty();
+                $rain_graph_container.empty();
 
                 // plot the graph
                 plot_fill_graph(response.graph_info, $fill_graph_container);
+                plot_rain_graph(response.graph_info, $rain_graph_container);
 
                 // show the 'bakjes' visualization
                 draw_overflow_visualization(response.overflow);
@@ -308,6 +316,53 @@ $(document).ready(function () {
         }
         // show self
         $overflow_visualization_container.show();
+    };
+
+    var plot_rain_graph = function (graph_info, $rain_graph_container) {
+        // build a new element
+        var $rain_graph = $('<div id="rain-graph"/>');
+        $rain_graph_container.append($rain_graph);
+        // order of following elements is also drawing order
+        var lines = [
+            { id: 'val', data: graph_info.data['val'], curvedLines: { show: true, lineWidth: 7 }, color: "#0026FF", label: 'vulgraad' }
+        ];
+        var values = graph_info.data['val'];
+        var markings = [
+            { color: '#000', lineWidth: 1, xaxis: { from: graph_info.xmin, to: graph_info.xmin } }
+        ];
+        var options = {
+            series: {
+                curvedLines: {
+                    active: true
+                }
+            },
+            xaxis: {
+                min: graph_info.xmin,
+                max: graph_info.xmax,
+                mode: 'time',
+                tickSize: [4, 'hour'],
+                tickFormatter: time_tick_formatter,
+                zoomRange: [4 * 60 * 60 * 1000, 7 * 24 * 60 * 60 * 1000]
+            },
+            yaxis: {
+                min: 0,
+                max: 200,
+                panRange: [0, 200],
+                zoomRange: [10, 200],
+                tickFormatter: function (v) { return v + " mm/s"; }
+            },
+            legend: { position: 'ne' },
+            grid: { hoverable: true, autoHighlight: false, markings: markings },
+            crosshair: { mode: 'x' },
+            pan: {
+                interactive: true
+            },
+            zoom: {
+                interactive: true
+            }
+        };
+        var plot = $.plot($rain_graph, lines, options);
+        return plot;
     };
 
     // set up start button

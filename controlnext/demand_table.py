@@ -22,11 +22,11 @@ elif not os.path.isfile(demand_table_path):
     logger.warn('Could not find a file at %s.', demand_table_path)
 
 # semi configurable constants
-delimiter = ';'
+col_delimiter = ';'
 required_cols = set(['week_number', 'demand_lans_m3_div_1000', 'demand_waterschap_m3_div_1000'])
 
 # dont use the csv module here, its ancient (no unicode)
-# and less dependencies is better
+# and less dependencies is generally better
 def read_demand_csv():
     '''
     Reads the demand csv file and return its contents in a dict
@@ -36,13 +36,13 @@ def read_demand_csv():
     logging.debug('Reading %s', demand_table_path)
     result = {}
     with open(demand_table_path, 'rb') as file:
-        cols = file.next().strip().split(delimiter)
+        cols = file.next().strip().split(col_delimiter)
         # do some validation
         if not required_cols.issubset(cols):
             raise Exception('Could not find the necessary columns in the csv.')
         # TODO: column headers are unused, so the CSV isn't very flexible
         for line in file:
-            row = line.strip().split(delimiter)
+            row = line.strip().split(col_delimiter)
             row = map(int, row)
             # multiply demands by 1000 so we return a sane unit (m^3)
             result[row[0]] = (row[1] * 1000, row[2] * 1000)
@@ -123,7 +123,7 @@ def get_hourly_demand(_from, to):
     # set from and to to year 2012 (leap year Feb. 29 works as well)
     # as we only have a table for one year
     _from = datetime.datetime(table_year, _from.month, _from.day, _from.hour)
-    to =    datetime.datetime(table_year, to.month, to.day, to.hour)
+    to = datetime.datetime(table_year, to.month, to.day, to.hour)
     return ts[_from:to]
 
 def get_total_demand(_from, to):

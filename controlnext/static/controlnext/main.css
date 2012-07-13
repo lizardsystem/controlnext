@@ -172,6 +172,12 @@ div.flot-tooltip {
     height:300px;
 }
 
+/* keep this, otherwise flot can't determine graph sizes */
+#rain-graph {
+    width:1000px;
+    height:300px;
+}
+
 /*override from bootstrap*/
 label {
     margin:0 !important;
