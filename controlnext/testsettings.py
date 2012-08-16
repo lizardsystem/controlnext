@@ -42,6 +42,8 @@ SECRET_KEY = 'This is not secret but that is ok.'
 INSTALLED_APPS = [
     'controlnext',
     'lizard_ui',
+    'lizard_map',
+    'lizard_fewsjdbc',
     'djangorestframework',
     'staticfiles',
     'compressor',
@@ -70,6 +72,9 @@ MIDDLEWARE_CLASSES = (
     )
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+NOSE_ARGS = ['--with-doctest', '--verbosity=3']
+SOUTH_TESTS_MIGRATE = False
+SKIP_SOUTH_TESTS = True
 
 # Used for django-staticfiles (and for media files
 STATIC_URL = '/static_media/'

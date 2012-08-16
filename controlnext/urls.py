@@ -22,7 +22,9 @@ urlpatterns = patterns(
     url(r'^prediction_data/$',
         views.PredictionDataView.as_view(),
         name='controlnext-prediction-data'
-    )
+    ),
+    # TEMP
+    url(r'^fewsjdbc/', include('lizard_fewsjdbc.urls')),
 )
 
 if settings.DEBUG:

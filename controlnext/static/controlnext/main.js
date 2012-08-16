@@ -266,6 +266,8 @@ $(document).ready(function () {
         // clear the graph container
         var $spinner = build_spinner();
         $fill_graph_container.empty().append($spinner);
+        var $spinner2 = build_spinner();
+        $rain_graph_container.empty().append($spinner2);
 
         // hide the 'bakjes' visualization
         $overflow_visualization_container.hide();
@@ -324,7 +326,7 @@ $(document).ready(function () {
         $rain_graph_container.append($rain_graph);
         // order of following elements is also drawing order
         var lines = [
-            { id: 'val', data: graph_info.data['val'], curvedLines: { show: true, lineWidth: 7 }, color: "#0026FF", label: 'vulgraad' }
+            { id: 'val', data: graph_info.data['val'], curvedLines: { show: true, lineWidth: 7 }, color: "#0026FF", label: 'regen' }
         ];
         var values = graph_info.data['val'];
         var markings = [

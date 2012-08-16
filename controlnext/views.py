@@ -21,6 +21,7 @@ class PredictionDataView(JsonView):
     _IGNORE_IE_ACCEPT_HEADER = False # Keep this, if you want IE to work
 
     def get(self, request, *args, **kwargs):
+        demand_table.test_demand_table()
         new_fill = request.GET.get('new_fill', None)
         # NOTE: times should be in UTC
         dtnow = datetime.datetime.now()
