@@ -1,9 +1,9 @@
 import datetime
 import logging
 
+import pytz
 import numpy as np
 import pandas as pd
-from pytz import timezone
 
 from django.test import TestCase
 
@@ -13,9 +13,15 @@ from controlnext.fews_data import FewsJdbcDataSource
 
 logger = logging.getLogger(__name__)
 
-utc = timezone('UTC')
+def plot(*args):
+    import matplotlib.pyplot as plt
+    fig = plt.figure(figsize=(24, 6))
+    for df in args:
+        fig.add_subplot(df.plot())
+    fig.savefig('plot.png')
+
 def mktim(*args):
-    return datetime.datetime(*args, tzinfo=utc)
+    return datetime.datetime(*args, tzinfo=pytz.utc)
 
 w26_0 = mktim(2012, 6, 25, 0, 0, 0)     # monday, 0:00, week 26 (d = 20000)
 w27_0 = mktim(2012, 7, 2, 0, 0, 0)      # monday, 0:00, week 27 (d = 20000)
@@ -38,9 +44,8 @@ class CalculationModelTest(TestCase):
         tbl.init()
         self.tbl = tbl
 
-        model = CalculationModel(tbl)
+        model = CalculationModel(tbl, None)
         model.init()
-        model.plot()
         self.model = model
 
     def test_full_week_linear(self):
@@ -80,19 +85,17 @@ class CalcTest(TestCase):
         tbl.init()
         self.tbl = tbl
 
-        model = CalculationModel(tbl)
-        model.init()
-        model.plot()
+        ds = FewsJdbcDataSource()
+        self.ds = ds
+
+        model = CalculationModel(tbl, ds)
         self.model = model
 
-        self.ds = FewsJdbcDataSource()
-
     def test_calculation(self):
-        d1 = self.model.get_demand(w28_0, w28_5)
-        d2 = self.ds.get_current_fill(w28_0, w28_5)
-        try:
-            d3 = pd.concat([d1, d2])
-        except Exception as ex:
-            logging.exception(ex)
+        d1 = self.tbl.get_demand(w28_0, w29_5)
+        d2 = self.ds.get_current_fill(w28_0, w29_5)
+        # build dataframe index based on intersection of d1 and d1 indices
+        d3 = pd.DataFrame(data={d1.name: d1, d2.name: d2})
+        plot(d1, d2)
         import pdb; pdb.set_trace()
         #d3 = d1.cov(d2)

@@ -6,6 +6,7 @@ import datetime
 
 from django.conf import settings
 
+import pytz
 import pandas as pd
 import numpy as np
 
@@ -27,6 +28,7 @@ class DemandTable(object):
 
     def __init__(self):
         self.data = None
+        self.ts = None
 
     def init(self):
         '''
@@ -34,6 +36,7 @@ class DemandTable(object):
         '''
         if not self.data:
             self.data = self._read_demand_csv()
+            self.ts = self._generate_series()
 
     def _read_demand_csv(self):
         '''
@@ -66,6 +69,22 @@ class DemandTable(object):
             result[53] = result[52]
         return result
 
+    def _generate_series(self):
+        '''
+        Generate a pandas Series object used for calculation.
+        '''
+        start = datetime.datetime(self.year, 1, 1, tzinfo=pytz.utc)
+        end = datetime.datetime(self.year + 1, 1, 1, tzinfo=pytz.utc)
+        weekly = pd.date_range(start, end, freq='W-MON', tz='UTC') # week changes on monday
+        values = [self.get_demand_for_week(week) for week in range(1, len(weekly) + 1)] # start at week 1
+
+        ts = pd.Series(values, weekly, name='demand')
+        #ts = ts.resample('H', fill_method='pad')
+        ts = ts.resample('15min')
+        ts = ts.interpolate()
+        ts = np.true_divide(ts, 7 * 24 * 4) # quarter hours in a week
+        return ts
+
     def get_demand_for_week(self, week):
         '''
         Returns the demand on the given week, in m^3. 
@@ -81,3 +100,23 @@ class DemandTable(object):
         # determine week number for given date
         week = date.isocalendar()[1]
         return self.get_demand_for_week(week)
+
+    def get_demand(self, _from, to):
+        # set from and to to year 2012 (leap year, so Feb. 29 works as well)
+        # as we only have a table for one year
+        _from = _from.replace(year=self.year)
+        to = to.replace(year=self.year)
+        return self.ts[_from:to]
+
+    def get_total_demand(self, _from, to):
+        return self.get_demand(_from, to).sum()
+
+    def plot(self):
+        '''
+        Useful for debugging.
+        '''
+        import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(24, 6))
+        axes = self.ts.plot()
+        fig.add_subplot(axes)
+        fig.savefig('{}_plot.png'.format(__name__))
