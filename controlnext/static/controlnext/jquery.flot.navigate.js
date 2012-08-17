@@ -126,10 +126,12 @@ Licensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-L
     };
 
     function init(plot) {
-        function onZoomClick(e, zoomOut) {
-            var c = plot.getPlaceholder().offset();
-            c.left = e.pageX - c.left;
-            c.top = e.pageY - c.top;
+        function onZoomClick(e, zoomOut, c) {
+            if (c === undefined) {
+                var c = plot.getPlaceholder().offset();
+                c.left = e.pageX - c.left;
+                c.top = e.pageY - c.top;
+            }
             if (zoomOut)
                 plot.zoomOut({ center: c });
             else
@@ -143,8 +145,15 @@ Licensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-L
                     delta = e.wheelDelta;
                 else
                     delta = e.detail * -1;
-            } 
-            onZoomClick(e, delta < 0);
+            }
+            if (e.pageX === undefined) {
+                // < ie9
+                var c = {left: e.x, top: e.y};
+                onZoomClick(e, delta < 0, c);
+            }
+            else {
+                onZoomClick(e, delta < 0);
+            }
             return false;
         }
         
