@@ -19,9 +19,9 @@ urlpatterns = patterns(
         views.MainView.as_view(),
         name='controlnext-main'
     ),
-    url(r'^prediction_data/$',
-        views.PredictionDataView.as_view(),
-        name='controlnext-prediction-data'
+    url(r'^data_service/(?P<data_type>[-a-zA-Z0-9_]+)/$',
+        views.DataService.as_view(),
+        name='controlnext-data-service'
     ),
     # TEMP
     url(r'^fewsjdbc/', include('lizard_fewsjdbc.urls')),

@@ -15,7 +15,7 @@ install_requires = [
     'lizard-ui >= 4.0',
     'lizard-fewsjdbc',
     'djangorestframework',
-    'pandas',
+    'pandas >= 0.8.2.dev',
     'numpy'
     ],
 

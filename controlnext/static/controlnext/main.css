@@ -160,8 +160,7 @@ div.marking-label {
 
 div.flot-tooltip {
     display:none;
-    width:240px;
-    height:20px;
+    background-color:#fff;
     border:1px solid #fdd;
     padding:2px;
 }
@@ -179,6 +178,10 @@ div.flot-tooltip {
 }
 
 /*override from bootstrap*/
+#content {
+    overflow:auto !important;
+}
+
 label {
     margin:0 !important;
     display:block;

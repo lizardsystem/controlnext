@@ -31,7 +31,8 @@
 {% spaceless %}
 <div id="data-urls"
      data-url-base="{{ STATIC_URL }}controlnext/"
-     data-prediction-url="{% url controlnext-prediction-data %}"
+     data-prediction-url="{% url controlnext-data-service data_type='prediction' %}"
+     data-rain-url="{% url controlnext-data-service data_type='rain' %}"
      style="display:none;"></div>
 <div id="controls">
 <div>
@@ -96,6 +97,11 @@
         <span id="start-btn-label">Start</span>
     </a>
 </div>
+
+<div id="debug-panel" style="display:none;">
+t0 verschil (uren): <input type="text" id="debug-hoursdiff" name="debug-hoursdiff" size="4" />
+</div>
+
 </div>
 {% endspaceless %}
 {% endblock %}
