@@ -40,13 +40,18 @@ class FewsJdbcDataSource(object):
 
     @cache_result(3600, ignore_cache=False, instancemethod=True)
     def get_rain(self, which, _from, to):
-        return self._get_timeseries_as_pd_series(
+        rain = self._get_timeseries_as_pd_series(
             rain_filter_id,
             rain_location_id,
             rain_parameter_ids[which],
             _from, to,
             name='rain_' + which
         )
+        # convert to quarterly figures
+        rain = rain.resample('15min', fill_method='ffill')
+        # 4 quarters in an hour
+        rain /= 4
+        return rain
 
     def get_fill(self, _from, to):
         return self._get_timeseries_as_pd_series(

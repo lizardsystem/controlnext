@@ -93,7 +93,8 @@ class DemandTable(object):
         ts = pd.Series(values, weekly, name='demand')
         ts = ts.resample('15min')
         ts = ts.interpolate()
-        ts = np.true_divide(ts, 7 * 24 * 4) # quarter hours in a week
+        # divide by amount of quarter hours in a week
+        ts /= 7 * 24 * 4
         return ts[_from:to]
 
     def get_total_demand(self, _from, to):

@@ -157,7 +157,7 @@ $(document).ready(function () {
     var time_tick_formatter = function (number, axis) {
         var time = new Date(number);
         // presentation, so don't use UTC, but the localized date instead.
-        return time.getDate() + '-' + pad(time.getMonth(), 2) + '<br/>' + time.getHours() + ':' + pad(time.getMinutes(), 2);
+        return time.getDate() + '-' + pad(time.getMonth() + 1, 2) + '<br/>' + time.getHours() + ':' + pad(time.getMinutes(), 2);
     };
     var add_tooltip = function (plot, values) {
         // build a tooltip element

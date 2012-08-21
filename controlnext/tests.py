@@ -108,7 +108,7 @@ class CalculationModelTest(TestCase):
         self.mkplot('future', now, future)
 
     def test_calc_model(self):
-        now = w28_0
+        now = mktim(2012, 8, 5, 8, 0) # some rain fell here
         future = now + datetime.timedelta(days=5)
         ts = self.model.predict_overflow(now, future, 80, 100)
         self.assertGreater(len(ts), 10)

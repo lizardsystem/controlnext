@@ -22,6 +22,8 @@ frequency = datetime.timedelta(minutes=15)
 
 min_berging_pct = 20
 max_berging_pct = 100
+max_berging_m3 = 20000 # in m^3
+area_receiving_rain_m2 = 20000 # in m^2
 
 def round_date(date):
     minutes = date.minute - (date.minute % 15)
