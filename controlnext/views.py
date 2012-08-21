@@ -19,8 +19,10 @@ from controlnext.fews_data import FewsJdbcDataSource
 logger = logging.getLogger(__name__)
 
 js_epoch = datetime.datetime(1970, 1, 1, tzinfo=pytz.utc)
+
 def datetime_to_js(dt):
     return (dt - js_epoch).total_seconds() * 1000
+
 def series_to_js(pdseries):
     return [(datetime_to_js(dt), value) for dt, value in pdseries.iterkv()]
 
@@ -32,30 +34,29 @@ class DataService(JsonView):
     _IGNORE_IE_ACCEPT_HEADER = False # Keep this, if you want IE to work
 
     def get(self, request, data_type=None):
-        new_fill = request.GET.get('new_fill', None)
+        desired_fill = request.GET.get('desired_fill', None)
         demand_diff = request.GET.get('demand_diff', None)
         hours_diff = request.GET.get('hours_diff', None)
 
         # note: t0 is Math.floor() 'ed to a full quarter
-        t0 = datetime.datetime.now(pytz.utc)
-        minutes = t0.minute - (t0.minute % 15)
-        t0 = t0.replace(minute=minutes, second=0, microsecond=0)
+        t0 = round_date(datetime.datetime.now(pytz.utc))
+        round_date(t0)
         if hours_diff:
             t0 += datetime.timedelta(hours=int(hours_diff))
 
         if data_type == 'rain':
             return self.rain(t0)
         elif data_type == 'prediction':
-            return self.prediction(t0, new_fill, demand_diff)
+            return self.prediction(t0, desired_fill, demand_diff)
 
-    def prediction(self, t0, new_fill, demand_diff):
+    def prediction(self, t0, desired_fill, demand_diff):
         # NOTE: times should be in UTC
         dtnow = datetime.datetime.now()
         now = time.time() * 1000
         times = [now + i * 2 * 60 * 60 * 1000 for i in range(72)]
         vals = [5, 50, 60, 20, 50, 60] * 36
-        if new_fill is not None:
-            vals[0] = int(new_fill)
+        if desired_fill is not None:
+            vals[0] = int(desired_fill)
         minsdiff = [-5, -5, -10, -20, -40, -10] * 36
         maxsdiff = [5, 5, 10, 20, 10, 30] * 36
         mins = map(operator.add, vals, minsdiff)

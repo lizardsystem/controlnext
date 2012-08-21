@@ -22,8 +22,9 @@ elif not os.path.isfile(demand_table_path):
     logger.warn('Could not find a file at %s.', demand_table_path)
 
 # semi configurable constants
-col_delimiter = ';'
-required_cols = set(['week_number', 'demand_m3'])
+csv_col_delimiter = ';'
+demand_column_name = 'demand_m3'
+week_column_name = 'week_number'
 
 def get_week(dt):
     return dt.isocalendar()[1]
@@ -41,7 +42,6 @@ class DemandTable(object):
         '''
         if not self.data:
             self.data = self._read_demand_csv()
-            #self.ts = self._generate_series()
 
     def _read_demand_csv(self):
         '''
@@ -54,16 +54,15 @@ class DemandTable(object):
         logging.debug('Reading %s', demand_table_path)
         result = {}
         with open(demand_table_path, 'rb') as file:
-            cols = file.next().strip().split(col_delimiter)
-            # do some validation
-            if not required_cols.issubset(cols):
-                raise Exception('Could not find the necessary columns in the csv.')
-            # TODO: column headers are unused, so the CSV isn't very flexible
+            cols = file.next().strip().split(csv_col_delimiter)
+            # do some validation, raises value error on missing column
+            week_column = cols.index(week_column_name)
+            demand_column = cols.index(demand_column_name)
             for line in file:
-                row = line.strip().split(col_delimiter)
+                row = line.strip().split(csv_col_delimiter)
                 # convert everything to ints
                 row = map(int, row)
-                result[row[0]] = row[1]
+                result[row[week_column]] = row[demand_column]
         # table doesn't define anything for week 0 (the days between new year and first sunday)
         if not 0 in result:
             # just copy the values from week 1
@@ -114,13 +113,15 @@ class DemandTable(object):
 #        return self.ts[_from:to]
 
     def get_demand(self, _from, to):
+        _from = round_date(_from)
+        to = round_date(to)
+
         # ensure we interpolate between two values at least
         to_adj = to + one_week
         weekly = pd.date_range(_from, to_adj, freq='W-MON', tz=pytz.utc) # week changes on monday
         values = [self.get_week_demand_on(date) for date in weekly]
 
         ts = pd.Series(values, weekly, name='demand')
-        #import pdb; pdb.set_trace()
         #ts = ts.resample('H', fill_method='pad')
         ts = ts.resample('15min')
         ts = ts.interpolate()
@@ -135,7 +136,7 @@ class DemandTable(object):
         Useful for debugging.
         '''
         import matplotlib.pyplot as plt
-        ts = self.get_demand(datetime.datetime(2011, 6, 1), datetime.datetime(2012, 6, 1))
+        ts = self.get_demand(datetime.datetime(2011, 1, 1), datetime.datetime(2012, 1, 1))
         fig = plt.figure(figsize=(24, 6))
         axes = ts.plot()
         fig.add_subplot(axes)

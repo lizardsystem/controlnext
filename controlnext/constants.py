@@ -22,3 +22,7 @@ frequency = datetime.timedelta(minutes=15)
 
 min_berging_pct = 20
 max_berging_pct = 100
+
+def round_date(date):
+    minutes = date.minute - (date.minute % 15)
+    return date.replace(minute=minutes, second=0, microsecond=0)

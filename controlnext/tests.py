@@ -10,6 +10,7 @@ from django.test import TestCase
 from controlnext.demand_table import DemandTable
 from controlnext.calc_model import CalculationModel
 from controlnext.fews_data import FewsJdbcDataSource
+from controlnext.constants import *
 
 logger = logging.getLogger(__name__)
 
@@ -48,22 +49,23 @@ class DemandTableTest(TestCase):
 
     def test_full_week_linear(self):
         res = self.tbl.get_total_demand(w26_0, w27_0)
-        res_tbl = self.tbl.get_demand_for_week(26)
-        self.assertAlmostEqual(res, res_tbl, delta=200)
+        expected = self.tbl.get_demand_for_week(26)
+        self.assertAlmostEqual(res, expected, delta=200)
 
     def test_half_week(self):
         res = self.tbl.get_total_demand(w28_0, w28_5)
-        self.assertAlmostEqual(res, 9500.0, delta=500)
+        expected = self.tbl.get_demand_for_week(28) / 2
+        self.assertAlmostEqual(res, expected, delta=500)
 
     def test_full_week(self):
         res = self.tbl.get_total_demand(w28_0, w29_0)
-        res_tbl = self.tbl.get_demand_for_week(28)
-        self.assertAlmostEqual(res, res_tbl, delta=500)
+        expected = self.tbl.get_demand_for_week(28)
+        self.assertAlmostEqual(res, expected, delta=500)
 
     def test_full_week2(self):
         res = self.tbl.get_total_demand(w29_0, w30_0)
-        res_tbl = self.tbl.get_demand_for_week(29)
-        self.assertAlmostEqual(res, res_tbl, delta=500)
+        expected = self.tbl.get_demand_for_week(29)
+        self.assertAlmostEqual(res, expected, delta=500)
 
 class FewsJdbcDataSourceTest(TestCase):
     fixtures = ['jdbc_source.json']
@@ -96,10 +98,8 @@ class CalculationModelTest(TestCase):
             rains.append(rain)
         plot(name, *rains)
 
-    def test_calculation(self):
+    def test_make_some_plots(self):
         now = datetime.datetime.now(pytz.utc)
-        #now = w29_0
-        #now = mktim(2012, 7, 27, 0, 0, 0)
         history = now - datetime.timedelta(days=1)
         future = now + datetime.timedelta(days=5)
         d1 = self.tbl.get_demand(w28_0, w29_5)
@@ -108,8 +108,9 @@ class CalculationModelTest(TestCase):
         self.mkplot('history', history, now)
         self.mkplot('span', history, future)
         self.mkplot('future', now, future)
-        import pdb; pdb.set_trace()
-        # build dataframe index based on intersection of d1 and d1 indices
-        #d5 = pd.DataFrame(data={d1.name: d1, d2.name: d2})
-        plot('combined', d1, d2, d3)
-        #d3 = d1.cov(d2)
+
+    def test_calc_model(self):
+        now = w28_0
+        future = now + datetime.timedelta(days=5)
+        ts = self.model.predict_overflow(now, future, 80, 100)
+        self.assertGreater(len(ts), 10)

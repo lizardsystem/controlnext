@@ -24,7 +24,7 @@
 
 /* ************************ */
 
-#new-fill-slider {
+#desired-fill-slider {
     display:block;
     position:absolute;
     left:50px;
@@ -33,7 +33,7 @@
     height:100%;
 }
 
-#new-fill-slider .ui-slider-handle {
+#desired-fill-slider .ui-slider-handle {
     left:-4px;
     width:46px;
     height:10px;
@@ -43,13 +43,13 @@
     background-image:none;
 }
 
-#new-fill-slider .ui-widget-header {
+#desired-fill-slider .ui-widget-header {
     background:#33e;
 }
 
 /* ************************ */
 
-#new-fill-container {
+#desired-fill-container {
     display:block;
     position:absolute;
     left:100px;
@@ -58,7 +58,7 @@
     height:100%;
 }
 
-#new-fill-label {
+#desired-fill-label {
     display:block;
     position:absolute;
     left:3px;

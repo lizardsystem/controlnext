@@ -63,13 +63,17 @@ class FewsJdbcDataSource(object):
         row_data = self._get_timeseries(*args)
         if check_frequency:
             do_check_frequency(row_data)
-        # store results in a pandas dataframe (fast numpy like datastructure)
+        # store results in a dataframe
         df = pd.DataFrame(row_data)
-        # convert the datetime list to numpy datetime objects
+
+        # for pandas 0.8.1
         # enforce utc here, because of a bug in pandas 0.8.1
         #dates = pd.tseries.tools.to_datetime(df[0], tz=pytz)
+
+        # convert the datetime list to numpy datetime objects
         # build an index of the timeseries and infer its frequency (should be 15min, see above)
         index = pd.DatetimeIndex(df[0], freq='infer', tz=pytz.utc)
+
         # build a timeseries object so we can compare it with other timeseries
         ts = pd.Series(df[1].values, index=index, name=name)
         return ts

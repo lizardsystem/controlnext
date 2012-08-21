@@ -80,7 +80,7 @@ $(document).ready(function () {
 
     // set up the fill slider (the vertical one)
     {
-        var $new_fill_slider = $('#new-fill-slider').slider({
+        var $desired_fill_slider = $('#desired-fill-slider').slider({
             orientation: 'vertical',
             range: 'min',
             min: 0,
@@ -89,14 +89,14 @@ $(document).ready(function () {
         });
 
         // grab related DOM elements
-        var $new_fill_label = $('#new-fill-label');
-        var $new_fill_val = $('#new-fill-label .val');
-        var $bg = $('#new-fill-slider .ui-widget-header');
+        var $desired_fill_label = $('#desired-fill-label');
+        var $desired_fill_val = $('#desired-fill-label .val');
+        var $bg = $('#desired-fill-slider .ui-widget-header');
     
         // change label position, value and slider background color on slider value change
         var refresh_amount = function (value) {
-            $new_fill_label.css('bottom', (value - 2) + '%');
-            $new_fill_val.html(value);
+            $desired_fill_label.css('bottom', (value - 2) + '%');
+            $desired_fill_val.html(value);
     
             var scaled = value / 100.0;
             var r = 12;
@@ -105,12 +105,12 @@ $(document).ready(function () {
             $bg.css('background-color', 'rgb(' + r + ', ' + g + ', ' + b + ')');
         };
     
-        $new_fill_slider.bind('slide', function (event, ui) {
+        $desired_fill_slider.bind('slide', function (event, ui) {
             refresh_amount(ui.value);
         });
     
         // do an initial refresh of the fill slider
-        refresh_amount($new_fill_slider.slider('value'));
+        refresh_amount($desired_fill_slider.slider('value'));
     }
 
     // set up the demand slider (the horizontal one)
@@ -296,7 +296,7 @@ $(document).ready(function () {
         // build query string based on user input
         var query = {
             format: 'json',
-            new_fill: $new_fill_slider.slider('value'),
+            desired_fill: $desired_fill_slider.slider('value'),
             demand_diff: $demand_slider.slider('value'),
             date: new Date().getTime() // add dummy date to simulate REST like behaviour, but in reality the server-time is used
         };
