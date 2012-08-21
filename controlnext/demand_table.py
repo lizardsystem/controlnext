@@ -33,15 +33,7 @@ one_week = datetime.timedelta(weeks=1)
 
 class DemandTable(object):
     def __init__(self):
-        self.data = None
-        self.ts = None
-
-    def init(self):
-        '''
-        Lazy load and keep the demand table in memory, because it's tiny.
-        '''
-        if not self.data:
-            self.data = self._read_demand_csv()
+        self.data = self._read_demand_csv()
 
     def _read_demand_csv(self):
         '''
@@ -73,22 +65,6 @@ class DemandTable(object):
             result[53] = result[52]
         return result
 
-#    def _generate_series_old(self):
-#        '''
-#        Generate a pandas Series object used for calculation.
-#        '''
-#        start = datetime.datetime(self.year, 1, 1, tzinfo=pytz.utc)
-#        end = datetime.datetime(self.year + 1, 1, 1, tzinfo=pytz.utc)
-#        weekly = pd.date_range(start, end, freq='W-MON', tz='UTC') # week changes on monday
-#        values = [self.get_demand_for_week(week) for week in range(1, len(weekly) + 1)] # start at week 1
-#
-#        ts = pd.Series(values, weekly, name='demand')
-#        #ts = ts.resample('H', fill_method='pad')
-#        ts = ts.resample('15min')
-#        ts = ts.interpolate()
-#        ts = np.true_divide(ts, 7 * 24 * 4) # quarter hours in a week
-#        return ts
-
     def get_demand_for_week(self, week):
         '''
         Returns the demand on the given week, in m^3. 
@@ -105,13 +81,6 @@ class DemandTable(object):
         week = get_week(date)
         return self.get_demand_for_week(week)
 
-#    def get_demand_old(self, _from, to):
-#        # set from and to to year 2012 (leap year, so Feb. 29 works as well)
-#        # as we only have a table for one year
-#        _from = _from.replace(year=self.year)
-#        to = to.replace(year=self.year)
-#        return self.ts[_from:to]
-
     def get_demand(self, _from, to):
         _from = round_date(_from)
         to = round_date(to)
@@ -122,7 +91,6 @@ class DemandTable(object):
         values = [self.get_week_demand_on(date) for date in weekly]
 
         ts = pd.Series(values, weekly, name='demand')
-        #ts = ts.resample('H', fill_method='pad')
         ts = ts.resample('15min')
         ts = ts.interpolate()
         ts = np.true_divide(ts, 7 * 24 * 4) # quarter hours in a week

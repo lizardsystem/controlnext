@@ -236,7 +236,7 @@ $(document).ready(function () {
                 min: xmin,
                 max: xmax,
                 mode: 'time',
-                tickSize: [1, 'hour'],
+                tickSize: [2, 'hour'],
                 tickFormatter: time_tick_formatter,
                 zoomRange: [4 * MS_HOUR, 24 * MS_HOUR] // 4 hours - 36 hours
                 //axisLabel: 'tijd vanaf',
@@ -252,7 +252,7 @@ $(document).ready(function () {
                 zoomRange: false
             },
             legend: { position: 'ne' },
-            grid: { hoverable: true, autoHighlight: false, markings: markings },
+            grid: { hoverable: true, autoHighlight: false, markings: markings, labelMargin: 10 },
             crosshair: { mode: 'x' },
             pan: {
                 interactive: true
@@ -389,7 +389,7 @@ $(document).ready(function () {
                 min: xmin,
                 max: xmax,
                 mode: 'time',
-                tickSize: [1, 'hour'],
+                tickSize: [2, 'hour'],
                 tickFormatter: time_tick_formatter,
                 zoomRange: [4 * MS_HOUR, 36 * MS_HOUR] // 4 hours - 36 hours
             },
@@ -402,7 +402,7 @@ $(document).ready(function () {
                 zoomRange: false
             },
             legend: { position: 'ne' },
-            grid: { hoverable: true, autoHighlight: false, markings: markings },
+            grid: { hoverable: true, autoHighlight: false, markings: markings, labelMargin: 10 },
             crosshair: { mode: 'x' },
             pan: {
                 interactive: true

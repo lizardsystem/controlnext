@@ -44,7 +44,6 @@ w30_9 = mktim(2012, 7, 29, 23, 59, 59)  # middle of week 30 (d = 17000)
 class DemandTableTest(TestCase):
     def setUp(self):
         tbl = DemandTable()
-        tbl.init()
         self.tbl = tbl
 
     def test_full_week_linear(self):
@@ -82,7 +81,6 @@ class CalculationModelTest(TestCase):
 
     def setUp(self):
         tbl = DemandTable()
-        tbl.init()
         self.tbl = tbl
 
         ds = FewsJdbcDataSource()
