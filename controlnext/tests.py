@@ -109,12 +109,15 @@ class CalculationModelTest(TestCase):
 
     def test_calc_model(self):
         now = mktim(2012, 8, 5, 8, 0) # some rain fell here
-        future = now + datetime.timedelta(days=5)
+        now = round_date(datetime.datetime.now(tz=pytz.utc))
+        future = now + fill_predict_future
+
         ts = self.model.predict_fill(now, future, 20, 100)
-        self.assertGreater(len(ts['mean'][0]), 10)
-        plot('predict_fill', ts['mean'][0], ts['history'])
+
+        self.assertGreater(len(ts['scenarios']['mean']['prediction']), 10)
+        plot('predict_fill', ts['scenarios']['mean']['prediction'], ts['history'])
         plot('predict_fill_rain', ts['rain'])
-        plot('predict_fill_uitstroom', ts['mean'][1])
-        plot('predict_fill_toestroom', ts['mean'][2])
+        plot('predict_fill_uitstroom', ts['scenarios']['mean']['uitstroom'])
+        plot('predict_fill_toestroom', ts['scenarios']['mean']['toestroom'])
         plot('predict_fill_max_uitstroom', ts['max_uitstroom'])
         plot('predict_fill_watervraag', ts['demand'])

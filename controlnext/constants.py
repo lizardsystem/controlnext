@@ -32,5 +32,5 @@ def round_date(date):
     minutes = date.minute - (date.minute % 15)
     return date.replace(minute=minutes, second=0, microsecond=0)
 
-fill_history = datetime.timedelta(days='3')
-fill_predict_future = datetime.timedelta(days='5')
+fill_history = datetime.timedelta(days=3)
+fill_predict_future = datetime.timedelta(days=5)

@@ -13,8 +13,10 @@ from djangorestframework.views import View as JsonView
 
 from lizard_ui.views import UiView
 from controlnext import models
-from controlnext.constants import *
+from controlnext.demand_table import DemandTable
+from controlnext.calc_model import CalculationModel
 from controlnext.fews_data import FewsJdbcDataSource
+from controlnext.constants import *
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +26,7 @@ def datetime_to_js(dt):
     return (dt - js_epoch).total_seconds() * 1000
 
 def series_to_js(pdseries):
+    pdseries = pdseries.fillna(None)
     return [(datetime_to_js(dt), value) for dt, value in pdseries.iterkv()]
 
 class MainView(UiView):
@@ -34,22 +37,45 @@ class DataService(JsonView):
     _IGNORE_IE_ACCEPT_HEADER = False # Keep this, if you want IE to work
 
     def get(self, request, data_type=None):
-        desired_fill = request.GET.get('desired_fill', None)
-        demand_diff = request.GET.get('demand_diff', None)
         hours_diff = request.GET.get('hours_diff', None)
 
         # note: t0 is Math.floor() 'ed to a full quarter
         t0 = round_date(datetime.datetime.now(pytz.utc))
-        round_date(t0)
         if hours_diff:
             t0 += datetime.timedelta(hours=int(hours_diff))
 
         if data_type == 'rain':
             return self.rain(t0)
         elif data_type == 'prediction':
+            desired_fill = request.GET.get('desired_fill')
+            demand_diff = request.GET.get('demand_diff')
+            desired_fill = int(desired_fill)
+            demand_diff = int(demand_diff)
             return self.prediction(t0, desired_fill, demand_diff)
 
     def prediction(self, t0, desired_fill, demand_diff):
+        tbl = DemandTable()
+        ds = FewsJdbcDataSource()
+        model = CalculationModel(tbl, ds)
+        future = t0 + fill_predict_future
+        prediction = model.predict_fill(t0, future, desired_fill, demand_diff, fill_history)
+        # TODO should use dict comprehension in py > 2.6
+        data = dict([(name, series_to_js(scenario['prediction'])) for name, scenario in prediction['scenarios'].items()])
+        graph_info = {
+            'data': data,
+            'x0': datetime_to_js(t0),
+            'y_marking_min': min_berging_pct,
+            'y_marking_max': max_berging_pct
+        }
+        result = {
+            'graph_info': graph_info,
+            'overflow': '',
+            #'demand24h': demand_table.get_total_demand(dtnow, dtnow + datetime.timedelta(hours=24))
+            'demand24h': ''
+        }
+        return result
+
+    def prediction_old(self, t0, desired_fill, demand_diff):
         # NOTE: times should be in UTC
         dtnow = datetime.datetime.now()
         now = time.time() * 1000

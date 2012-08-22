@@ -51,6 +51,7 @@ class FewsJdbcDataSource(object):
         rain = rain.resample('15min', fill_method='ffill')
         # 4 quarters in an hour
         rain /= 4
+        rain = rain.fillna(0)
         return rain
 
     def get_fill(self, _from, to):

@@ -23,11 +23,11 @@ logger = logging.getLogger(__name__)
 
 def cross(series, cross=0, direction='cross'):
     """
-    Given a Series returns all the index values where the data values equal 
-    the 'cross' value. 
+    Given a Series returns all the index values where the data values equal
+    the 'cross' value.
 
-    Direction can be 'rising' (for rising edge), 'falling' (for only falling 
-    edge), or 'cross' for both edges
+    Direction can be 'rising' (for rising edge), 'falling' (for only falling
+    edge), or 'cross' for both edges.
     """
     # Find if values are above or bellow yvalue crossing:
     above = series.values > cross
@@ -54,27 +54,12 @@ class CalculationModel(object):
         self.fews_data = fews_data
 
     def calc_max_uitstroom(self, _from, periods):
-        '''
-        if desired_fill_m3 > current_fill_m3:
-            # geen toestroom
-            return None
-        # bereken aantal tijdstappen voor de gehele periode
-        totale_uitstroom_m3 = (current_fill_m3 - desired_fill_m3) / max_uitstroom_per_tijdstap_m3
-        periods = totale_uitstroom_m3 / max_uitstroom_per_tijdstap_m3
-        # desired_fill wordt niet bereikt over periode als periodes > max_periods
-        periods = min(periods, max_periods)
-        # bereken uitstroom over periode
-        values = np.arange(0.0, totale_uitstroom_m3, max_uitstroom_per_tijdstap_m3)
-        values = values[:periods]
-        # stel timeseries op
-        dates = pd.date_range(_from, periods=periods, freq='15min', tz=pytz.utc)
-        ts = pd.Series(values, dates, name='uitstroom')
-        '''
+        # tel ook eerste en laatste periode mee
+        periods += 2
         totale_uitstroom_m3 = periods * max_uitstroom_per_tijdstap_m3
         values = np.arange(0.0, totale_uitstroom_m3, max_uitstroom_per_tijdstap_m3)
         dates = pd.date_range(_from, periods=periods, freq='15min', tz=pytz.utc)
         ts = pd.Series(values, dates, name='uitstroom')
-
         return ts
 
     def calc_scenario(self, current_fill_m3, desired_fill_m3, demand_m3, rain, max_uitstroom_m3):
@@ -84,8 +69,9 @@ class CalculationModel(object):
         vast_met_max_uitstroom = vaste_verandering - max_uitstroom_m3
 
         # zoek eerste waarde waar de gewenste vulling bereikt wordt
+        omslagpunt = None
         cross_desired = cross(vast_met_max_uitstroom, desired_fill_m3)
-        if cross_desired:
+        if len(cross_desired) > 0:
             # gewenste vulling wordt bereikt
             omslagpunt = cross_desired[0]
             uitstroom_m3 = max_uitstroom_m3.copy()
@@ -94,7 +80,16 @@ class CalculationModel(object):
             uitstroom_m3 = max_uitstroom_m3
         result = vaste_verandering - uitstroom_m3
 
-        return result, uitstroom_m3, toestroom.cumsum()
+        # terug naar percentages
+        result /= max_berging_m3
+        result *= 100
+
+        return {
+            'prediction': result,
+            'uitstroom': uitstroom_m3,
+            'toestroom': toestroom.cumsum(),
+            'omslagpunt': omslagpunt,
+        }
 
     def predict_fill(self, _from, to, desired_fill_pct, demand_diff_pct, history_timedelta=None):
         # do some input validation here, to ensure we are dealing with sane numbers
@@ -105,7 +100,7 @@ class CalculationModel(object):
 
         # optional parameter
         if not history_timedelta:
-            history_timedelta = datetime.timedelta(days=3)
+            history_timedelta = fill_history
 
         # haal vulgraad op
         fill = self.fews_data.get_fill(_from - history_timedelta, _from)
@@ -116,11 +111,16 @@ class CalculationModel(object):
         # bepaal gewenste vulgraad
         desired_fill_m3 = max_berging_m3 * (desired_fill_pct / 100)
 
-        # TEMP speed up min max
-        #rain_min = self.fews_data.get_rain('min', _from, to)
         rain_mean = self.fews_data.get_rain('mean', _from, to)
-        #rain_max = self.fews_data.get_rain('max', _from, to)
-        rain_min = rain_max = rain_mean
+        if to < round_date(datetime.datetime.now(tz=pytz.utc)):
+            # HACK: indien data uit het verleden wordt opgevraagd, zit er geen min en max meer in FEWS
+            rain_min = rain_max = rain_mean
+        else:
+            rain_min = self.fews_data.get_rain('min', _from, to)
+            rain_max = self.fews_data.get_rain('max', _from, to)
+        # HACK: gebruik de datum van de laatst beschikbaar regenvoorspelling als to
+        _from = rain_mean.index[0] 
+        to = rain_mean.index[-1]
 
         # bereken watervraag over deze periode
         demand_m3 = self.demand_table.get_demand(_from, to)
@@ -137,6 +137,7 @@ class CalculationModel(object):
 
         # return ook tussentijdse waarden, vnml. voor debugging
         result = {
+            'scenarios': {},
             'history': fill,
             'rain': rain_mean,
             'max_uitstroom': max_uitstroom_m3,
@@ -144,14 +145,14 @@ class CalculationModel(object):
         }
 
         # bereken de drie scenarios
-        scenarios = {
+        calc_scenarios = {
             'min': rain_min,
             'mean': rain_mean,
             'max': rain_max,
         }
 
-        for scenario, rain in scenarios.items():
-            result[scenario] = self.calc_scenario(current_fill_m3, desired_fill_m3, demand_m3, rain, max_uitstroom_m3)
+        for scenario, rain in calc_scenarios.items():
+            result['scenarios'][scenario] = self.calc_scenario(current_fill_m3, desired_fill_m3, demand_m3, rain, max_uitstroom_m3)
 
         #import pdb; pdb.set_trace()
 
