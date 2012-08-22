@@ -63,19 +63,12 @@ class FewsJdbcDataSource(object):
             name='fill'
         )
         # zet om in cm vanaf bodem bak
-        ts += onderkant_buis_cm
+        ts += hoogte_niveaumeter_cm
         # zet om naar fractie totale bak
         ts /= bovenkant_bak_cm
         # zet om naar m3
         ts *= max_berging_m3
-        return ts 
-
-    def get_most_recent_fill(self, date):
-        # haal data over de hele afgelopen week op
-        _from = date - max_vertraging_doorgifte_vulgraad
-        ts = self.get_fill(_from, date)
-        # return de meest recente waarde
-        return ts[-1]
+        return ts
 
     def _get_timeseries_as_pd_series(self, *args, **kwargs):
         name = kwargs.get('name', None)

@@ -26,11 +26,11 @@ max_berging_m3 = 15527 # in m^3
 opp_invloed_regen_m2 = 90000 # in m^2
 max_uitstroom_per_tijdstap_m3 = 4.5 # in m^3
 bovenkant_bak_cm = 265 # in cm
-onderkant_buis_cm = 205 # in cm
+hoogte_niveaumeter_cm = 205 # in cm
 
 def round_date(date):
     minutes = date.minute - (date.minute % 15)
     return date.replace(minute=minutes, second=0, microsecond=0)
 
-
-max_vertraging_doorgifte_vulgraad = datetime.timedelta(days=1)
+fill_history = datetime.timedelta(days='3')
+fill_predict_future = datetime.timedelta(days='5')
