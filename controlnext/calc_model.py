@@ -48,6 +48,11 @@ def cross(series, cross=0, direction='cross'):
     result = series.index[idxs]
     return result
 
+def m3_to_pct(ts):
+    ts /= max_berging_m3
+    ts *= 100
+    return ts
+
 class CalculationModel(object):
     def __init__(self, demand_table, fews_data):
         self.demand_table = demand_table
@@ -81,8 +86,7 @@ class CalculationModel(object):
         result = vaste_verandering - uitstroom_m3
 
         # terug naar percentages
-        result /= max_berging_m3
-        result *= 100
+        result = m3_to_pct(result)
 
         return {
             'prediction': result,
@@ -138,7 +142,7 @@ class CalculationModel(object):
         # return ook tussentijdse waarden, vnml. voor debugging
         result = {
             'scenarios': {},
-            'history': fill,
+            'history': m3_to_pct(fill),
             'rain': rain_mean,
             'max_uitstroom': max_uitstroom_m3,
             'demand': demand_m3.cumsum(),

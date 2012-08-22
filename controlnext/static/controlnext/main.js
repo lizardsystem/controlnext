@@ -215,15 +215,21 @@ $(document).ready(function () {
         $fill_graph_container.append($fill_graph);
         // order of following elements is also drawing order
         var lines = [
-            { id: 'min',     data: graph_info.data.min, lines: { show: true, lineWidth: 0, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'mean' },
+            { id: 'min',     data: graph_info.data.min, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'mean' },
             { id: 'mean',     data: graph_info.data.mean, lines: { show: true, lineWidth: 7 }, color: "#0026FF", label: 'vulgraad' },
-            { id: 'max',     data: graph_info.data.max, lines: { show: true, lineWidth: 0, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'mean' }
+            { id: 'max',     data: graph_info.data.max, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#EFC9FF", fillBetween: 'mean' },
+            { id: 'history',     data: graph_info.data.history, lines: { show: true, lineWidth: 7 }, color: "yellow", label: 'verleden' }
         ];
         var markings = [
             { color: '#12d', yaxis: { from: graph_info.y_marking_min, to: graph_info.y_marking_min } },
             { color: '#e22', yaxis: { from: graph_info.y_marking_max, to: graph_info.y_marking_max } },
             { color: '#000', lineWidth: 1, xaxis: { from: graph_info.x0, to: graph_info.x0 } }
         ];
+        var omslagpunt = graph_info.x_marking_omslagpunt;
+        if (omslagpunt) {
+            var m = { color: '#f00', lineWidth: 1, xaxis: { from: omslagpunt, to: omslagpunt } };
+            markings.push(m);
+        }
         var xmin = graph_info.x0;
         var xmax = graph_info.x0 + 24 * MS_HOUR;
         var options = {

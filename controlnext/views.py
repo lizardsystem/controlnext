@@ -23,7 +23,8 @@ logger = logging.getLogger(__name__)
 js_epoch = datetime.datetime(1970, 1, 1, tzinfo=pytz.utc)
 
 def datetime_to_js(dt):
-    return (dt - js_epoch).total_seconds() * 1000
+    if dt is not None:
+        return (dt - js_epoch).total_seconds() * 1000
 
 def series_to_js(pdseries):
     pdseries = pdseries.fillna(None)
@@ -61,11 +62,13 @@ class DataService(JsonView):
         prediction = model.predict_fill(t0, future, desired_fill, demand_diff, fill_history)
         # TODO should use dict comprehension in py > 2.6
         data = dict([(name, series_to_js(scenario['prediction'])) for name, scenario in prediction['scenarios'].items()])
+        data['history'] = series_to_js(prediction['history'])
         graph_info = {
             'data': data,
             'x0': datetime_to_js(t0),
             'y_marking_min': min_berging_pct,
-            'y_marking_max': max_berging_pct
+            'y_marking_max': max_berging_pct,
+            'x_marking_omslagpunt': datetime_to_js(prediction['scenarios']['mean']['omslagpunt']),
         }
         result = {
             'graph_info': graph_info,
