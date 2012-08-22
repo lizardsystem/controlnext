@@ -1,5 +1,6 @@
 # (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.rst.
 from __future__ import unicode_literals
+from __future__ import division
 import os
 import logging
 import datetime
@@ -85,9 +86,10 @@ class DemandTable(object):
         _from = round_date(_from)
         to = round_date(to)
 
-        # ensure we interpolate between two values at least
+        # ensure we deal with values for _from which are mid-week
+        from_adj = _from - one_week
         to_adj = to + one_week
-        weekly = pd.date_range(_from, to_adj, freq='W-MON', tz=pytz.utc) # week changes on monday
+        weekly = pd.date_range(from_adj, to_adj, freq='W-MON', tz=pytz.utc) # week changes on monday
         values = [self.get_week_demand_on(date) for date in weekly]
 
         ts = pd.Series(values, weekly, name='demand')

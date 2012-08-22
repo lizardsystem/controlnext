@@ -395,7 +395,7 @@ $(document).ready(function () {
             },
             yaxis: {
                 min: -1,
-                max: 10,
+                max: 4,
                 tickSize: 1,
                 tickFormatter: function (v) { return v + " mm"; },
                 panRange: [-1, null], // no upper limit

@@ -110,5 +110,8 @@ class CalculationModelTest(TestCase):
     def test_calc_model(self):
         now = mktim(2012, 8, 5, 8, 0) # some rain fell here
         future = now + datetime.timedelta(days=5)
-        ts = self.model.predict_overflow(now, future, 80, 100)
-        self.assertGreater(len(ts), 10)
+        ts = self.model.predict_fill(now, future, 20, 100)
+        self.assertGreater(len(ts['mean']), 10)
+        plot('predict_fill', ts['mean'], ts['history'])
+        plot('predict_fill_uitstroom', ts['max_uitstroom'])
+        plot('predict_fill_watervraag', ts['demand'])
