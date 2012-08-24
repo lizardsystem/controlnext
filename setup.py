@@ -19,7 +19,7 @@ install_requires = [
     'pytz',
     'djangorestframework',
     'pandas >= 0.8.2.dev',
-    'numpy'
+    'numpy >= 1.6'
     ],
 
 tests_require = [
