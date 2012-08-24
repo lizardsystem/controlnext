@@ -43,7 +43,8 @@ class MainView(UiView):
 class DataService(JsonView):
     _IGNORE_IE_ACCEPT_HEADER = False # Keep this, if you want IE to work
 
-    def get(self, request, data_type=None):
+    def get(self, request):
+        graph_type = request.GET.get('graph_type', None)
         hours_diff = request.GET.get('hours_diff', None)
         rain_exaggerate_factor = request.GET.get('rain_exaggerate_factor', None)
 
@@ -54,14 +55,20 @@ class DataService(JsonView):
         if rain_exaggerate_factor:
             rain_exaggerate_factor = float(rain_exaggerate_factor)
 
-        if data_type == 'rain':
-            return self.rain(t0)
-        elif data_type == 'prediction':
+        if graph_type == 'rain':
+            return self.rain(t0, rain_exaggerate_factor)
+        elif graph_type == 'prediction':
             desired_fill = request.GET.get('desired_fill')
             demand_diff = request.GET.get('demand_diff')
             desired_fill = int(desired_fill)
             demand_diff = int(demand_diff)
             return self.prediction(t0, desired_fill, demand_diff, rain_exaggerate_factor)
+        else:
+            desired_fill = request.GET.get('desired_fill')
+            demand_diff = request.GET.get('demand_diff')
+            desired_fill = int(desired_fill)
+            demand_diff = int(demand_diff)
+            return self.advanced(t0, desired_fill, demand_diff, graph_type, rain_exaggerate_factor)
 
     def prediction(self, t0, desired_fill_pct, demand_diff, rain_exaggerate_factor=None):
         tbl = DemandTable()
@@ -86,9 +93,26 @@ class DataService(JsonView):
         }
         result = {
             'graph_info': graph_info,
-            'overflow': '',
-            'demand24h': tbl.get_total_demand(t0, t0 + datetime.timedelta(hours=24)),
+            'overflow_24h': prediction['scenarios']['mean']['overstort'],
+            'demand_24h': tbl.get_total_demand(t0, t0 + datetime.timedelta(hours=24)),
             'current_fill': prediction['current_fill'],
+        }
+        return result
+
+    def advanced(self, t0, desired_fill_pct, demand_diff, graph_type, rain_exaggerate_factor=None):
+        tbl = DemandTable()
+        ds = FewsJdbcDataSource()
+        model = CalculationModel(tbl, ds)
+
+        future = t0 + fill_predict_future
+
+        prediction = model.predict_fill(t0, future, desired_fill_pct, demand_diff, rain_exaggerate_factor)
+
+        result = {
+            'graph_info': {
+                'data': series_to_js(prediction['scenarios']['mean']['prediction']),
+                'x0': datetime_to_js(t0),
+            }
         }
         return result
 
@@ -130,7 +154,7 @@ class DataService(JsonView):
         }
     """
 
-    def rain(self, t0):
+    def rain(self, t0, rain_exaggerate_factor=None):
         _from = t0 - datetime.timedelta(days=2)
         to = t0 + datetime.timedelta(days=5)
 
@@ -138,6 +162,12 @@ class DataService(JsonView):
         min = ds.get_rain('min', _from, to)
         mean = ds.get_rain('mean', _from, to)
         max = ds.get_rain('max', _from, to)
+
+        if rain_exaggerate_factor:
+            min *= rain_exaggerate_factor
+            mean *= rain_exaggerate_factor
+            max *= rain_exaggerate_factor
+
         #import pdb; pdb.set_trace()
         rain_graph_info = {
             'data': {

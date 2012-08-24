@@ -64,8 +64,7 @@ $(document).ready(function () {
     // grab url base
     var $urls = $('#data-urls');
     var url_base = $urls.attr('data-url-base');
-    var prediction_url = $urls.attr('data-prediction-url');
-    var rain_url = $urls.attr('data-rain-url');
+    var data_url = $urls.attr('data-data-url');
     var debug = $.getQueryString('debug') !== undefined;
 
     // set up debug panel
@@ -304,22 +303,11 @@ $(document).ready(function () {
         add_label('Gewenste vulgraad', o.left, o.top);
         return plot;
     };
-    var $fill_graph_container = $('#fill-graph-container');
-    var $rain_graph_container = $('#rain-graph-container');
-    var $overflow_visualization_container = $('#overflow-visualization-container');
-    var $overflow_visualization = $('#overflow-visualization');
-    var refresh_prediction_data = function () {
-        // clear the graph container
-        var $spinner = build_spinner();
-        $fill_graph_container.empty().append($spinner);
-        var $spinner2 = build_spinner();
-        $rain_graph_container.empty().append($spinner2);
 
-        // hide the 'bakjes' visualization
-        $overflow_visualization_container.hide();
-
+    var get_query_params = function (graph_type) {
         // build query string based on user input
         var query = {
+            graph_type: graph_type,
             format: 'json',
             desired_fill: $desired_fill_slider.slider('value'),
             demand_diff: $demand_slider.slider('value'),
@@ -334,9 +322,29 @@ $(document).ready(function () {
             });
         }
 
+        return $.param(query);
+    };
+
+    var $fill_graph_container = $('#fill-graph-container');
+    var $rain_graph_container = $('#rain-graph-container');
+    var $overflow_visualization_container = $('#overflow-visualization-container');
+    var $overflow_visualization = $('#overflow-visualization');
+    var refresh_prediction_data = function () {
+        // clear the graph container
+        var $spinner = build_spinner();
+        $fill_graph_container.empty().append($spinner);
+        var $spinner2 = build_spinner();
+        $rain_graph_container.empty().append($spinner2);
+
+        // hide the 'bakjes' visualization
+        $overflow_visualization_container.hide();
+
+        // generate query
+        var query_params = get_query_params('prediction');
+
         // submit requests to the server
         $.ajax({
-            url: prediction_url + '?' + $.param(query),
+            url: data_url + '?' + query_params,
             success: function (response) {
                 // clear the graph container (remove spinner)
                 $fill_graph_container.empty();
@@ -345,7 +353,7 @@ $(document).ready(function () {
                 plot_fill_graph(response.graph_info, $fill_graph_container);
 
                 // show the 'bakjes' visualization
-                draw_overflow_visualization(response.overflow);
+                // draw_overflow_visualization(response.overflow);
 
                 // set current fill label
                 var current_fill = response.current_fill.toFixed();
@@ -353,7 +361,7 @@ $(document).ready(function () {
                 $('#current-fill-label').css({bottom: current_fill + '%'});
 
                 // show the demand
-                $('#demand-value').html(Math.round(response.demand24h) + ' m<sup>3</sup>');
+                $('#demand-value').html(Math.round(response.demand_24h) + ' m<sup>3</sup>');
 
                 // show the "omslagpunt"
                 var omslagpunt = response.graph_info.x_marking_omslagpunt;
@@ -363,14 +371,17 @@ $(document).ready(function () {
                 else {
                     $('#omslagpunt-value').html('N.v.t.');
                 }
+
+                $('#overflow-value').html(Math.round(response.overflow_24h) + ' m<sup>3</sup>');
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 var $error = $('<p>Fout bij het laden van de grafiekdata: ' + errorThrown + '</p>');
                 $fill_graph_container.empty().append($error);
             }
         });
+        var query_params2 = get_query_params('rain');
         $.ajax({
-            url: rain_url + '?' + $.param(query),
+            url: data_url + '?' + query_params2,
             success: function (response) {
                 // clear the graph container (remove spinner)
                 $rain_graph_container.empty();
@@ -465,10 +476,71 @@ $(document).ready(function () {
         return plot;
     };
 
+    var get_advanced_graph = function (graph_type) {
+        // generate query
+        var query_params = get_query_params(graph_type);
+        var $container = $('#advanced-graph-container');
+        $.ajax({
+            url: data_url + '?' + query_params,
+            success: function (response) {
+                $container.empty();
+                $container.show();
+                plot_advanced_graph(response.graph_info, $container);
+            }
+        });
+    };
+
+    var plot_advanced_graph = function (graph_info, $container) {
+        // build a new element
+        var $graph = $('<div id="advanced-graph"/>');
+        $container.append($graph);
+
+        // order of following elements is also drawing order
+        var lines = [
+            { id: 'value', data: graph_info.data, lines: { show: true, lineWidth: 1 },
+              color: "#222222", label: 'waarde' }
+        ];
+        var xmin = graph_info.x0;
+        var xmax = graph_info.x0 + 24 * MS_HOUR;
+        var initial_options = {
+            xaxis: {
+                min: xmin,
+                max: xmax,
+                mode: 'time',
+                tickSize: [2, 'hour'],
+                tickFormatter: time_tick_formatter,
+                zoomRange: [4 * MS_HOUR, 24 * MS_HOUR] // 4 hours - 24 hours
+            },
+            yaxis: {
+                //min: -1,
+                //max: 4,
+                //tickSize: 1,
+                //tickFormatter: function (v) { return v + " mm"; },
+                //panRange: [-1, null], // no upper limit
+                //zoomRange: false
+            },
+            legend: { position: 'ne' },
+            grid: { hoverable: true, autoHighlight: false, labelMargin: 10 },
+            crosshair: { mode: 'x' },
+            pan: {
+                interactive: true
+            }
+        };
+        var plot = $.plot($graph, lines, initial_options);
+        return plot;
+    };
+
     // set up start button
     {
         $('#start-btn').click(function (event) {
             refresh_prediction_data();
+        });
+    }
+
+    // set up advanced graph buttons
+    {
+        $('#abc').click(function (event) {
+            get_advanced_graph('demand');
         });
     }
 

@@ -112,8 +112,8 @@
 }
 
 #start-btn-container {
-    width:130px;
-    margin:40px auto 0 auto;
+    width:212px;
+    margin:30px auto 0 auto;
 }
 
 #start-btn {
@@ -141,12 +141,7 @@
     margin-left:10px;
 }
 
-#demand-value {
-    font-weight:bold;
-    margin-left:10px;
-}
-
-#omslagpunt-value {
+#demand-value, #omslagpunt-value, #overflow-value {
     font-weight:bold;
     margin-left:10px;
 }
@@ -179,6 +174,13 @@ div.flot-tooltip {
 
 /* keep this, otherwise flot can't determine graph sizes */
 #rain-graph {
+    width:700px;
+    height:300px;
+}
+
+
+/* keep this, otherwise flot can't determine graph sizes */
+#advanced-graph {
     width:700px;
     height:300px;
 }
@@ -238,7 +240,7 @@ input[type="image"], input[type="checkbox"], input[type="radio"] {
 }
 
 #weerwidget {
-    margin-left:10px;
+    margin-left:74px;
     margin-top:10px;
 }
 

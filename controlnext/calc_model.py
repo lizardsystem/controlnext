@@ -66,14 +66,14 @@ class CalculationModel(object):
         ts = pd.Series(values, dates, name='uitstroom')
         return ts
 
-    def predict_scenario(self, current_fill_m3, desired_fill_m3, demand_m3, rain_mm, max_uitstroom_m3):
-        toestroom_m3 = (rain_mm * (opp_invloed_regen_m2 / 1000)).cumsum()
-        vaste_verandering = (toestroom_m3 - demand_m3) + current_fill_m3
-        vast_met_max_uitstroom = vaste_verandering - max_uitstroom_m3
+    def predict_scenario(self, _from, current_fill_m3, desired_fill_m3, demand_m3, rain_mm, max_uitstroom_m3):
+        toestroom_m3 = rain_mm * (opp_invloed_regen_m2 / 1000)
+        vaste_verandering = (toestroom_m3 - demand_m3)# + current_fill_m3
+        result_met_max_uitstroom = vaste_verandering.cumsum() + current_fill_m3 - max_uitstroom_m3
 
         # zoek eerste waarde waar de gewenste vulling bereikt wordt
         omslagpunt = None
-        cross_desired = cross(vast_met_max_uitstroom, desired_fill_m3)
+        cross_desired = cross(result_met_max_uitstroom, desired_fill_m3)
         if len(cross_desired) > 0:
             # gewenste vulling wordt bereikt
             omslagpunt = cross_desired[0]
@@ -82,14 +82,20 @@ class CalculationModel(object):
             uitstroom_m3[omslagpunt:] = uitstroom_m3[omslagpunt]
         else:
             uitstroom_m3 = max_uitstroom_m3
-        result = vaste_verandering - uitstroom_m3
+        result = vaste_verandering.cumsum() + current_fill_m3 - uitstroom_m3
 
         # sommer waarden boven de max berging
-        overstort = result[result.values > max_berging_m3]
-        overstort = overstort[:overstort.index[0] + datetime.timedelta(hours=24)] - max_berging_m3
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
+        result_24h = result[:_from + datetime.timedelta(hours=24)]
+        overstort = result_24h[result_24h.values > max_berging_m3]
+        if len(overstort) > 0:
+            overstort -= max_berging_m3
+            overstort = overstort.sum()
+        else:
+            # geen overstort
+            overstort = 0
 
-        result += current_fill_m3
+        #result += current_fill_m3
         # terug naar percentages
         result = fill_m3_to_pct(result)
 
@@ -143,7 +149,7 @@ class CalculationModel(object):
         # pas reguliere watervraag aan met de opgegeven factor
         demand_diff = (demand_diff_pct / 100)
         demand_m3 = demand_m3 * demand_diff
-        demand_m3 = demand_m3.cumsum()
+        #demand_m3 = demand_m3.cumsum()
 
         # leidt aantal periodes af uit een vd 'input' tijdreeksen
         periods = len(rain_mean)
@@ -173,7 +179,7 @@ class CalculationModel(object):
         }
 
         for scenario, rain in calc_scenarios.items():
-            result['scenarios'][scenario] = self.predict_scenario(current_fill_m3, desired_fill_m3, demand_m3, rain, max_uitstroom_m3)
+            result['scenarios'][scenario] = self.predict_scenario(_from, current_fill_m3, desired_fill_m3, demand_m3, rain, max_uitstroom_m3)
 
         #import pdb; pdb.set_trace()
 

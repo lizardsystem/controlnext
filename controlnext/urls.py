@@ -19,7 +19,7 @@ urlpatterns = patterns(
         views.MainView.as_view(),
         name='controlnext-main'
     ),
-    url(r'^data_service/(?P<data_type>[-a-zA-Z0-9_]+)/$',
+    url(r'^data_service/$',
         views.DataService.as_view(),
         name='controlnext-data-service'
     ),
