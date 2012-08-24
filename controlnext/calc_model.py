@@ -68,8 +68,8 @@ class CalculationModel(object):
 
     def predict_scenario(self, _from, current_fill_m3, desired_fill_m3, demand_m3, rain_mm, max_uitstroom_m3):
         toestroom_m3 = rain_mm * (opp_invloed_regen_m2 / 1000)
-        vaste_verandering = (toestroom_m3 - demand_m3)# + current_fill_m3
-        result_met_max_uitstroom = vaste_verandering.cumsum() + current_fill_m3 - max_uitstroom_m3
+        vaste_verandering = (toestroom_m3 - demand_m3).cumsum() # + current_fill_m3
+        result_met_max_uitstroom = vaste_verandering + current_fill_m3 - max_uitstroom_m3
 
         # zoek eerste waarde waar de gewenste vulling bereikt wordt
         omslagpunt = None
@@ -82,7 +82,7 @@ class CalculationModel(object):
             uitstroom_m3[omslagpunt:] = uitstroom_m3[omslagpunt]
         else:
             uitstroom_m3 = max_uitstroom_m3
-        result = vaste_verandering.cumsum() + current_fill_m3 - uitstroom_m3
+        result = vaste_verandering + current_fill_m3 - uitstroom_m3
 
         # sommer waarden boven de max berging
         #import pdb; pdb.set_trace()
@@ -105,7 +105,7 @@ class CalculationModel(object):
             'overstort': overstort,
             'intermediate': {
                 'uitstroom': uitstroom_m3,
-                'toestroom': toestroom_m3,
+                'toestroom': toestroom_m3.cumsum(),
             },
         }
 

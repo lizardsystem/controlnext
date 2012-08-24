@@ -27,6 +27,23 @@
 $(document).ready(function () {
     var MS_HOUR = 60 * 60 * 1000;
 
+    var fixIE8DrawBug = function (plot) {
+        if (navigator.appName == 'Microsoft Internet Explorer') {
+            var ua = navigator.userAgent;
+            var re = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+            if (re.exec(ua) != null) {
+                var rv = parseFloat(RegExp.$1);
+                if (rv == 8) {
+                    setTimeout(function () {
+                        plot.resize();
+                        plot.setupGrid();
+                        plot.draw();
+                    }, 100);
+                }
+            }
+        }
+    };
+
     var set_tick_size = function (options, x_min, x_max) {
         var tick_size = [];
         var diff_time = x_max - x_min;
@@ -301,6 +318,7 @@ $(document).ready(function () {
         add_label('Max. berging', o.left, o.top);
         o = plot.pointOffset({ x: plot.getOptions().xaxis.max, y: graph_info.desired_fill});
         add_label('Gewenste vulgraad', o.left, o.top);
+        fixIE8DrawBug(plot);
         return plot;
     };
 
@@ -318,7 +336,7 @@ $(document).ready(function () {
         if (debug) {
             $.extend(query, {
                 hours_diff: eval($('#debug-hours-diff').val()),
-                rain_exaggerate_factor: eval($('#debug-rain-exaggerate-factor').val()),
+                rain_exaggerate_factor: eval($('#debug-rain-exaggerate-factor').val())
             });
         }
 
@@ -473,6 +491,7 @@ $(document).ready(function () {
             //plot.setupGrid();
             //plot.draw();
         //});
+        fixIE8DrawBug(plot);
         return plot;
     };
 
@@ -498,7 +517,7 @@ $(document).ready(function () {
         // order of following elements is also drawing order
         var lines = [
             { id: 'value', data: graph_info.data, lines: { show: true, lineWidth: 1 },
-              color: "#222222", label: 'waarde' }
+              color: "#222222", label: 'waarde in ' + graph_info.unit }
         ];
         var xmin = graph_info.x0;
         var xmax = graph_info.x0 + 24 * MS_HOUR;
@@ -515,18 +534,23 @@ $(document).ready(function () {
                 //min: -1,
                 //max: 4,
                 //tickSize: 1,
-                //tickFormatter: function (v) { return v + " mm"; },
+                tickFormatter: function (v) { return v + " " + graph_info.unit; },
                 //panRange: [-1, null], // no upper limit
-                //zoomRange: false
+                zoomRange: [-1, 100000]
             },
             legend: { position: 'ne' },
             grid: { hoverable: true, autoHighlight: false, labelMargin: 10 },
             crosshair: { mode: 'x' },
             pan: {
                 interactive: true
+            },
+            zoom: {
+                interactive: true
             }
         };
         var plot = $.plot($graph, lines, initial_options);
+        add_tooltip(plot, graph_info.data);
+        fixIE8DrawBug(plot);
         return plot;
     };
 
@@ -539,8 +563,10 @@ $(document).ready(function () {
 
     // set up advanced graph buttons
     {
-        $('#abc').click(function (event) {
-            get_advanced_graph('demand');
+        $('.advanced-graph').click(function (event) {
+            var graph_type = $(this).attr('data-graph-type');
+            get_advanced_graph(graph_type);
+            return false;
         });
     }
 

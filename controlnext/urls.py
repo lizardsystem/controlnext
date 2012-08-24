@@ -14,7 +14,7 @@ urlpatterns = patterns(
     '',
     url(r'^ui/', include('lizard_ui.urls')),
     # url(r'^map/', include('lizard_map.urls')),
-    url(r'^admin/', include(admin.site.urls)),
+    #url(r'^admin/', include(admin.site.urls)),
     url(r'^$',
         views.MainView.as_view(),
         name='controlnext-main'
@@ -24,7 +24,7 @@ urlpatterns = patterns(
         name='controlnext-data-service'
     ),
     # TEMP
-    url(r'^fewsjdbc/', include('lizard_fewsjdbc.urls')),
+    #url(r'^fewsjdbc/', include('lizard_fewsjdbc.urls')),
 )
 
 if settings.DEBUG:

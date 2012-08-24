@@ -108,10 +108,26 @@ class DataService(JsonView):
 
         prediction = model.predict_fill(t0, future, desired_fill_pct, demand_diff, rain_exaggerate_factor)
 
+        data = []
+        unit = ''
+        if graph_type == 'demand':
+            data = prediction['intermediate']['demand']
+            unit = 'm3'
+        elif graph_type == 'max_uitstroom':
+            data = prediction['intermediate']['max_uitstroom']
+            unit = 'm3'
+        elif graph_type == 'toestroom':
+            data = prediction['scenarios']['mean']['intermediate']['toestroom']
+            unit = 'm3'
+        elif graph_type == 'uitstroom':
+            data = prediction['scenarios']['mean']['intermediate']['uitstroom']
+            unit = 'm3'
+
         result = {
             'graph_info': {
-                'data': series_to_js(prediction['scenarios']['mean']['prediction']),
+                'data': series_to_js(data),
                 'x0': datetime_to_js(t0),
+                'unit': unit,
             }
         }
         return result
