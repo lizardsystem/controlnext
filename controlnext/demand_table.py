@@ -7,11 +7,11 @@ import datetime
 
 from django.conf import settings
 
+from controlnext import constants
+
 import pytz
 import pandas as pd
 import numpy as np
-
-from controlnext.constants import *
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +27,8 @@ csv_col_delimiter = ';'
 demand_column_name = 'demand_m3'
 week_column_name = 'week_number'
 
-def get_week(dt):
-    return dt.isocalendar()[1]
+def get_week(date):
+    return date.isocalendar()[1]
 
 one_week = datetime.timedelta(weeks=1)
 
@@ -83,12 +83,12 @@ class DemandTable(object):
         return self.get_demand_for_week(week)
 
     def get_demand(self, _from, to):
-        _from = round_date(_from)
-        to = round_date(to)
+        constants.validate_date(_from)
+        constants.validate_date(to)
 
         # ensure we deal with values for _from which are mid-week
-        from_adj = _from - one_week
-        to_adj = to + one_week
+        from_adj = _from - 2 * one_week
+        to_adj = to + 2 * one_week
         weekly = pd.date_range(from_adj, to_adj, freq='W-MON', tz=pytz.utc) # week changes on monday
         values = [self.get_week_demand_on(date) for date in weekly]
 
@@ -97,6 +97,7 @@ class DemandTable(object):
         ts = ts.interpolate()
         # divide by amount of quarter hours in a week
         ts /= 7 * 24 * 4
+        #import pdb; pdb.set_trace()
         return ts[_from:to]
 
     def get_total_demand(self, _from, to):
@@ -107,7 +108,7 @@ class DemandTable(object):
         Useful for debugging.
         '''
         import matplotlib.pyplot as plt
-        ts = self.get_demand(datetime.datetime(2011, 1, 1), datetime.datetime(2012, 1, 1))
+        ts = self.get_demand(constants.mktim(2012, 1, 1), constants.mktim(2013, 1, 1))
         fig = plt.figure(figsize=(24, 6))
         axes = ts.plot()
         fig.add_subplot(axes)

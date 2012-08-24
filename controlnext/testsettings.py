@@ -1,6 +1,5 @@
 import os
 
-from lizard_ui.settingshelper import setup_logging
 from lizard_ui.settingshelper import STATICFILES_FINDERS
 
 DEBUG = True
@@ -14,7 +13,47 @@ SETTINGS_DIR = os.path.dirname(os.path.realpath(__file__))
 # BUILDOUT_DIR/var/static files to give django-staticfiles a proper place
 # to place all collected static files.
 BUILDOUT_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, '..'))
-LOGGING = setup_logging(BUILDOUT_DIR)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format': '%(asctime)s %(name)s %(levelname)s\n%(message)s',
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'null': {
+            'level': 'DEBUG',
+            'class': 'django.utils.log.NullHandler',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'logfile': {
+            'level': 'WARN',
+            'class': 'logging.FileHandler',
+            'formatter': 'verbose',
+            'filename': os.path.join(BUILDOUT_DIR, 'var', 'log', 'django.log'),
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console', 'logfile'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
+        'django.db.backends': {
+            'handlers': ['null'], # Quiet by default!
+            'propagate': False,
+            'level': 'DEBUG',
+        },
+    },
+}
 
 # ENGINE: 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
 # In case of geodatabase, prepend with:

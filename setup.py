@@ -12,8 +12,11 @@ install_requires = [
     'Django',
     'django-extensions',
     'django-nose',
-    'lizard-ui >= 4.0',
-    'lizard-fewsjdbc',
+    'python-dateutil == 1.5',
+    'lizard-ui == 4.8',
+    'lizard-map == 4.6',
+    'lizard-fewsjdbc == 2.7',
+    'pytz == 2012d',
     'djangorestframework',
     'pandas >= 0.8.2.dev',
     'numpy'

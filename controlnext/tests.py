@@ -23,23 +23,18 @@ def plot(name, *args):
         fig.add_subplot(df.plot())
     fig.savefig('plot_' + name + '.png')
 
-def mktim(*args):
-    return datetime.datetime(*args, tzinfo=pytz.utc)
 
 w26_0 = mktim(2012, 6, 25, 0, 0, 0)     # monday, 0:00, week 26 (d = 20000)
 w27_0 = mktim(2012, 7, 2, 0, 0, 0)      # monday, 0:00, week 27 (d = 20000)
 
 w28_0 = mktim(2012, 7, 9, 0, 0, 0)      # monday, 0:00, week 28 (d = 19000)
-w28_5 = mktim(2012, 7, 12, 11, 59, 59)  # middle of week 28
-w28_9 = mktim(2012, 7, 15, 23, 59, 59)  # sunday, 23:59, week 28
+w28_5 = mktim(2012, 7, 12, 12, 0, 0)  # middle of week 28
 
 w29_0 = mktim(2012, 7, 16, 0, 0, 0)     # sunday, 0:00, week 29 (d = 18000)
 w29_5 = mktim(2012, 7, 19, 12, 0, 0)    # middle of week 29
-w29_9 = mktim(2012, 7, 22, 23, 59, 59)  # sunday, 23:59, week 29
 
 w30_0 = mktim(2012, 7, 23, 0, 0, 0)     # sunday, 0:00, week 30 (d = 17000)
 w30_5 = mktim(2012, 7, 26, 12, 0, 0)    # middle of week 30 (d = 17000)
-w30_9 = mktim(2012, 7, 29, 23, 59, 59)  # middle of week 30 (d = 17000)
 
 class DemandTableTest(TestCase):
     def setUp(self):

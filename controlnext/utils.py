@@ -1,8 +1,12 @@
+import logging 
+
 from django.core.cache import cache
 
 from inspect import ismethod
 from hashlib import sha1
 from functools import wraps
+
+logger = logging.getLogger(__name__)
 
 def cache_result(seconds=900, ignore_cache=False, instancemethod=False):
     """
@@ -24,7 +28,9 @@ def cache_result(seconds=900, ignore_cache=False, instancemethod=False):
         @wraps(f)
         def wrapper(*args, **kwargs):
                 cachekeyargs = args[1:] if instancemethod else args
-                key = sha1(str(f.__module__) + str(f.__name__) + str(cachekeyargs) + str(kwargs)).hexdigest()
+                key = str(f.__module__) + str(f.__name__) + str(cachekeyargs) + str(kwargs)
+                logger.debug('cache_key = %s', key)
+                key = sha1(key).hexdigest()
                 result = cache.get(key)
                 if ignore_cache or result is None:
                     result = f(*args, **kwargs)

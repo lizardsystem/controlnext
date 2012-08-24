@@ -3,6 +3,7 @@
 # Keep this separate from Django's settings file,
 # because this code might need to be reused in a FEWS general adapter.
 import datetime
+import pytz
 
 jdbc_source_slug = 'controlnext'
 
@@ -32,5 +33,18 @@ def round_date(date):
     minutes = date.minute - (date.minute % 15)
     return date.replace(minute=minutes, second=0, microsecond=0)
 
+def validate_date(date):
+    if date.tzinfo != pytz.utc:
+        raise ValueError('can not deal with non-UTC (or timezone-naive) datetime objects')
+    if date.second or date.microsecond or date.minute % 15 != 0:
+        raise ValueError('please round dates to full quarter hours')
+
 fill_history = datetime.timedelta(days=3)
 fill_predict_future = datetime.timedelta(days=5)
+
+fewsjdbc_cache_seconds = 15 * 60
+
+def mktim(year, month, day, hour, minute_quarter):
+    if minute_quarter % 15 != 0:
+        raise ValueError('not rounded to a quarter hour')
+    return datetime.datetime(year, month, day, hour, minute_quarter, tzinfo=pytz.utc)

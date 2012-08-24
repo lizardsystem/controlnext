@@ -85,7 +85,7 @@ $(document).ready(function () {
             range: 'min',
             min: 0,
             max: 100,
-            value: 60
+            value: 50
         });
 
         // grab related DOM elements
@@ -159,6 +159,16 @@ $(document).ready(function () {
         // presentation, so don't use UTC, but the localized date instead.
         return time.getDate() + '-' + pad(time.getMonth() + 1, 2) + '<br/>' + time.getHours() + ':' + pad(time.getMinutes(), 2);
     };
+    var full_time_format = function (timestamp) {
+        var time = new Date(timestamp);
+        // presentation, so don't use UTC, but the localized date instead.
+        return time.getDate() + '-'
+               + (time.getMonth() + 1)
+               + '-' + time.getFullYear()
+               + ' ' + pad(time.getHours(), 2)
+               + ':' + pad(time.getMinutes(), 2)
+               + ' uur';
+    };
     var add_tooltip = function (plot, values) {
         // build a tooltip element
         var $graph = plot.getPlaceholder();
@@ -186,7 +196,7 @@ $(document).ready(function () {
             // now interpolate
             var y;
             if (p1 == null || p2 == null)
-                y = 0; //p2[1] || p1[1];
+                y = null; //p2[1] || p1[1];
             else
                 y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
             // format the label
@@ -198,7 +208,11 @@ $(document).ready(function () {
                  + ' ' + pad(time.getHours(), 2)
                  + ':' + pad(time.getMinutes(), 2)
                  + ' uur';
-            var y_formatted = plot.getYAxes()[0].tickFormatter(y.toFixed(2));
+            var y_formatted;
+            if (y !== null)
+                y_formatted = plot.getYAxes()[0].tickFormatter(y.toFixed(2));
+            else
+                y_formatted = 'n.v.t.';
             var label = "waarde op " + time + ": " + y_formatted;
             // position it
             $tt.css({
@@ -216,18 +230,21 @@ $(document).ready(function () {
         // order of following elements is also drawing order
         var lines = [
             { id: 'min',     data: graph_info.data.min, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'mean' },
-            { id: 'mean',     data: graph_info.data.mean, lines: { show: true, lineWidth: 7 }, color: "#0026FF", label: 'vulgraad' },
+            { id: 'mean',     data: graph_info.data.mean, lines: { show: true, lineWidth: 7 }, color: "#0026FF", label: 'voorspelling vulgraad' },
             { id: 'max',     data: graph_info.data.max, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#EFC9FF", fillBetween: 'mean' },
-            { id: 'history',     data: graph_info.data.history, lines: { show: true, lineWidth: 7 }, color: "yellow", label: 'verleden' }
+            { id: 'history',     data: graph_info.data.history, lines: { show: true, lineWidth: 7 }, color: "yellow", label: 'meting vulgraad' }
         ];
         var markings = [
+            { color: '#f9f9f9', yaxis: { from: graph_info.y_marking_min, to: 0 } },
             { color: '#12d', yaxis: { from: graph_info.y_marking_min, to: graph_info.y_marking_min } },
             { color: '#e22', yaxis: { from: graph_info.y_marking_max, to: graph_info.y_marking_max } },
+            { color: '#f9f9f9', yaxis: { from: 120, to: graph_info.y_marking_max } },
+            { color: '#2a2', yaxis: { from: graph_info.desired_fill, to: graph_info.desired_fill } },
             { color: '#000', lineWidth: 1, xaxis: { from: graph_info.x0, to: graph_info.x0 } }
         ];
         var omslagpunt = graph_info.x_marking_omslagpunt;
         if (omslagpunt) {
-            var m = { color: '#f00', lineWidth: 1, xaxis: { from: omslagpunt, to: omslagpunt } };
+            var m = { color: '#2a2', lineWidth: 2, xaxis: { from: omslagpunt, to: omslagpunt } };
             markings.push(m);
         }
         var xmin = graph_info.x0;
@@ -283,6 +300,8 @@ $(document).ready(function () {
         add_label('Min. berging', o.left, o.top);
         o = plot.pointOffset({ x: plot.getOptions().xaxis.max, y: graph_info.y_marking_max});
         add_label('Max. berging', o.left, o.top);
+        o = plot.pointOffset({ x: plot.getOptions().xaxis.max, y: graph_info.desired_fill});
+        add_label('Gewenste vulgraad', o.left, o.top);
         return plot;
     };
     var $fill_graph_container = $('#fill-graph-container');
@@ -310,7 +329,8 @@ $(document).ready(function () {
         // append debug parameters
         if (debug) {
             $.extend(query, {
-                hours_diff: eval($('#debug-hoursdiff').val())
+                hours_diff: eval($('#debug-hours-diff').val()),
+                rain_exaggerate_factor: eval($('#debug-rain-exaggerate-factor').val()),
             });
         }
 
@@ -327,8 +347,22 @@ $(document).ready(function () {
                 // show the 'bakjes' visualization
                 draw_overflow_visualization(response.overflow);
 
+                // set current fill label
+                var current_fill = response.current_fill.toFixed();
+                $('#current-fill-label').html(current_fill + ' % -');
+                $('#current-fill-label').css({bottom: current_fill + '%'});
+
                 // show the demand
                 $('#demand-value').html(Math.round(response.demand24h) + ' m<sup>3</sup>');
+
+                // show the "omslagpunt"
+                var omslagpunt = response.graph_info.x_marking_omslagpunt;
+                if (omslagpunt) {
+                    $('#omslagpunt-value').html(full_time_format(omslagpunt));
+                }
+                else {
+                    $('#omslagpunt-value').html('N.v.t.');
+                }
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 var $error = $('<p>Fout bij het laden van de grafiekdata: ' + errorThrown + '</p>');
@@ -384,7 +418,7 @@ $(document).ready(function () {
             { color: '#000', lineWidth: 1, xaxis: { from: graph_info.x0, to: graph_info.x0 } }
         ];
         var xmin = graph_info.x0;
-        var xmax = graph_info.x0 + 36 * MS_HOUR;
+        var xmax = graph_info.x0 + 24 * MS_HOUR;
         var initial_options = {
             series: {
                 curvedLines: {
@@ -397,7 +431,7 @@ $(document).ready(function () {
                 mode: 'time',
                 tickSize: [2, 'hour'],
                 tickFormatter: time_tick_formatter,
-                zoomRange: [4 * MS_HOUR, 36 * MS_HOUR] // 4 hours - 36 hours
+                zoomRange: [4 * MS_HOUR, 24 * MS_HOUR] // 4 hours - 24 hours
             },
             yaxis: {
                 min: -1,
@@ -437,4 +471,7 @@ $(document).ready(function () {
             refresh_prediction_data();
         });
     }
+
+    // initial data on page load
+    refresh_prediction_data();
 });

@@ -19,7 +19,7 @@
 #current-fill-label {
     display:block;
     position:absolute;
-    bottom:65%;
+    bottom:0;
 }
 
 /* ************************ */
@@ -143,6 +143,12 @@
 
 #demand-value {
     font-weight:bold;
+    margin-left:10px;
+}
+
+#omslagpunt-value {
+    font-weight:bold;
+    margin-left:10px;
 }
 
 #fill-graph-container {
@@ -154,7 +160,7 @@ div.marking-label {
     position:absolute;
     color:#666;
     font-size:smaller;
-    width:80px;
+    width:120px;
     margin-left:7px;
 }
 
@@ -173,7 +179,7 @@ div.flot-tooltip {
 
 /* keep this, otherwise flot can't determine graph sizes */
 #rain-graph {
-    width:1000px;
+    width:700px;
     height:300px;
 }
 
@@ -202,13 +208,14 @@ input[type="image"], input[type="checkbox"], input[type="radio"] {
 #upper {
     position:relative;
     width:100%;
-    height:480px;
+    height:380px;
 }
 
 #lower {
     border-top:1px solid #C0C0BC;
     position:relative;
     width:100%;
+    height:380px;
 }
 
 #left {
@@ -222,4 +229,26 @@ input[type="image"], input[type="checkbox"], input[type="radio"] {
     left:280px;
     border-left:1px solid #C0C0BC;
     height:100%;
+}
+
+#lleft {
+    position:absolute;
+    height:100%;
+    width:280px;
+}
+
+#weerwidget {
+    margin-left:10px;
+    margin-top:10px;
+}
+
+#lright {
+    position:absolute;
+    left:280px;
+    height:100%;
+}
+
+.graph-header {
+    color:#104661;
+    margin-left:50px;
 }

@@ -44,40 +44,30 @@
             </tr>
             <tr>
                 <td>Oppervlakte</td>
-                <td>2200 m<sup>2</sup></td>
+                <td>{{ view.oppervlakte }} m<sup>2</sup></td>
             </tr>
             <tr>
-                <td>Maand</td>
-                <td>September</td>
+                <td>Inhoud bassin</td>
+                <td>{{ view.inhoud }} m<sup>3</sup></td>
             </tr>
         </tbody>
     </table>
 </div>
 
 <div id="fill-container" class="has_popover_east"
-     data-title="Nieuwe vulgraad"
-     data-content="Selecteer hier de nieuwe vulgraad.">
+     data-title="Gewenste vulgraad"
+     data-content="Selecteer hier de gewenste vulgraad.">
     <div id="current-fill-container" class="has_popover_east"
          data-selector="#current-fill-label"
          data-title="Huidige vulgraad"
          data-content="Huidige vulgraad uit meetresultaten ControlNEXT.">
-        <div id="current-fill-label">67 % -</div>
+        <div id="current-fill-label"></div>
     </div>
     <div id="desired-fill-slider"></div>
     <div id="desired-fill-container" class="slider-label-container">
         <div id="desired-fill-label">- <span class="val"></span> %</div>
     </div>
 </div>
-
-{% comment %}
-<div class="time-select-container has_popover_east" data-animated="false" data-title="Datum" data-content="Het tijdstip waar vanaf de nieuwe vulgraad geldt.">
-    <div class="time-select">
-        <label><input type="radio" name="date-radio" checked="checked" value="now" />Nu</label>
-        <label><input type="radio" name="date-radio" value="other" />Ander tijdstip</label>
-        <input type="text" id="time-select-date" name="date" />
-    </div>
-</div>
-{% endcomment %}
 
 <div id="demand-diff-container"
      class="has_popover_east"
@@ -99,7 +89,8 @@
 </div>
 
 <div id="debug-panel" style="display:none;">
-t0 verschil (uren): <input type="text" id="debug-hoursdiff" name="debug-hoursdiff" size="4" />
+t0 verschil (uren): <input type="text" id="debug-hours-diff" name="debug-hours-diff" size="4" /><br/>
+regen overdrijving (factor): <input type="text" id="debug-rain-exaggerate-factor" name="debug-rain-exaggerate-factor" size="4" />
 </div>
 
 </div>
@@ -115,22 +106,31 @@ t0 verschil (uren): <input type="text" id="debug-hoursdiff" name="debug-hoursdif
         <div id="overflow-visualization-container" style="display:none;">
             <div>Watervraag in de komende 24 uur:</div>
             <div id="demand-value"></div>
+            <div>Gewenste niveau wordt bereikt op:</div>
+            <div id="omslagpunt-value"></div>
             <div>Verwachte overstort in de komende 24 uur:</div>
             <div id="overflow-visualization"></div>
         </div>
     </div>
 </div>
 <div id="right">
-    <div id="right-img-container" class="inner">
-    </div>
+    <h3 class="graph-header">Voorspelling vulgraad</h3>
     <div id="fill-graph-container"></div>
 </div>
 </div>
 
 <div id="lower">
-    <div id="lower-img-container" class="inner">
+<div id="lleft">
+    <div id="weerwidget">
+        <!-- begin weer.nl widget code -->
+        <a href="http://www.weer.nl/" style="padding:0;background:none" target="_blank" title="Your weather service"><img src="http://www.weer.nl/meteo/hptool/logo_weer_nl.png" alt="" width="120" height="32" border="0" style="display:block;" /></a><div style="background-color:#ffffff;color:#000000;font-family:Verdana,Arial,Tahoma,Times New Roman;font-weight:normal;font-size:10px;width:120px;text-align:center"><a href="http://www.weer.nl/wereldweer/actueel-en-verwacht-weer/stad/31X3558/maasdijk.html" target="_blank" style="color:#000000;font-family:Verdana,Arial,Tahoma,Times New Roman;font-weight:normal;font-size:10px;padding:0;background:none" title="Detailed weather forecast for Weer Maasdijk">Weer Maasdijk</a></div><iframe width="120" height="151" scrolling="no" frameborder="0" src="http://www.weer.nl/meteo/hptool/index.php?cid=31X3558&cityName=Maasdijk&l=nl&style=14&v=nl&ver=2&c1=000000&c2=ffffff&c3=000000&c4=ffffff&c5=000000&c6=ffffff&c7=ffffff&f1a=1&f1b=1&f2a=1&f2b=1&f3a=1&f3b=1&ct1=1&ct2=2&ct3=6&ct4=10&ct5=12&fcd=0"></iframe><div style="height:14px;width:120px;text-align:center;background-color:#ffffff"><a href="http://www.weer.nl/" target="_blank" style="background:none;padding:0;text-decoration:none;color:#000000;font-family:Verdana,Arial,Tahoma,Times New Roman;font-weight:normal;font-size:10px" title="Latest weather observations and 14 day forecasts for over 2 MM locations worldwide">&copy; MeteoConsult</a></div>
+        <!-- end weer.nl widget code -->
     </div>
+</div>
+<div id="lright">
+    <h3 class="graph-header">Vooruitzicht regen</h3>
     <div id="rain-graph-container"></div>
+</div>
 </div>
 {% endspaceless %}
 {% endblock %}

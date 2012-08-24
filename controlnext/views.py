@@ -16,6 +16,7 @@ from controlnext import models
 from controlnext.demand_table import DemandTable
 from controlnext.calc_model import CalculationModel
 from controlnext.fews_data import FewsJdbcDataSource
+from controlnext import constants
 from controlnext.constants import *
 
 logger = logging.getLogger(__name__)
@@ -32,18 +33,26 @@ def series_to_js(pdseries):
 
 class MainView(UiView):
     template_name = 'controlnext/main.html'
-    page_title = _('Kraantjesproject')
+    page_title = _('ControlNEXT sturing Delfland')
+
+    def get_context_data(self, *args, **kwargs):
+        self.oppervlakte = constants.opp_invloed_regen_m2
+        self.inhoud = constants.max_berging_m3
+        return super(UiView, self).get_context_data(*args, **kwargs)
 
 class DataService(JsonView):
     _IGNORE_IE_ACCEPT_HEADER = False # Keep this, if you want IE to work
 
     def get(self, request, data_type=None):
         hours_diff = request.GET.get('hours_diff', None)
+        rain_exaggerate_factor = request.GET.get('rain_exaggerate_factor', None)
 
         # note: t0 is Math.floor() 'ed to a full quarter
         t0 = round_date(datetime.datetime.now(pytz.utc))
         if hours_diff:
             t0 += datetime.timedelta(hours=int(hours_diff))
+        if rain_exaggerate_factor:
+            rain_exaggerate_factor = float(rain_exaggerate_factor)
 
         if data_type == 'rain':
             return self.rain(t0)
@@ -52,14 +61,17 @@ class DataService(JsonView):
             demand_diff = request.GET.get('demand_diff')
             desired_fill = int(desired_fill)
             demand_diff = int(demand_diff)
-            return self.prediction(t0, desired_fill, demand_diff)
+            return self.prediction(t0, desired_fill, demand_diff, rain_exaggerate_factor)
 
-    def prediction(self, t0, desired_fill, demand_diff):
+    def prediction(self, t0, desired_fill_pct, demand_diff, rain_exaggerate_factor=None):
         tbl = DemandTable()
         ds = FewsJdbcDataSource()
         model = CalculationModel(tbl, ds)
+
         future = t0 + fill_predict_future
-        prediction = model.predict_fill(t0, future, desired_fill, demand_diff, fill_history)
+
+        prediction = model.predict_fill(t0, future, desired_fill_pct, demand_diff, rain_exaggerate_factor)
+
         # TODO should use dict comprehension in py > 2.6
         data = dict([(name, series_to_js(scenario['prediction'])) for name, scenario in prediction['scenarios'].items()])
         data['history'] = series_to_js(prediction['history'])
@@ -69,15 +81,18 @@ class DataService(JsonView):
             'y_marking_min': min_berging_pct,
             'y_marking_max': max_berging_pct,
             'x_marking_omslagpunt': datetime_to_js(prediction['scenarios']['mean']['omslagpunt']),
+            'y_marking_desired_fill': desired_fill_pct,
+            'desired_fill': desired_fill_pct,
         }
         result = {
             'graph_info': graph_info,
             'overflow': '',
-            #'demand24h': demand_table.get_total_demand(dtnow, dtnow + datetime.timedelta(hours=24))
-            'demand24h': ''
+            'demand24h': tbl.get_total_demand(t0, t0 + datetime.timedelta(hours=24)),
+            'current_fill': prediction['current_fill'],
         }
         return result
 
+    """
     def prediction_old(self, t0, desired_fill, demand_diff):
         # NOTE: times should be in UTC
         dtnow = datetime.datetime.now()
@@ -113,15 +128,16 @@ class DataService(JsonView):
             #'demand24h': demand_table.get_total_demand(dtnow, dtnow + datetime.timedelta(hours=24))
             'demand24h': ''
         }
+    """
 
     def rain(self, t0):
-        tmin = t0 - datetime.timedelta(days=2)
-        tmax = t0 + datetime.timedelta(days=5)
+        _from = t0 - datetime.timedelta(days=2)
+        to = t0 + datetime.timedelta(days=5)
 
         ds = FewsJdbcDataSource()
-        min = ds.get_rain('min', tmin, tmax)
-        mean = ds.get_rain('mean', tmin, tmax)
-        max = ds.get_rain('max', tmin, tmax)
+        min = ds.get_rain('min', _from, to)
+        mean = ds.get_rain('mean', _from, to)
+        max = ds.get_rain('max', _from, to)
         #import pdb; pdb.set_trace()
         rain_graph_info = {
             'data': {
