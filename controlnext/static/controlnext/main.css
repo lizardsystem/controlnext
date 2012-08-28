@@ -147,7 +147,7 @@
 }
 
 #fill-graph-container {
-    width:700px;
+    width:100%;
     height:360px;
 }
 
@@ -168,20 +168,20 @@ div.flot-tooltip {
 
 /* keep this, otherwise flot can't determine graph sizes */
 #fill-graph {
-    width:700px;
+    width:100%;
     height:300px;
 }
 
 /* keep this, otherwise flot can't determine graph sizes */
 #rain-graph {
-    width:700px;
+    width:100%;
     height:300px;
 }
 
 
 /* keep this, otherwise flot can't determine graph sizes */
 #advanced-graph {
-    width:700px;
+    width:100%;
     height:300px;
 }
 
@@ -229,6 +229,7 @@ input[type="image"], input[type="checkbox"], input[type="radio"] {
 #right {
     position:absolute;
     left:280px;
+    right:0;
     border-left:1px solid #C0C0BC;
     height:100%;
 }
@@ -247,6 +248,7 @@ input[type="image"], input[type="checkbox"], input[type="radio"] {
 #lright {
     position:absolute;
     left:280px;
+    right:0;
     height:100%;
 }
 

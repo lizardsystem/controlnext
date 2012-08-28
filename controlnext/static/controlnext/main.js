@@ -25,7 +25,55 @@
 })(jQuery);
 
 $(document).ready(function () {
-    var MS_HOUR = 60 * 60 * 1000;
+    var MS_SECOND = 1000;
+    var MS_MINUTE = 60 * MS_SECOND;
+    var MS_HOUR = 60 * MS_MINUTE;
+    var MS_DAY = 24 * MS_HOUR;
+    var MS_MONTH = 30 * MS_DAY;
+    var MS_YEAR = 365 * MS_DAY;
+
+    var tick_size_map = [
+        [100 * MS_YEAR,  999 * MS_YEAR,   [50, 'year']],
+        [ 10 * MS_YEAR,  100 * MS_YEAR,   [10, 'year']],
+        [  1 * MS_YEAR,   10 * MS_YEAR,   [ 1, 'year']],
+        [  1 * MS_MONTH,   1 * MS_YEAR,   [ 1, 'month']],
+        [  1 * MS_DAY,     1 * MS_MONTH,  [ 1, 'day']],
+        [ 12 * MS_HOUR,    1 * MS_DAY,    [ 2, 'hour']],
+        [  1 * MS_HOUR,   12 * MS_HOUR,   [ 1, 'hour']],
+        [ 15 * MS_MINUTE,  1 * MS_HOUR,   [15, 'minute']],
+        [  1 * MS_MINUTE, 15 * MS_MINUTE, [ 1, 'minute']]
+    ];
+
+    /**
+     * Note: use $.extend() for this.
+     */
+    var default_flot_options = {
+        xaxis: {
+            mode: 'time',
+            position: 'bottom',
+            zoomRange: [1 * MS_HOUR, 10 * MS_DAY],
+            timeformat: '%H:%M<br/>%d %b<br/>(%a)',
+            monthNames: ['jan', 'feb', 'mar', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'],
+            dayNames: ['zo', 'ma', 'di', 'wo', 'do', 'vr', 'za']
+        },
+        legend: { position: 'ne' },
+        grid: { hoverable: true, autoHighlight: false, labelMargin: 10 },
+        crosshair: { mode: 'x' },
+        pan: { interactive: true },
+        zoom: { interactive: true }
+    };
+    var add_default_flot_options = function (options) {
+        // first {} = make a copy instead of destroying original 
+        return $.extend(true, {}, default_flot_options, options);
+    };
+
+    /**
+     * Much faster than native .toFixed(), see http://jsperf.com/tofixed-vs-factor . 
+     */
+    var fastToFixed = function (v, decimals) {
+        var factor = Math.pow(10, decimals);
+        return Math.round(v * factor) / factor;
+    };
 
     var fixIE8DrawBug = function (plot) {
         if (navigator.appName == 'Microsoft Internet Explorer') {
@@ -44,38 +92,21 @@ $(document).ready(function () {
         }
     };
 
-    var set_tick_size = function (options, x_min, x_max) {
-        var tick_size = [];
-        var diff_time = x_max - x_min;
-        var diff_seconds = diff_time/1000;
-        var diff_minutes = diff_time/1000/60;
-        var diff_hours = diff_time/1000/60/60;
-        if (diff_hours > 24*30*12) {
-            $.merge(tick_size, [1, "year"]);
-        } else if (diff_hours > 24*30) {
-            $.merge(tick_size, [1, "month"]);
-        } else if (diff_hours > 24) {
-            $.merge(tick_size, [1, "day"]);
-        } else if (diff_hours > 20) {
-            $.merge(tick_size, [2, "hour"]);
-        } else if (diff_hours > 1) {
-            $.merge(tick_size, [1, "hour"]);
-        } else if (diff_minutes > 45) {
-            $.merge(tick_size, [15, "minute"]);
-        } else if (diff_minutes > 10) {
-            $.merge(tick_size, [10, "minute"]);
-        } else if (diff_minutes > 5) {
-            $.merge(tick_size, [5, "minute"]);
-        } else if (diff_minutes > 1) {
-            $.merge(tick_size, [1, "minute"]);
-        } else if (diff_seconds > 45 ) {
-            $.merge(tick_size, [15, "second"]);
-        } else if (diff_seconds > 10) {
-            $.merge(tick_size, [10, "second"]);
-        } else {
-            $.merge(tick_size, [1, "second"]);
+    var set_tick_size = function (plot) {
+        var xaxis = plot.getOptions().xaxes[0];
+        var tick_size = null;
+        var diff = xaxis.max - xaxis.min;
+        var len = tick_size_map.length;
+        for (var i = 0; i < len; i++) {
+            var ts = tick_size_map[i];
+            if (diff > ts[0] && diff <= ts[1]) {
+                tick_size = ts[2];
+                break;
+            }
         }
-        options.xaxis.tickSize = tick_size;
+        if (tick_size) {
+            xaxis.tickSize = tick_size;
+        }
     };
 
     // grab url base
@@ -182,8 +213,7 @@ $(document).ready(function () {
                + (time.getMonth() + 1)
                + '-' + time.getFullYear()
                + ' ' + pad(time.getHours(), 2)
-               + ':' + pad(time.getMinutes(), 2)
-               + ' uur';
+               + ':' + pad(time.getMinutes(), 2);
     };
     var add_tooltip = function (plot, values) {
         // build a tooltip element
@@ -226,10 +256,10 @@ $(document).ready(function () {
                  + ' uur';
             var y_formatted;
             if (y !== null)
-                y_formatted = plot.getYAxes()[0].tickFormatter(y.toFixed(2));
+                y_formatted = plot.getYAxes()[0].tickFormatter(fastToFixed(y, 2));
             else
                 y_formatted = 'n.v.t.';
-            var label = "waarde op " + time + ": " + y_formatted;
+            var label = time + ": " + y_formatted;
             // position it
             $tt.css({
                 top: pos.pageY,
@@ -245,61 +275,66 @@ $(document).ready(function () {
         $fill_graph_container.append($fill_graph);
         // order of following elements is also drawing order
         var lines = [
-            { id: 'min',     data: graph_info.data.min, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'mean' },
-            { id: 'mean',     data: graph_info.data.mean, lines: { show: true, lineWidth: 7 }, color: "#0026FF", label: 'voorspelling vulgraad' },
-            { id: 'max',     data: graph_info.data.max, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#EFC9FF", fillBetween: 'mean' },
-            { id: 'history',     data: graph_info.data.history, lines: { show: true, lineWidth: 7 }, color: "yellow", label: 'meting vulgraad' }
+            { id: 'min',     data: graph_info.data.min,     yaxis: 1, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'mean' },
+            { id: 'mean',    data: graph_info.data.mean,    yaxis: 1, lines: { show: true, lineWidth: 7 }, color: "#0026FF", label: 'voorspelling vulgraad' },
+            { id: 'max',     data: graph_info.data.max,     yaxis: 1, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#EFC9FF", fillBetween: 'mean' },
+            { id: 'history', data: graph_info.data.history, yaxis: 1, lines: { show: true, lineWidth: 7 }, color: "yellow", label: 'meting vulgraad' },
+            { id: 'dummy1',  data: [0, 0],                  yaxis: 2 }
         ];
         var markings = [
-            { color: '#f9f9f9', yaxis: { from: graph_info.y_marking_min, to: 0 } },
-            { color: '#12d', yaxis: { from: graph_info.y_marking_min, to: graph_info.y_marking_min } },
-            { color: '#e22', yaxis: { from: graph_info.y_marking_max, to: graph_info.y_marking_max } },
-            { color: '#f9f9f9', yaxis: { from: 120, to: graph_info.y_marking_max } },
-            { color: '#2a2', yaxis: { from: graph_info.desired_fill, to: graph_info.desired_fill } },
-            { color: '#000', lineWidth: 1, xaxis: { from: graph_info.x0, to: graph_info.x0 } }
+            { color: '#f6f6f6', yaxis: { from: graph_info.y_marking_min, to: 0 } },
+            { color: '#f6f6f6', yaxis: { from: 120, to: graph_info.y_marking_max } },
+            { color: '#12d',    yaxis: { from: graph_info.y_marking_min, to: graph_info.y_marking_min } },
+            { color: '#e22',    yaxis: { from: graph_info.y_marking_max, to: graph_info.y_marking_max } },
+            { color: '#2a2',    yaxis: { from: graph_info.desired_fill, to: graph_info.desired_fill } },
+            { color: '#000',    xaxis: { from: graph_info.x0, to: graph_info.x0 }, lineWidth: 1 }
         ];
         var omslagpunt = graph_info.x_marking_omslagpunt;
         if (omslagpunt) {
-            var m = { color: '#2a2', lineWidth: 2, xaxis: { from: omslagpunt, to: omslagpunt } };
+            var m = { color: '#2a2', xaxis: { from: omslagpunt, to: omslagpunt }, lineWidth: 2 };
             markings.push(m);
         }
-        var xmin = graph_info.x0;
-        var xmax = graph_info.x0 + 24 * MS_HOUR;
+        var xmin = graph_info.x0 - 2 * MS_DAY;
+        var xmax = graph_info.x0 + 5 * MS_DAY;
         var options = {
             series: {
                 curvedLines: {
                     active: false
                 }
             },
-            xaxis: {
-                min: xmin,
-                max: xmax,
-                mode: 'time',
-                tickSize: [2, 'hour'],
-                tickFormatter: time_tick_formatter,
-                zoomRange: [4 * MS_HOUR, 24 * MS_HOUR] // 4 hours - 36 hours
-                //axisLabel: 'tijd vanaf',
-                //axisLabelUseCanvas: true,
-                //axisLabelFontFamily: 'Verdana,Arial,sans-serif',
-                //axisLabelFontSizePixels: 10
-            },
-            yaxis: {
-                min: 0,
-                max: 120,
-                panRange: [0, 120],
-                tickFormatter: function (v) { return v + " %"; },
-                zoomRange: false
-            },
-            legend: { position: 'ne' },
-            grid: { hoverable: true, autoHighlight: false, markings: markings, labelMargin: 10 },
-            crosshair: { mode: 'x' },
-            pan: {
-                interactive: true
-            },
-            zoom: {
-                interactive: true
-            }
+            xaxes: [
+                {
+                    min: xmin,
+                    max: xmax
+                }
+            ],
+            yaxes: [
+                {
+                    min: 0,
+                    max: 120,
+                    labelWidth: 30,
+                    tickFormatter: function (v, axis) { return v + " %"; },
+                    panRange: false,
+                    zoomRange: false,
+                    position: 'left'
+                },
+                {
+                    min: 0,
+                    max: 120,
+                    labelWidth: 100,
+                    ticks: [
+                        [graph_info.y_marking_min, 'Min. berging'],
+                        [graph_info.y_marking_max, 'Max. berging'],
+                        [graph_info.desired_fill, 'Gewenste vulgraad']
+                    ],
+                    panRange: false,
+                    zoomRange: false,
+                    position: 'right'
+                }
+            ],
+            grid: { markings: markings }
         };
+        options = add_default_flot_options(options);
         var plot = $.plot($fill_graph, lines, options);
         add_tooltip(plot, graph_info.data.mean);
 
@@ -429,6 +464,18 @@ $(document).ready(function () {
         $overflow_visualization_container.show();
     };
 
+    // var refresh_tick_size = function (plot) {
+        // var width = plot.width();
+        // var labelWidth = 40;
+        // var max_ticks = width / labelWidth;
+// 
+        // var xaxis = plot.getOptions().xaxes[0];
+// 
+        // var xaxis = plot.getAxes().xaxis;
+        // var diff_quarter = (xaxis.max - xaxis.min) / (15 * 60 * 1000);
+        // console.log(diff_hour + ' ' + max_ticks);
+    // };
+
     var plot_rain_graph = function (graph_info, $rain_graph_container) {
         // build a new element
         var $rain_graph = $('<div id="rain-graph"/>');
@@ -446,51 +493,65 @@ $(document).ready(function () {
         var markings = [
             { color: '#000', lineWidth: 1, xaxis: { from: graph_info.x0, to: graph_info.x0 } }
         ];
-        var xmin = graph_info.x0;
-        var xmax = graph_info.x0 + 24 * MS_HOUR;
-        var initial_options = {
+        var xmin = graph_info.x0 - 2 * MS_DAY;
+        var xmax = graph_info.x0 + 5 * MS_DAY;
+        var options = {
             series: {
                 curvedLines: {
-                    active: true
+                    active: false
                 }
             },
-            xaxis: {
-                min: xmin,
-                max: xmax,
-                mode: 'time',
-                tickSize: [2, 'hour'],
-                tickFormatter: time_tick_formatter,
-                zoomRange: [4 * MS_HOUR, 24 * MS_HOUR] // 4 hours - 24 hours
-            },
-            yaxis: {
-                min: -1,
-                max: 4,
-                tickSize: 1,
-                tickFormatter: function (v) { return v + " mm"; },
-                panRange: [-1, null], // no upper limit
-                zoomRange: false
-            },
-            legend: { position: 'ne' },
-            grid: { hoverable: true, autoHighlight: false, markings: markings, labelMargin: 10 },
-            crosshair: { mode: 'x' },
-            pan: {
-                interactive: true
-            },
-            zoom: {
-                interactive: true
-            }
+            xaxes: [
+                {
+                    min: xmin,
+                    max: xmax
+                }
+                // {
+                    // min: xmin,
+                    // max: xmax,
+                    // //mode: 'time',
+                    // ticks: [[graph_info.x0, 'asd']],
+                    // //tickSize: [2, 'hour'],
+                    // labelHeight: 10,
+                    // position: 'bottom',
+                    // //panRange: false,
+                    // zoomRange: false
+                // }
+
+            ],
+            yaxes: [
+                {
+                    //min: -0.2,
+                    //max: 4,
+                    tickSize: 0.5,
+                    tickFormatter: function (v) { return v.toFixed(1) + " mm"; },
+                    labelWidth: 30,
+                    panRange: false,
+                    zoomRange: false,
+                    position: 'left'
+                },
+                {
+                    reserveSpace: true,
+                    labelWidth: 100,
+                    position: 'right'
+                }
+            ],
+            grid: { markings: markings },
         };
         //set_tick_size(initial_options, xmin, xmax);
-        var plot = $.plot($rain_graph, lines, initial_options);
+        options = add_default_flot_options(options);
+        var plot = $.plot($rain_graph, lines, options);
 
         add_tooltip(plot, graph_info.data.mean);
-        //$rain_graph.bind('plotzoom', function (event, plot) {
+        $rain_graph.bind('plotzoom', function (event, plot) {
             // get a 'bound' options dataset
-            //var options = plot.getOptions();
-            //set_tick_size(options, options.xaxis.min, options.xaxis.max);
-            //plot.setupGrid();
-            //plot.draw();
-        //});
+            // var options = plot.getOptions();
+            // set_tick_size(options, options.xaxis.min, options.xaxis.max);
+            // plot.setupGrid();
+            // plot.draw();
+            //set_tick_size(plot);
+            //refresh_tick_size(plot);
+        });
         fixIE8DrawBug(plot);
         return plot;
     };
@@ -519,36 +580,36 @@ $(document).ready(function () {
             { id: 'value', data: graph_info.data, lines: { show: true, lineWidth: 1 },
               color: "#222222", label: 'waarde in ' + graph_info.unit }
         ];
-        var xmin = graph_info.x0;
-        var xmax = graph_info.x0 + 24 * MS_HOUR;
-        var initial_options = {
+        var xmin = graph_info.x0 - 2 * MS_DAY;
+        var xmax = graph_info.x0 + 5 * MS_DAY;
+        var options = {
             xaxis: {
                 min: xmin,
-                max: xmax,
-                mode: 'time',
-                tickSize: [2, 'hour'],
-                tickFormatter: time_tick_formatter,
-                zoomRange: [4 * MS_HOUR, 24 * MS_HOUR] // 4 hours - 24 hours
+                max: xmax
+                // mode: 'time',
+                // tickSize: [2, 'hour'],
+                // tickFormatter: time_tick_formatter,
+                // zoomRange: [4 * MS_HOUR, 24 * MS_HOUR] // 4 hours - 24 hours
             },
-            yaxis: {
-                //min: -1,
-                //max: 4,
-                //tickSize: 1,
-                tickFormatter: function (v) { return v + " " + graph_info.unit; },
-                //panRange: [-1, null], // no upper limit
-                zoomRange: [-1, 100000]
-            },
-            legend: { position: 'ne' },
-            grid: { hoverable: true, autoHighlight: false, labelMargin: 10 },
-            crosshair: { mode: 'x' },
-            pan: {
-                interactive: true
-            },
-            zoom: {
-                interactive: true
-            }
+            yaxes: [
+                {
+                    //min: -1,
+                    //max: 4,
+                    //tickSize: 1,
+                    tickFormatter: function (v) { return fastToFixed(v, 2) + " " + graph_info.unit; },
+                    //panRange: [-1, null], // no upper limit
+                    zoomRange: false
+                },
+                {
+                    reserveSpace: true,
+                    labelWidth: 100,
+                    position: 'right'
+                }
+            ],
+            grid: { hoverable: true, autoHighlight: false, labelMargin: 10 }
         };
-        var plot = $.plot($graph, lines, initial_options);
+        options = add_default_flot_options(options);
+        var plot = $.plot($graph, lines, options);
         add_tooltip(plot, graph_info.data);
         fixIE8DrawBug(plot);
         return plot;

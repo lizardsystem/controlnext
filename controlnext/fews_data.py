@@ -119,7 +119,7 @@ class FewsJdbcDataSource(object):
         # for pandas 0.8.1
         # enforce utc here, because of a bug in pandas 0.8.1
         #dates = pd.tseries.tools.to_datetime(df[0], tz=pytz)
-
+        #import pdb; pdb.set_trace()
         # convert the datetime list to numpy datetime objects
         # build an index of the timeseries and infer its frequency (should be 15min, see above)
         index = pd.DatetimeIndex(df[0], freq='infer', tz=pytz.utc)
