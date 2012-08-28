@@ -252,8 +252,7 @@ $(document).ready(function () {
                  + (time.getMonth() + 1)
                  + '-' + time.getFullYear()
                  + ' ' + pad(time.getHours(), 2)
-                 + ':' + pad(time.getMinutes(), 2)
-                 + ' uur';
+                 + ':' + pad(time.getMinutes(), 2);
             var y_formatted;
             if (y !== null)
                 y_formatted = plot.getYAxes()[0].tickFormatter(fastToFixed(y, 2));
@@ -598,6 +597,7 @@ $(document).ready(function () {
                     //tickSize: 1,
                     tickFormatter: function (v) { return fastToFixed(v, 2) + " " + graph_info.unit; },
                     //panRange: [-1, null], // no upper limit
+                    panRange: false,
                     zoomRange: false
                 },
                 {
