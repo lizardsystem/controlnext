@@ -535,7 +535,7 @@ $(document).ready(function () {
                     position: 'right'
                 }
             ],
-            grid: { markings: markings },
+            grid: { markings: markings }
         };
         //set_tick_size(initial_options, xmin, xmax);
         options = add_default_flot_options(options);
