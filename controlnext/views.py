@@ -1,5 +1,6 @@
 # (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.rst.
 from __future__ import unicode_literals
+import os
 import logging
 import datetime
 import time
@@ -7,6 +8,7 @@ import operator
 import random
 
 import pytz
+from django.conf import settings
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
 from djangorestframework.views import View as JsonView
@@ -37,11 +39,26 @@ class MainView(UiView):
 
     def get_context_data(self, *args, **kwargs):
         self.oppervlakte = constants.opp_invloed_regen_m2
-        self.inhoud = constants.max_berging_m3
+        self.max_voorraad = constants.max_berging_m3
         return super(UiView, self).get_context_data(*args, **kwargs)
 
 class DataService(JsonView):
     _IGNORE_IE_ACCEPT_HEADER = False # Keep this, if you want IE to work
+
+    def store_parameters(self, desired_fill, demand_diff, rain_diff, extra=''):
+        path = settings.REQUESTED_VALUES_CSV_PATH
+        directory = os.path.dirname(path)
+        if not os.path.isdir(directory):
+            os.makedirs(directory)
+        if not os.path.isfile(path):
+            # write column headers
+            with open(path, 'w') as file:
+                file.write('desired_fill;demand_diff;rain_diff;extra\n')
+        # write parameter values
+        parameters = [desired_fill, demand_diff, rain_diff, extra]
+        parameters = map(str, parameters)
+        with open(path, 'a') as file:
+            file.write(';'.join(parameters) + '\n')
 
     def get(self, request):
         graph_type = request.GET.get('graph_type', None)
@@ -62,6 +79,7 @@ class DataService(JsonView):
             demand_diff = request.GET.get('demand_diff')
             desired_fill = int(desired_fill)
             demand_diff = int(demand_diff)
+            self.store_parameters(desired_fill, demand_diff, rain_exaggerate_factor)
             return self.prediction(t0, desired_fill, demand_diff, rain_exaggerate_factor)
         else:
             desired_fill = request.GET.get('desired_fill')
@@ -171,13 +189,13 @@ class DataService(JsonView):
     """
 
     def rain(self, t0, rain_exaggerate_factor=None):
-        _from = t0 - datetime.timedelta(days=2)
-        to = t0 + datetime.timedelta(days=5)
+        _from = t0 - constants.fill_history
+        to = t0 + constants.fill_predict_future
 
         ds = FewsJdbcDataSource()
-        min = ds.get_rain('min', _from, to)
+        min = ds.get_rain('min', t0, to)
         mean = ds.get_rain('mean', _from, to)
-        max = ds.get_rain('max', _from, to)
+        max = ds.get_rain('max', t0, to)
 
         if rain_exaggerate_factor:
             min *= rain_exaggerate_factor

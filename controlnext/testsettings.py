@@ -123,6 +123,7 @@ MEDIA_ROOT = os.path.join(BUILDOUT_DIR, 'var', 'media')
 STATICFILES_FINDERS = STATICFILES_FINDERS
 
 DEMAND_TABLE_PATH = os.path.join(BUILDOUT_DIR, 'demand_table.csv')
+REQUESTED_VALUES_CSV_PATH = os.path.join(BUILDOUT_DIR, 'var', 'analysis', 'requested_values.csv')
 
 try:
     # Import local settings that aren't stored in svn/git.

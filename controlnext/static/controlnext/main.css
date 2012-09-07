@@ -2,7 +2,7 @@
     position:relative;
     width:215px;
     height:300px;
-    margin:40px auto 0 67px;
+    margin:40px auto 0 32px;
 }
 
 /* ************************ */
@@ -92,12 +92,12 @@
 
 #demand-diff-container {
     width:200px;
-    margin:40px auto 0 auto;
+    margin:40px auto 0 32px;
 }
 
 #rain-diff-container {
     width:200px;
-    margin:20px auto 0 auto;
+    margin:20px auto 0 32px;
 }
 
 #demand-diff-label-container,
@@ -120,7 +120,7 @@
 
 #start-btn-container {
     width:152px;
-    margin:30px auto 0 auto;
+    margin:30px auto 0 60px;
 }
 
 #start-btn {

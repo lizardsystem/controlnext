@@ -100,6 +100,35 @@ $(document).ready(function () {
         }
     };
 
+    /**
+     * Sets xaxis min and max the same as given parameter graph, for all
+     * other graphs in the document.
+     */
+    var panAndZoomOtherGraphs = function (plot) {
+        var axes = plot.getAxes();
+        var xmin = axes.xaxis.min;
+        var xmax = axes.xaxis.max;
+        $('.zoompanlinked-flot-graph').each(function () {
+            var otherPlot = $(this).data('plot');
+            if (plot !== otherPlot) {
+                var otherXAxisOptions = otherPlot.getAxes().xaxis.options;
+                otherXAxisOptions.min = xmin;
+                otherXAxisOptions.max = xmax;
+                otherPlot.setupGrid();
+                otherPlot.draw();
+            }
+        });
+    };
+    var bindPanZoomEvents = function ($graph) {
+        $graph.bind('plotzoom', function (event, plot) {
+            panAndZoomOtherGraphs(plot);
+        });
+
+        $graph.bind('plotpan', function (event, plot) {
+            panAndZoomOtherGraphs(plot);
+        });
+    };
+
     // var set_tick_size = function (plot) {
         // var xaxis = plot.getOptions().xaxes[0];
         // var tick_size = null;
@@ -123,9 +152,11 @@ $(document).ready(function () {
     }, MS_HOUR);
 
     // grab url bases from the DOM
-    var $urls = $('#data-urls');
-    var url_base = $urls.attr('data-url-base');
-    var data_url = $urls.attr('data-data-url');
+    var $constants = $('#data-constants');
+    var url_base = $constants.attr('data-url-base');
+    var data_url = $constants.attr('data-data-url');
+    var max_voorraad = parseInt($constants.attr('data-max-voorraad'));
+    var oppervlakte = parseInt($constants.attr('data-oppervlakte'));
 
     // set up a simple debug panel when ?debug=true is passed in the URL
     var debug = $.getQueryString('debug') !== undefined;
@@ -166,9 +197,11 @@ $(document).ready(function () {
         var $bg = $('#desired-fill-slider .ui-widget-header');
 
         // updates the label position, value and background color
+        var max_voorraad_per_oppervlakte_m3_ha = max_voorraad / (oppervlakte / 10000);
         var update_label = function (value) {
             $label.css('bottom', (value - 2) + '%');
-            $val.html(value + ' % (9.5 m<sup>3</sup>/ha)');
+            var vulgraad_ha = fastToFixed(value / 100 * max_voorraad_per_oppervlakte_m3_ha, 0);
+            $val.html(value + ' % (' + vulgraad_ha + ' m<sup>3</sup>/ha)');
 
             var scaled = value / 100.0;
             var r = 12;
@@ -232,8 +265,8 @@ $(document).ready(function () {
     var setup_rain_slider = function () {
         // construct the jQuery UI slider
         var $slider = $('#rain-diff-slider').slider({
-            min: 50,
-            max: 150,
+            min: 10,
+            max: 500,
             value: 100
         });
 
@@ -361,8 +394,8 @@ $(document).ready(function () {
      */
     var plot_fill_graph = function (graph_info, $container) {
         // build a new element
-        var $fill_graph = $('<div id="fill-graph"/>');
-        $container.append($fill_graph);
+        var $graph = $('<div id="fill-graph" class="zoompanlinked-flot-graph"/>');
+        $container.append($graph);
         // order of following elements is also drawing order
         var lines = [
             { id: 'min',     data: graph_info.data.min,     yaxis: 1, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'mean' },
@@ -425,25 +458,27 @@ $(document).ready(function () {
             grid: { markings: markings }
         };
         options = add_default_flot_options(options);
-        var plot = $.plot($fill_graph, lines, options);
+        var plot = $.plot($graph, lines, options);
         add_tooltip(plot, graph_info.data.mean);
 
         // add marking labels
-        var add_label = function (text, left, top) {
-            var $label = $('<div class="marking-label"/>').css({
-                left: left,
-                top: top
-            }).html(text);
-            $container.append($label);
-        };
-        var o;
-        o = plot.pointOffset({ x: plot.getOptions().xaxis.max, y: graph_info.y_marking_min});
-        add_label('Min. berging', o.left, o.top);
-        o = plot.pointOffset({ x: plot.getOptions().xaxis.max, y: graph_info.y_marking_max});
-        add_label('Max. berging', o.left, o.top);
-        o = plot.pointOffset({ x: plot.getOptions().xaxis.max, y: graph_info.desired_fill});
-        add_label('Gewenste vulgraad', o.left, o.top);
+        // var add_label = function (text, left, top) {
+            // var $label = $('<div class="marking-label"/>').css({
+                // left: left,
+                // top: top
+            // }).html(text);
+            // $container.append($label);
+        // };
+        // var o;
+        // o = plot.pointOffset({ x: plot.getOptions().xaxis.max, y: graph_info.y_marking_min});
+        // add_label('Min. voorraad', o.left, o.top);
+        // o = plot.pointOffset({ x: plot.getOptions().xaxis.max, y: graph_info.y_marking_max});
+        // add_label('Max. voorraad', o.left, o.top);
+        // o = plot.pointOffset({ x: plot.getOptions().xaxis.max, y: graph_info.desired_fill});
+        // add_label('Gewenste vulgraad', o.left, o.top);
+
         fixIE8DrawBug(plot);
+        bindPanZoomEvents($graph);
         return plot;
     };
 
@@ -452,8 +487,8 @@ $(document).ready(function () {
      */
     var plot_rain_graph = function (graph_info, $container) {
         // build a new element
-        var $rain_graph = $('<div id="rain-graph"/>');
-        $container.append($rain_graph);
+        var $graph = $('<div id="rain-graph" class="zoompanlinked-flot-graph"/>');
+        $container.append($graph);
 
         // order of following elements is also drawing order
         var lines = [
@@ -499,10 +534,11 @@ $(document).ready(function () {
             grid: { markings: markings }
         };
         options = add_default_flot_options(options);
-        var plot = $.plot($rain_graph, lines, options);
+        var plot = $.plot($graph, lines, options);
 
         add_tooltip(plot, graph_info.data.mean);
         fixIE8DrawBug(plot);
+        bindPanZoomEvents($graph);
         return plot;
     };
 
@@ -511,7 +547,7 @@ $(document).ready(function () {
      */
     var plot_advanced_graph = function (graph_info, $container) {
         // build a new element
-        var $graph = $('<div id="advanced-graph"/>');
+        var $graph = $('<div id="advanced-graph" class="zoompanlinked-flot-graph"/>');
         $container.append($graph);
 
         // order of following elements is also drawing order
@@ -544,6 +580,7 @@ $(document).ready(function () {
         var plot = $.plot($graph, lines, options);
         add_tooltip(plot, graph_info.data);
         fixIE8DrawBug(plot);
+        bindPanZoomEvents($graph);
         return plot;
     };
 

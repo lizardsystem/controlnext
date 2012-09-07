@@ -31,9 +31,11 @@
 
 {% block sidebar %}
 {% spaceless %}
-<div id="data-urls"
+<div id="data-constants"
      data-url-base="{{ STATIC_URL }}controlnext/"
      data-data-url="{% url controlnext-data-service %}"
+     data-oppervlakte="{{ view.oppervlakte }}"
+     data-max-voorraad="{{ view.max_voorraad }}"
      style="display:none;"></div>
 <div id="controls">
 <div>
@@ -49,7 +51,7 @@
             </tr>
             <tr>
                 <td>Inhoud bassin</td>
-                <td>{{ view.inhoud }} m<sup>3</sup></td>
+                <td>{{ view.max_voorraad }} m<sup>3</sup></td>
             </tr>
         </tbody>
     </table>
