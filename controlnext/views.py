@@ -45,7 +45,7 @@ class MainView(UiView):
 class DataService(JsonView):
     _IGNORE_IE_ACCEPT_HEADER = False # Keep this, if you want IE to work
 
-    def store_parameters(self, desired_fill, demand_diff, rain_diff, extra=''):
+    def store_parameters(self, desired_fill, demand_exaggerate, rain_exaggerate, extra=''):
         path = settings.REQUESTED_VALUES_CSV_PATH
         directory = os.path.dirname(path)
         if not os.path.isdir(directory):
@@ -53,9 +53,9 @@ class DataService(JsonView):
         if not os.path.isfile(path):
             # write column headers
             with open(path, 'w') as file:
-                file.write('desired_fill;demand_diff;rain_diff;extra\n')
+                file.write('desired_fill;demand_exaggerate;rain_exaggerate;extra\n')
         # write parameter values
-        parameters = [desired_fill, demand_diff, rain_diff, extra]
+        parameters = [desired_fill, demand_exaggerate, rain_exaggerate, extra]
         parameters = map(str, parameters)
         with open(path, 'a') as file:
             file.write(';'.join(parameters) + '\n')
@@ -63,39 +63,35 @@ class DataService(JsonView):
     def get(self, request):
         graph_type = request.GET.get('graph_type', None)
         hours_diff = request.GET.get('hours_diff', None)
-        rain_exaggerate_factor = request.GET.get('rain_exaggerate_factor', None)
+
+        desired_fill = request.GET.get('desired_fill')
+        demand_exaggerate = request.GET.get('demand_exaggerate')
+        rain_exaggerate = request.GET.get('rain_exaggerate')
+        desired_fill = int(desired_fill)
+        demand_exaggerate = int(demand_exaggerate)
+        rain_exaggerate = int(rain_exaggerate)
 
         # note: t0 is Math.floor() 'ed to a full quarter
         t0 = round_date(datetime.datetime.now(pytz.utc))
         if hours_diff:
             t0 += datetime.timedelta(hours=int(hours_diff))
-        if rain_exaggerate_factor:
-            rain_exaggerate_factor = float(rain_exaggerate_factor)
 
         if graph_type == 'rain':
-            return self.rain(t0, rain_exaggerate_factor)
+            return self.rain(t0, rain_exaggerate)
         elif graph_type == 'prediction':
-            desired_fill = request.GET.get('desired_fill')
-            demand_diff = request.GET.get('demand_diff')
-            desired_fill = int(desired_fill)
-            demand_diff = int(demand_diff)
-            self.store_parameters(desired_fill, demand_diff, rain_exaggerate_factor)
-            return self.prediction(t0, desired_fill, demand_diff, rain_exaggerate_factor)
+            self.store_parameters(desired_fill, demand_exaggerate, rain_exaggerate)
+            return self.prediction(t0, desired_fill, demand_exaggerate, rain_exaggerate)
         else:
-            desired_fill = request.GET.get('desired_fill')
-            demand_diff = request.GET.get('demand_diff')
-            desired_fill = int(desired_fill)
-            demand_diff = int(demand_diff)
-            return self.advanced(t0, desired_fill, demand_diff, graph_type, rain_exaggerate_factor)
+            return self.advanced(t0, desired_fill, demand_exaggerate, rain_exaggerate, graph_type)
 
-    def prediction(self, t0, desired_fill_pct, demand_diff, rain_exaggerate_factor=None):
+    def prediction(self, t0, desired_fill_pct, demand_exaggerate, rain_exaggerate):
         tbl = DemandTable()
         ds = FewsJdbcDataSource()
         model = CalculationModel(tbl, ds)
 
         future = t0 + fill_predict_future
 
-        prediction = model.predict_fill(t0, future, desired_fill_pct, demand_diff, rain_exaggerate_factor)
+        prediction = model.predict_fill(t0, future, desired_fill_pct, demand_exaggerate, rain_exaggerate)
 
         # TODO should use dict comprehension in py > 2.6
         data = dict([(name, series_to_js(scenario['prediction'])) for name, scenario in prediction['scenarios'].items()])
@@ -117,14 +113,14 @@ class DataService(JsonView):
         }
         return result
 
-    def advanced(self, t0, desired_fill_pct, demand_diff, graph_type, rain_exaggerate_factor=None):
+    def advanced(self, t0, desired_fill_pct, demand_exaggerate, rain_exaggerate, graph_type):
         tbl = DemandTable()
         ds = FewsJdbcDataSource()
         model = CalculationModel(tbl, ds)
 
         future = t0 + fill_predict_future
 
-        prediction = model.predict_fill(t0, future, desired_fill_pct, demand_diff, rain_exaggerate_factor)
+        prediction = model.predict_fill(t0, future, desired_fill_pct, demand_exaggerate, rain_exaggerate)
 
         data = []
         unit = ''
@@ -188,7 +184,7 @@ class DataService(JsonView):
         }
     """
 
-    def rain(self, t0, rain_exaggerate_factor=None):
+    def rain(self, t0, rain_exaggerate_pct):
         _from = t0 - constants.fill_history
         to = t0 + constants.fill_predict_future
 
@@ -197,10 +193,11 @@ class DataService(JsonView):
         mean = ds.get_rain('mean', _from, to)
         max = ds.get_rain('max', t0, to)
 
-        if rain_exaggerate_factor:
-            min *= rain_exaggerate_factor
-            mean *= rain_exaggerate_factor
-            max *= rain_exaggerate_factor
+        if rain_exaggerate_pct != 100:
+            rain_exaggerate = rain_exaggerate_pct / 100
+            min *= rain_exaggerate
+            mean *= rain_exaggerate
+            max *= rain_exaggerate
 
         #import pdb; pdb.set_trace()
         rain_graph_info = {

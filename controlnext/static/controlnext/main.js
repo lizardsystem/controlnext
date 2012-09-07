@@ -250,15 +250,15 @@ $(document).ready(function () {
      */
     var setup_demand_slider = function () {
         // construct the jQuery UI slider
-        var $slider = $('#demand-diff-slider').slider({
+        var $slider = $('#demand-exaggerate-slider').slider({
             min: 50,
             max: 150,
             value: 100
         });
 
         // grab related DOM elements
-        var $label = $('#demand-diff-label');
-        var $val = $('#demand-diff-label .val');
+        var $label = $('#demand-exaggerate-label');
+        var $val = $('#demand-exaggerate-label .val');
 
         // updates the label value
         var update_label = function (value) {
@@ -282,15 +282,15 @@ $(document).ready(function () {
      */
     var setup_rain_slider = function () {
         // construct the jQuery UI slider
-        var $slider = $('#rain-diff-slider').slider({
+        var $slider = $('#rain-exaggerate-slider').slider({
             min: 10,
             max: 500,
             value: 100
         });
 
         // grab related DOM elements
-        var $label = $('#rain-diff-label');
-        var $val = $('#rain-diff-label .val');
+        var $label = $('#rain-exaggerate-label');
+        var $val = $('#rain-exaggerate-label .val');
 
         // updates the label value
         var update_label = function (value) {
@@ -611,15 +611,15 @@ $(document).ready(function () {
             graph_type: graph_type,
             format: 'json',
             desired_fill: $('#desired-fill-slider').slider('value'),
-            demand_diff: $('#demand-diff-slider').slider('value'),
+            demand_exaggerate: $('#demand-exaggerate-slider').slider('value'),
+            rain_exaggerate: $('#rain-exaggerate-slider').slider('value'),
             date: new Date().getTime() // add dummy date to simulate REST like behaviour, but in reality the server-time is used
         };
 
         // append debug parameters
         if (debug) {
             $.extend(query, {
-                hours_diff: eval($('#debug-hours-diff').val()),
-                rain_exaggerate_factor: eval($('#debug-rain-exaggerate-factor').val())
+                hours_diff: eval($('#debug-hours-diff').val())
             });
         }
 

@@ -109,13 +109,15 @@ class CalculationModel(object):
             },
         }
 
-    def predict_fill(self, _from, to, desired_fill_pct, demand_diff_pct, rain_exaggerate_factor=None):
+    def predict_fill(self, _from, to, desired_fill_pct, demand_exaggerate_pct, rain_exaggerate_pct):
         # do some input validation here, to ensure we are dealing with sane numbers
         validate_date(_from)
         validate_date(to)
         if 0 > desired_fill_pct > 100:
             raise ValueError('value should be a percentage between 0 and 100')
-        if 0 > demand_diff_pct:
+        if 0 > demand_exaggerate_pct:
+            raise ValueError('value should be a percentage > 0')
+        if 0 > rain_exaggerate_pct:
             raise ValueError('value should be a percentage > 0')
 
         # determine desired fill in m^3
@@ -134,10 +136,11 @@ class CalculationModel(object):
         to = rain_mean.index[-1]
 
         # optionele overdrijf factor voor regen
-        if rain_exaggerate_factor is not None:
-            rain_min *= rain_exaggerate_factor
-            rain_mean *= rain_exaggerate_factor
-            rain_max *= rain_exaggerate_factor
+        if rain_exaggerate_pct != 100:
+            rain_exaggerate = rain_exaggerate_pct / 100
+            rain_min *= rain_exaggerate
+            rain_mean *= rain_exaggerate
+            rain_max *= rain_exaggerate
 
         # retrieve fill
         current_fill = self.fews_data.get_current_fill(_from)
@@ -147,9 +150,10 @@ class CalculationModel(object):
         demand_m3 = self.demand_table.get_demand(_from, to)
 
         # pas reguliere watervraag aan met de opgegeven factor
-        demand_diff = (demand_diff_pct / 100)
-        demand_m3 = demand_m3 * demand_diff
-        #demand_m3 = demand_m3.cumsum()
+        if demand_exaggerate_pct != 100:
+            demand_exaggerate = demand_exaggerate_pct / 100
+            demand_m3 *= demand_exaggerate
+            #demand_m3 = demand_m3.cumsum()
 
         # leidt aantal periodes af uit een vd 'input' tijdreeksen
         periods = len(rain_mean)

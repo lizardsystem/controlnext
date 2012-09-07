@@ -71,24 +71,24 @@
         <div id="desired-fill-label">- <span class="val"></span></div>
     </div>
 </div>
-<div id="demand-diff-container"
+<div id="demand-exaggerate-container"
      class="has_popover_east"
      data-title="Watervraagcorrectie"
      data-content="Correctie op de normale watervraag voor deze periode.">
     <p style="text-align:center;">Stel watervraagcorrectie in:</p>
-    <div id="demand-diff-slider"></div>
-    <div id="demand-diff-label-container">
-        <div id="demand-diff-label"><span class="val"></span> %</div>
+    <div id="demand-exaggerate-slider"></div>
+    <div id="demand-exaggerate-label-container">
+        <div id="demand-exaggerate-label"><span class="val"></span> %</div>
     </div>
 </div>
-<div id="rain-diff-container"
+<div id="rain-exaggerate-container"
      class="has_popover_east"
      data-title="Neerslagcorrectie"
      data-content="Correctie op de normale hoeveelheid neerslag voor deze periode.">
     <p style="text-align:center;">Stel neerslagcorrectie in:</p>
-    <div id="rain-diff-slider"></div>
-    <div id="rain-diff-label-container">
-        <div id="rain-diff-label"><span class="val"></span> %</div>
+    <div id="rain-exaggerate-slider"></div>
+    <div id="rain-exaggerate-label-container">
+        <div id="rain-exaggerate-label"><span class="val"></span> %</div>
     </div>
 </div>
 
@@ -102,8 +102,7 @@
 </div>
 
 <div id="debug-panel" style="display:none;">
-t0 verschil (uren): <input type="text" id="debug-hours-diff" name="debug-hours-diff" size="4" /><br/>
-regen overdrijving (factor): <input type="text" id="debug-rain-exaggerate-factor" name="debug-rain-exaggerate-factor" size="4" />
+t0 verschil (uren): <input type="text" id="debug-hours-diff" name="debug-hours-diff" size="4" />
 </div>
 
 </div>
@@ -135,6 +134,11 @@ regen overdrijving (factor): <input type="text" id="debug-rain-exaggerate-factor
 
 <div id="lower">
 <div id="lleft">
+    <div id="weerwidget">
+        <!-- begin weer.nl widget code -->
+        <a href="http://www.weer.nl/" style="padding:0;background:none" target="_blank" title="Your weather service"><img src="http://www.weer.nl/meteo/hptool/logo_weer_nl.png" alt="" width="120" height="32" border="0" style="display:block;" /></a><div style="background-color:#ffffff;color:#000000;font-family:Verdana,Arial,Tahoma,Times New Roman;font-weight:normal;font-size:10px;width:120px;text-align:center"><a href="http://www.weer.nl/wereldweer/actueel-en-verwacht-weer/stad/31X3558/maasdijk.html" target="_blank" style="color:#000000;font-family:Verdana,Arial,Tahoma,Times New Roman;font-weight:normal;font-size:10px;padding:0;background:none" title="Detailed weather forecast for Weer Maasdijk">Weer Maasdijk</a></div><iframe width="120" height="151" scrolling="no" frameborder="0" src="http://www.weer.nl/meteo/hptool/index.php?cid=31X3558&cityName=Maasdijk&l=nl&style=14&v=nl&ver=2&c1=000000&c2=ffffff&c3=000000&c4=ffffff&c5=000000&c6=ffffff&c7=ffffff&f1a=1&f1b=1&f2a=1&f2b=1&f3a=1&f3b=1&ct1=1&ct2=2&ct3=6&ct4=10&ct5=12&fcd=0"></iframe><div style="height:14px;width:120px;text-align:center;background-color:#ffffff"><a href="http://www.weer.nl/" target="_blank" style="background:none;padding:0;text-decoration:none;color:#000000;font-family:Verdana,Arial,Tahoma,Times New Roman;font-weight:normal;font-size:10px" title="Latest weather observations and 14 day forecasts for over 2 MM locations worldwide">&copy; MeteoConsult</a></div>
+        <!-- end weer.nl widget code -->
+    </div>
     <div id="advanced-graph-form-container">
         <form id="advanced-graph-form" action="GET">
             <label><input type="radio" name="advanced-graph-radio" value="0" data-graph-type="none" checked="checked"/>Geen</label>
@@ -143,11 +147,6 @@ regen overdrijving (factor): <input type="text" id="debug-rain-exaggerate-factor
             <label><input type="radio" name="advanced-graph-radio" value="3" data-graph-type="max_uitstroom"/>Maximaal mogelijke uitstroom (cumulatief)</label>
             <label><input type="radio" name="advanced-graph-radio" value="4" data-graph-type="toestroom"/>Toestroom (cumulatief)</label>
         </form>
-    </div>
-    <div id="weerwidget">
-        <!-- begin weer.nl widget code -->
-        <a href="http://www.weer.nl/" style="padding:0;background:none" target="_blank" title="Your weather service"><img src="http://www.weer.nl/meteo/hptool/logo_weer_nl.png" alt="" width="120" height="32" border="0" style="display:block;" /></a><div style="background-color:#ffffff;color:#000000;font-family:Verdana,Arial,Tahoma,Times New Roman;font-weight:normal;font-size:10px;width:120px;text-align:center"><a href="http://www.weer.nl/wereldweer/actueel-en-verwacht-weer/stad/31X3558/maasdijk.html" target="_blank" style="color:#000000;font-family:Verdana,Arial,Tahoma,Times New Roman;font-weight:normal;font-size:10px;padding:0;background:none" title="Detailed weather forecast for Weer Maasdijk">Weer Maasdijk</a></div><iframe width="120" height="151" scrolling="no" frameborder="0" src="http://www.weer.nl/meteo/hptool/index.php?cid=31X3558&cityName=Maasdijk&l=nl&style=14&v=nl&ver=2&c1=000000&c2=ffffff&c3=000000&c4=ffffff&c5=000000&c6=ffffff&c7=ffffff&f1a=1&f1b=1&f2a=1&f2b=1&f3a=1&f3b=1&ct1=1&ct2=2&ct3=6&ct4=10&ct5=12&fcd=0"></iframe><div style="height:14px;width:120px;text-align:center;background-color:#ffffff"><a href="http://www.weer.nl/" target="_blank" style="background:none;padding:0;text-decoration:none;color:#000000;font-family:Verdana,Arial,Tahoma,Times New Roman;font-weight:normal;font-size:10px" title="Latest weather observations and 14 day forecasts for over 2 MM locations worldwide">&copy; MeteoConsult</a></div>
-        <!-- end weer.nl widget code -->
     </div>
 </div>
 <div id="lright">
