@@ -9,6 +9,8 @@
 
 {% block map-javascript %}
 <script type="text/javascript"
+        src="{{ STATIC_URL }}controlnext/jquery.cookie.js"></script>
+<script type="text/javascript"
         src="{{ STATIC_URL }}controlnext/jquery.flot.fillbetween.js"></script>
 <script type="text/javascript"
         src="{{ STATIC_URL }}controlnext/jquery.flot.crosshair.js"></script>
@@ -39,7 +41,7 @@
         <tbody>
             <tr>
                 <td>Lokatie</td>
-                <td>Delfland</td>
+                <td>Lans</td>
             </tr>
             <tr>
                 <td>Oppervlakte</td>
@@ -64,17 +66,27 @@
     </div>
     <div id="desired-fill-slider"></div>
     <div id="desired-fill-container" class="slider-label-container">
-        <div id="desired-fill-label">- <span class="val"></span> %</div>
+        <div id="desired-fill-label">- <span class="val"></span></div>
     </div>
 </div>
-
 <div id="demand-diff-container"
      class="has_popover_east"
-     data-title="Correctie watervraag"
-     data-content="Correctiefactor op de normale watervraag voor deze periode.">
+     data-title="Watervraagcorrectie"
+     data-content="Correctie op de normale watervraag voor deze periode.">
+    <p style="text-align:center;">Stel watervraagcorrectie in:</p>
     <div id="demand-diff-slider"></div>
     <div id="demand-diff-label-container">
         <div id="demand-diff-label"><span class="val"></span> %</div>
+    </div>
+</div>
+<div id="rain-diff-container"
+     class="has_popover_east"
+     data-title="Neerslagcorrectie"
+     data-content="Correctie op de normale hoeveelheid neerslag voor deze periode.">
+    <p style="text-align:center;">Stel neerslagcorrectie in:</p>
+    <div id="rain-diff-slider"></div>
+    <div id="rain-diff-label-container">
+        <div id="rain-diff-label"><span class="val"></span> %</div>
     </div>
 </div>
 
@@ -102,11 +114,11 @@ regen overdrijving (factor): <input type="text" id="debug-rain-exaggerate-factor
 <div id="left">
     <div class="inner">
         <img id="situation-image" src="{{ STATIC_URL }}controlnext/situation.jpg" width="200" height="200" />
-        <div>Watervraag in de komende 24 uur:</div>
+        <div>Watervraag 24 uur:</div>
         <div id="demand-value"></div>
         <div>Gewenste niveau wordt bereikt op:</div>
         <div id="omslagpunt-value"></div>
-        <div>Verwachte overstort in de komende 24 uur:</div>
+        <div>Verwachte overstort 24 uur:</div>
         <div id="overflow-value"></div>
         <div id="overflow-visualization-container" style="display:none;">
             <div id="overflow-visualization"></div>
@@ -114,27 +126,30 @@ regen overdrijving (factor): <input type="text" id="debug-rain-exaggerate-factor
     </div>
 </div>
 <div id="right">
-    <h3 class="graph-header">Voorspelling vulgraad</h3>
+    <h3 class="graph-header">Vullingsgraad</h3>
     <div id="fill-graph-container"></div>
 </div>
 </div>
 
 <div id="lower">
 <div id="lleft">
+    <div id="advanced-graph-form-container">
+        <form id="advanced-graph-form" action="GET">
+            <label><input type="radio" name="advanced-graph-radio" value="0" data-graph-type="none"/>Geen</label>
+            <label><input type="radio" name="advanced-graph-radio" value="1" data-graph-type="demand"/>Watervraag</label>
+            <label><input type="radio" name="advanced-graph-radio" value="2" data-graph-type="uitstroom"/>Uitstroom (cumulatief)</label>
+            <label><input type="radio" name="advanced-graph-radio" value="3" data-graph-type="max_uitstroom"/>Maximaal mogelijke uitstroom (cumulatief)</label>
+            <label><input type="radio" name="advanced-graph-radio" value="4" data-graph-type="toestroom"/>Toestroom (cumulatief)</label>
+        </form>
+    </div>
     <div id="weerwidget">
         <!-- begin weer.nl widget code -->
         <a href="http://www.weer.nl/" style="padding:0;background:none" target="_blank" title="Your weather service"><img src="http://www.weer.nl/meteo/hptool/logo_weer_nl.png" alt="" width="120" height="32" border="0" style="display:block;" /></a><div style="background-color:#ffffff;color:#000000;font-family:Verdana,Arial,Tahoma,Times New Roman;font-weight:normal;font-size:10px;width:120px;text-align:center"><a href="http://www.weer.nl/wereldweer/actueel-en-verwacht-weer/stad/31X3558/maasdijk.html" target="_blank" style="color:#000000;font-family:Verdana,Arial,Tahoma,Times New Roman;font-weight:normal;font-size:10px;padding:0;background:none" title="Detailed weather forecast for Weer Maasdijk">Weer Maasdijk</a></div><iframe width="120" height="151" scrolling="no" frameborder="0" src="http://www.weer.nl/meteo/hptool/index.php?cid=31X3558&cityName=Maasdijk&l=nl&style=14&v=nl&ver=2&c1=000000&c2=ffffff&c3=000000&c4=ffffff&c5=000000&c6=ffffff&c7=ffffff&f1a=1&f1b=1&f2a=1&f2b=1&f3a=1&f3b=1&ct1=1&ct2=2&ct3=6&ct4=10&ct5=12&fcd=0"></iframe><div style="height:14px;width:120px;text-align:center;background-color:#ffffff"><a href="http://www.weer.nl/" target="_blank" style="background:none;padding:0;text-decoration:none;color:#000000;font-family:Verdana,Arial,Tahoma,Times New Roman;font-weight:normal;font-size:10px" title="Latest weather observations and 14 day forecasts for over 2 MM locations worldwide">&copy; MeteoConsult</a></div>
         <!-- end weer.nl widget code -->
     </div>
-    <ul>
-        <li><a href="#" class="advanced-graph" data-graph-type="demand">Watervraag</a></li>
-        <li><a href="#" class="advanced-graph" data-graph-type="uitstroom">Uitstroom (cumulatief)</a></li>
-        <li><a href="#" class="advanced-graph" data-graph-type="max_uitstroom">Maximaal mogelijke uitstroom (cumulatief)</a></li>
-        <li><a href="#" class="advanced-graph" data-graph-type="toestroom">Toestroom (cumulatief)</a></li>
-    </ul>
 </div>
 <div id="lright">
-    <h3 class="graph-header">Vooruitzicht regen</h3>
+    <h3 class="graph-header">Neerslag</h3>
     <div id="rain-graph-container"></div>
     <div id="advanced-graph-container"></div>
 </div>

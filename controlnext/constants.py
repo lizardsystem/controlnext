@@ -24,7 +24,7 @@ frequency = datetime.timedelta(minutes=15)
 min_berging_pct = 20
 max_berging_pct = 100
 max_berging_m3 = 15527 # in m^3
-opp_invloed_regen_m2 = 90000 # in m^2
+opp_invloed_regen_m2 = 95000 # in m^2
 max_uitstroom_per_tijdstap_m3 = 4.5 # in m^3
 bovenkant_bak_cm = 265 # in cm
 hoogte_niveaumeter_cm = 205 # in cm
@@ -39,7 +39,7 @@ def validate_date(date):
     if date.second or date.microsecond or date.minute % 15 != 0:
         raise ValueError('please round dates to full quarter hours')
 
-fill_history = datetime.timedelta(days=3)
+fill_history = datetime.timedelta(days=31)
 fill_predict_future = datetime.timedelta(days=5)
 
 fewsjdbc_cache_seconds = 15 * 60

@@ -109,6 +109,9 @@ class FewsJdbcDataSource(object):
     def _get_timeseries_as_pd_series(self, filter_id, location_id, parameter_id, _from, to, name=None, check_frequency=False):
         row_data = self._get_timeseries(filter_id, location_id, parameter_id, _from, to)
 
+        if len(row_data) == 0:
+            raise Exception('No data available')
+
         # check frequency when asked
         if check_frequency:
             do_check_frequency(row_data)

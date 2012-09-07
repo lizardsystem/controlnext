@@ -27,13 +27,13 @@ def cache_result(seconds=900, ignore_cache=False, instancemethod=False):
     def do_cache_result(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
-                cachekeyargs = args[1:] if instancemethod else args
-                key = str(f.__module__) + str(f.__name__) + str(cachekeyargs) + str(kwargs)
-                key = sha1(key).hexdigest()
-                result = cache.get(key)
-                if ignore_cache or result is None:
-                    result = f(*args, **kwargs)
-                    cache.set(key, result, seconds)
-                return result
+            cachekeyargs = args[1:] if instancemethod else args
+            key = str(f.__module__) + str(f.__name__) + str(cachekeyargs) + str(kwargs)
+            key = sha1(key).hexdigest()
+            result = cache.get(key)
+            if ignore_cache or result is None:
+                result = f(*args, **kwargs)
+                cache.set(key, result, seconds)
+            return result
         return wrapper
     return do_cache_result

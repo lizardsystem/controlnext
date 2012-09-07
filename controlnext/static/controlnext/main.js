@@ -32,26 +32,27 @@ $(document).ready(function () {
     var MS_MONTH = 30 * MS_DAY;
     var MS_YEAR = 365 * MS_DAY;
 
-    var tick_size_map = [
-        [100 * MS_YEAR,  999 * MS_YEAR,   [50, 'year']],
-        [ 10 * MS_YEAR,  100 * MS_YEAR,   [10, 'year']],
-        [  1 * MS_YEAR,   10 * MS_YEAR,   [ 1, 'year']],
-        [  1 * MS_MONTH,   1 * MS_YEAR,   [ 1, 'month']],
-        [  1 * MS_DAY,     1 * MS_MONTH,  [ 1, 'day']],
-        [ 12 * MS_HOUR,    1 * MS_DAY,    [ 2, 'hour']],
-        [  1 * MS_HOUR,   12 * MS_HOUR,   [ 1, 'hour']],
-        [ 15 * MS_MINUTE,  1 * MS_HOUR,   [15, 'minute']],
-        [  1 * MS_MINUTE, 15 * MS_MINUTE, [ 1, 'minute']]
-    ];
+    // var tick_size_map = [
+        // [100 * MS_YEAR,  999 * MS_YEAR,   [50, 'year']],
+        // [ 10 * MS_YEAR,  100 * MS_YEAR,   [10, 'year']],
+        // [  1 * MS_YEAR,   10 * MS_YEAR,   [ 1, 'year']],
+        // [  1 * MS_MONTH,   1 * MS_YEAR,   [ 1, 'month']],
+        // [  1 * MS_DAY,     1 * MS_MONTH,  [ 1, 'day']],
+        // [ 12 * MS_HOUR,    1 * MS_DAY,    [ 2, 'hour']],
+        // [  1 * MS_HOUR,   12 * MS_HOUR,   [ 1, 'hour']],
+        // [ 15 * MS_MINUTE,  1 * MS_HOUR,   [15, 'minute']],
+        // [  1 * MS_MINUTE, 15 * MS_MINUTE, [ 1, 'minute']]
+    // ];
 
     /**
-     * Note: use $.extend() for this.
+     * Default options for all flot graphs.
+     * Use add_default_flot_options to overwrite with custom options.
      */
     var default_flot_options = {
         xaxis: {
             mode: 'time',
             position: 'bottom',
-            zoomRange: [1 * MS_HOUR, 10 * MS_DAY],
+            zoomRange: [1 * MS_HOUR, 40 * MS_DAY],
             timeformat: '%H:%M<br/>%d %b<br/>(%a)',
             monthNames: ['jan', 'feb', 'mar', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'],
             dayNames: ['zo', 'ma', 'di', 'wo', 'do', 'vr', 'za']
@@ -62,19 +63,26 @@ $(document).ready(function () {
         pan: { interactive: true },
         zoom: { interactive: true }
     };
+
+    /**
+     * Combine custom flot options with the default option set.
+     */
     var add_default_flot_options = function (options) {
         // first {} = make a copy instead of destroying original 
         return $.extend(true, {}, default_flot_options, options);
     };
 
     /**
-     * Much faster than native .toFixed(), see http://jsperf.com/tofixed-vs-factor . 
+     * Much faster than native .toFixed(), see http://jsperf.com/tofixed-vs-factor.
      */
     var fastToFixed = function (v, decimals) {
         var factor = Math.pow(10, decimals);
         return Math.round(v * factor) / factor;
     };
 
+    /**
+     * Fixes a weird redraw bug, which only occurs in IE8...
+     */
     var fixIE8DrawBug = function (plot) {
         if (navigator.appName == 'Microsoft Internet Explorer') {
             var ua = navigator.userAgent;
@@ -92,77 +100,106 @@ $(document).ready(function () {
         }
     };
 
-    var set_tick_size = function (plot) {
-        var xaxis = plot.getOptions().xaxes[0];
-        var tick_size = null;
-        var diff = xaxis.max - xaxis.min;
-        var len = tick_size_map.length;
-        for (var i = 0; i < len; i++) {
-            var ts = tick_size_map[i];
-            if (diff > ts[0] && diff <= ts[1]) {
-                tick_size = ts[2];
-                break;
-            }
-        }
-        if (tick_size) {
-            xaxis.tickSize = tick_size;
-        }
-    };
+    // var set_tick_size = function (plot) {
+        // var xaxis = plot.getOptions().xaxes[0];
+        // var tick_size = null;
+        // var diff = xaxis.max - xaxis.min;
+        // var len = tick_size_map.length;
+        // for (var i = 0; i < len; i++) {
+            // var ts = tick_size_map[i];
+            // if (diff > ts[0] && diff <= ts[1]) {
+                // tick_size = ts[2];
+                // break;
+            // }
+        // }
+        // if (tick_size) {
+            // xaxis.tickSize = tick_size;
+        // }
+    // };
 
-    // grab url base
+    // setup an hourly page reload
+    window.setTimeout(function () {
+        window.location.reload(true);
+    }, MS_HOUR);
+
+    // grab url bases from the DOM
     var $urls = $('#data-urls');
     var url_base = $urls.attr('data-url-base');
     var data_url = $urls.attr('data-data-url');
-    var debug = $.getQueryString('debug') !== undefined;
 
-    // set up debug panel
+    // set up a simple debug panel when ?debug=true is passed in the URL
+    var debug = $.getQueryString('debug') !== undefined;
     if (debug) {
         $('#debug-panel').show();
     }
 
-    // set up information popovers
+    // set up information popovers on hover
+    // content and title are read from data attributes in the DOM
     $(".has_popover_east").popover({
-        placement: 'right'
+        placement: 'right',
+        animation: false
     });
 
-    // set up the fill slider (the vertical one)
-    {
-        var $desired_fill_slider = $('#desired-fill-slider').slider({
+    /**
+     * Set up the fill slider (the vertical one).
+     */
+    var setup_fill_slider = function () {
+        // load initial value of this slider from a cookie, if present
+        var initialValue = 50;
+        var cookieValue = $.cookie('desired_fill');
+        if (cookieValue !== null) {
+            initialValue = cookieValue;
+        }
+
+        // construct the jQuery UI slider
+        var $slider = $('#desired-fill-slider').slider({
             orientation: 'vertical',
             range: 'min',
             min: 0,
             max: 100,
-            value: 50
+            value: initialValue
         });
 
         // grab related DOM elements
-        var $desired_fill_label = $('#desired-fill-label');
-        var $desired_fill_val = $('#desired-fill-label .val');
+        var $label = $('#desired-fill-label');
+        var $val = $('#desired-fill-label .val');
         var $bg = $('#desired-fill-slider .ui-widget-header');
-    
-        // change label position, value and slider background color on slider value change
-        var refresh_amount = function (value) {
-            $desired_fill_label.css('bottom', (value - 2) + '%');
-            $desired_fill_val.html(value);
-    
+
+        // updates the label position, value and background color
+        var update_label = function (value) {
+            $label.css('bottom', (value - 2) + '%');
+            $val.html(value + ' % (9.5 m<sup>3</sup>/ha)');
+
             var scaled = value / 100.0;
             var r = 12;
             var g = Math.round(48 + scaled * 48); // g in range [48-96]
             var b = value + 155; // b in range [155-255]
-            $bg.css('background-color', 'rgb(' + r + ', ' + g + ', ' + b + ')');
+            $bg.css('background-color', 'rgb('+r+','+g+','+b+')');
         };
-    
-        $desired_fill_slider.bind('slide', function (event, ui) {
-            refresh_amount(ui.value);
-        });
-    
-        // do an initial refresh of the fill slider
-        refresh_amount($desired_fill_slider.slider('value'));
-    }
 
-    // set up the demand slider (the horizontal one)
-    {
-        var $demand_slider = $('#demand-diff-slider').slider({
+        // smoothly update the label when user is 'sliding'
+        $slider.bind('slide', function (event, ui) {
+            update_label(ui.value);
+        });
+
+        // update the cookie, when slider is released
+        $slider.bind('slidechange', function (event, ui) {
+            $.cookie('desired_fill', ui.value, { expires: 14 });
+        });
+
+        // do an initial update of the label
+        update_label($slider.slider('value'));
+
+        return $slider;
+    };
+    var $fill_slider = setup_fill_slider();
+
+    /**
+     * Set up the demand slider (the horizontal one).
+     */
+    var setup_demand_slider = function () {
+        // construct the jQuery UI slider
+        var $slider = $('#demand-diff-slider').slider({
             min: 50,
             max: 150,
             value: 100
@@ -172,40 +209,85 @@ $(document).ready(function () {
         var $label = $('#demand-diff-label');
         var $val = $('#demand-diff-label .val');
 
-        // change label value on slider value change
-        var refresh_demand_diff = function (value) {
+        // updates the label value
+        var update_label = function (value) {
             $val.html(value);
         };
-    
-        $demand_slider.bind('slide', function (event, ui) {
-            refresh_demand_diff(ui.value);
-        });
-    
-        // do an initial refresh of the demand slider
-        refresh_demand_diff($demand_slider.slider('value'));
-    }
 
-    // set up right flot graph
-    // depends on jquery.flot.axislabels.js
-    // depends on jquery.flot.fillbetween.js
-    // depends on jquery.flot.crosshair.js
-    // depends on jquery.flot.navigate.js
-    // depends on jquery.flot.dashes.js
+        // change label value on slider change
+        $slider.bind('slide', function (event, ui) {
+            update_label(ui.value);
+        });
+
+        // do an initial update of the label
+        update_label($slider.slider('value'));
+
+        return $slider;
+    };
+    var $demand_slider = setup_demand_slider();
+
+    /**
+     * Set up the rain slider (the second horizontal one).
+     */
+    var setup_rain_slider = function () {
+        // construct the jQuery UI slider
+        var $slider = $('#rain-diff-slider').slider({
+            min: 50,
+            max: 150,
+            value: 100
+        });
+
+        // grab related DOM elements
+        var $label = $('#rain-diff-label');
+        var $val = $('#rain-diff-label .val');
+
+        // updates the label value
+        var update_label = function (value) {
+            $val.html(value);
+        };
+
+        // change label value on slider change
+        $slider.bind('slide', function (event, ui) {
+            update_label(ui.value);
+        });
+
+        // do an initial update of the label
+        update_label($slider.slider('value'));
+
+        return $slider;
+    };
+    var $rain_slider = setup_rain_slider();
+
+    /**
+     * Build a spinner (animated gif) element.
+     */
     var build_spinner = function () {
         var $spinner = $('<img width="32" height="32" />').attr('src', url_base + 'ajax-loader.gif');
         return $spinner;
     };
+
+    /**
+     * Pad a value with leading zeros.
+     */
     var pad = function (val, len) {
         val = String(val);
         len = len || 2;
         while (val.length < len) val = "0" + val;
         return val;
     };
+
+    /**
+     * Formatter for Flot graphs which adds a newline between date and time.
+     */
     var time_tick_formatter = function (number, axis) {
         var time = new Date(number);
         // presentation, so don't use UTC, but the localized date instead.
         return time.getDate() + '-' + pad(time.getMonth() + 1, 2) + '<br/>' + time.getHours() + ':' + pad(time.getMinutes(), 2);
     };
+
+    /**
+     * Format a timestamp to a Dutch representation.
+     */
     var full_time_format = function (timestamp) {
         var time = new Date(timestamp);
         // presentation, so don't use UTC, but the localized date instead.
@@ -215,6 +297,10 @@ $(document).ready(function () {
                + ' ' + pad(time.getHours(), 2)
                + ':' + pad(time.getMinutes(), 2);
     };
+
+    /**
+     * Add a mouse tooltip to flot graphs.
+     */
     var add_tooltip = function (plot, values) {
         // build a tooltip element
         var $graph = plot.getPlaceholder();
@@ -232,19 +318,19 @@ $(document).ready(function () {
         plot.hooks.shutdown.push(cleanup);
 
         $graph.bind("plothover", function (event, pos, item) {
-            var i;
-            // find the nearest points, x-wise
-            for (i = 0; i < values.length; ++i)
-                if (values[i][0] > pos.x)
-                    break;
-            var p1 = values[i - 1];
-            var p2 = values[i];
-            // now interpolate
-            var y;
-            if (p1 == null || p2 == null)
-                y = null; //p2[1] || p1[1];
-            else
-                y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
+            // var i;
+            // // find the nearest points, x-wise
+            // for (i = 0; i < values.length; ++i)
+                // if (values[i][0] > pos.x)
+                    // break;
+            // var p1 = values[i - 1];
+            // var p2 = values[i];
+            // // now interpolate
+            // var y;
+            // if (p1 == null || p2 == null)
+                // y = null; //p2[1] || p1[1];
+            // else
+                // y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
             // format the label
             // presentation, so don't use UTC, but the localized date instead.
             var time = new Date(pos.x);
@@ -253,12 +339,13 @@ $(document).ready(function () {
                  + '-' + time.getFullYear()
                  + ' ' + pad(time.getHours(), 2)
                  + ':' + pad(time.getMinutes(), 2);
-            var y_formatted;
-            if (y !== null)
-                y_formatted = plot.getYAxes()[0].tickFormatter(fastToFixed(y, 2));
-            else
-                y_formatted = 'n.v.t.';
-            var label = time + ": " + y_formatted;
+            // var y_formatted;
+            // if (y !== null)
+                // y_formatted = plot.getYAxes()[0].tickFormatter(fastToFixed(y, 2));
+            // else
+                // y_formatted = 'n.v.t.';
+            // var label = time + ": " + y_formatted;
+            var label = time;
             // position it
             $tt.css({
                 top: pos.pageY,
@@ -268,10 +355,14 @@ $(document).ready(function () {
             $tt.html(label);
         });
     };
-    var plot_fill_graph = function (graph_info, $fill_graph_container) {
+
+    /**
+     * Set up the top graph showing the fill percentage.
+     */
+    var plot_fill_graph = function (graph_info, $container) {
         // build a new element
         var $fill_graph = $('<div id="fill-graph"/>');
-        $fill_graph_container.append($fill_graph);
+        $container.append($fill_graph);
         // order of following elements is also drawing order
         var lines = [
             { id: 'min',     data: graph_info.data.min,     yaxis: 1, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'mean' },
@@ -322,8 +413,8 @@ $(document).ready(function () {
                     max: 120,
                     labelWidth: 100,
                     ticks: [
-                        [graph_info.y_marking_min, 'Min. berging'],
-                        [graph_info.y_marking_max, 'Max. berging'],
+                        [graph_info.y_marking_min, 'Min. voorraad'],
+                        [graph_info.y_marking_max, 'Max. voorraad'],
                         [graph_info.desired_fill, 'Gewenste vulgraad']
                     ],
                     panRange: false,
@@ -343,7 +434,7 @@ $(document).ready(function () {
                 left: left,
                 top: top
             }).html(text);
-            $fill_graph_container.append($label);
+            $container.append($label);
         };
         var o;
         o = plot.pointOffset({ x: plot.getOptions().xaxis.max, y: graph_info.y_marking_min});
@@ -356,138 +447,22 @@ $(document).ready(function () {
         return plot;
     };
 
-    var get_query_params = function (graph_type) {
-        // build query string based on user input
-        var query = {
-            graph_type: graph_type,
-            format: 'json',
-            desired_fill: $desired_fill_slider.slider('value'),
-            demand_diff: $demand_slider.slider('value'),
-            date: new Date().getTime() // add dummy date to simulate REST like behaviour, but in reality the server-time is used
-        };
-
-        // append debug parameters
-        if (debug) {
-            $.extend(query, {
-                hours_diff: eval($('#debug-hours-diff').val()),
-                rain_exaggerate_factor: eval($('#debug-rain-exaggerate-factor').val())
-            });
-        }
-
-        return $.param(query);
-    };
-
-    var $fill_graph_container = $('#fill-graph-container');
-    var $rain_graph_container = $('#rain-graph-container');
-    var $overflow_visualization_container = $('#overflow-visualization-container');
-    var $overflow_visualization = $('#overflow-visualization');
-    var refresh_prediction_data = function () {
-        // clear the graph container
-        var $spinner = build_spinner();
-        $fill_graph_container.empty().append($spinner);
-        var $spinner2 = build_spinner();
-        $rain_graph_container.empty().append($spinner2);
-
-        // hide the 'bakjes' visualization
-        $overflow_visualization_container.hide();
-
-        // generate query
-        var query_params = get_query_params('prediction');
-
-        // submit requests to the server
-        $.ajax({
-            url: data_url + '?' + query_params,
-            success: function (response) {
-                // clear the graph container (remove spinner)
-                $fill_graph_container.empty();
-
-                // plot the graph
-                plot_fill_graph(response.graph_info, $fill_graph_container);
-
-                // show the 'bakjes' visualization
-                // draw_overflow_visualization(response.overflow);
-
-                // set current fill label
-                var current_fill = response.current_fill.toFixed();
-                $('#current-fill-label').html(current_fill + ' % -');
-                $('#current-fill-label').css({bottom: current_fill + '%'});
-
-                // show the demand
-                $('#demand-value').html(Math.round(response.demand_24h) + ' m<sup>3</sup>');
-
-                // show the "omslagpunt"
-                var omslagpunt = response.graph_info.x_marking_omslagpunt;
-                if (omslagpunt) {
-                    $('#omslagpunt-value').html(full_time_format(omslagpunt));
-                }
-                else {
-                    $('#omslagpunt-value').html('N.v.t.');
-                }
-
-                $('#overflow-value').html(Math.round(response.overflow_24h) + ' m<sup>3</sup>');
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                var $error = $('<p>Fout bij het laden van de grafiekdata: ' + errorThrown + '</p>');
-                $fill_graph_container.empty().append($error);
-            }
-        });
-        var query_params2 = get_query_params('rain');
-        $.ajax({
-            url: data_url + '?' + query_params2,
-            success: function (response) {
-                // clear the graph container (remove spinner)
-                $rain_graph_container.empty();
-
-                // plot the graph
-                plot_rain_graph(response.rain_graph_info, $rain_graph_container);
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                var $error = $('<p>Fout bij het laden van de grafiekdata: ' + errorThrown + '</p>');
-                $rain_graph_container.empty().append($error);
-            }
-        });
-    };
-
-    var draw_overflow_visualization = function (amount) {
-        $overflow_visualization.empty();
-        if (amount === 0) {
-            $('<p class="no-overflow">Geen</p>').appendTo($overflow_visualization);
-        }
-        else {
-            for (var i = 0; i < amount; i++) {
-                var $image = $('<img width="64" height="64" />').attr('src', url_base + 'bakje.jpg');
-                $overflow_visualization.append($image);
-            }
-        }
-        // show self
-        $overflow_visualization_container.show();
-    };
-
-    // var refresh_tick_size = function (plot) {
-        // var width = plot.width();
-        // var labelWidth = 40;
-        // var max_ticks = width / labelWidth;
-// 
-        // var xaxis = plot.getOptions().xaxes[0];
-// 
-        // var xaxis = plot.getAxes().xaxis;
-        // var diff_quarter = (xaxis.max - xaxis.min) / (15 * 60 * 1000);
-        // console.log(diff_hour + ' ' + max_ticks);
-    // };
-
-    var plot_rain_graph = function (graph_info, $rain_graph_container) {
+    /**
+     * Set up the bottom graph showing the rain predictions.
+     */
+    var plot_rain_graph = function (graph_info, $container) {
         // build a new element
         var $rain_graph = $('<div id="rain-graph"/>');
-        $rain_graph_container.append($rain_graph);
+        $container.append($rain_graph);
 
         // order of following elements is also drawing order
         var lines = [
             { id: 'min',  data: graph_info.data.min,  lines: { show: true, lineWidth: 1, fill: 0.4 },
-              color: "#7FC9FF", label: 'min', fillBetween: 'mean' },
+              color: "#7FC9FF", fillBetween: 'mean' },
             { id: 'mean', data: graph_info.data.mean, lines: { show: true, lineWidth: 2 },
               color: "#222222", label: 'regen in mm/h' },
             { id: 'max',  data: graph_info.data.max,  lines: { show: true, lineWidth: 1, fill: 0.4 },
-              color: "#FF696F", label: 'max', fillBetween: 'mean' }
+              color: "#7FC9FF", fillBetween: 'mean' }
         ];
         var markings = [
             { color: '#000', lineWidth: 1, xaxis: { from: graph_info.x0, to: graph_info.x0 } }
@@ -505,23 +480,9 @@ $(document).ready(function () {
                     min: xmin,
                     max: xmax
                 }
-                // {
-                    // min: xmin,
-                    // max: xmax,
-                    // //mode: 'time',
-                    // ticks: [[graph_info.x0, 'asd']],
-                    // //tickSize: [2, 'hour'],
-                    // labelHeight: 10,
-                    // position: 'bottom',
-                    // //panRange: false,
-                    // zoomRange: false
-                // }
-
             ],
             yaxes: [
                 {
-                    //min: -0.2,
-                    //max: 4,
                     tickSize: 0.5,
                     tickFormatter: function (v) { return v.toFixed(1) + " mm"; },
                     labelWidth: 30,
@@ -537,38 +498,17 @@ $(document).ready(function () {
             ],
             grid: { markings: markings }
         };
-        //set_tick_size(initial_options, xmin, xmax);
         options = add_default_flot_options(options);
         var plot = $.plot($rain_graph, lines, options);
 
         add_tooltip(plot, graph_info.data.mean);
-        $rain_graph.bind('plotzoom', function (event, plot) {
-            // get a 'bound' options dataset
-            // var options = plot.getOptions();
-            // set_tick_size(options, options.xaxis.min, options.xaxis.max);
-            // plot.setupGrid();
-            // plot.draw();
-            //set_tick_size(plot);
-            //refresh_tick_size(plot);
-        });
         fixIE8DrawBug(plot);
         return plot;
     };
 
-    var get_advanced_graph = function (graph_type) {
-        // generate query
-        var query_params = get_query_params(graph_type);
-        var $container = $('#advanced-graph-container');
-        $.ajax({
-            url: data_url + '?' + query_params,
-            success: function (response) {
-                $container.empty();
-                $container.show();
-                plot_advanced_graph(response.graph_info, $container);
-            }
-        });
-    };
-
+    /**
+     * Set up the optional bottom graph showing some advanced calculation data.
+     */
     var plot_advanced_graph = function (graph_info, $container) {
         // build a new element
         var $graph = $('<div id="advanced-graph"/>');
@@ -585,18 +525,10 @@ $(document).ready(function () {
             xaxis: {
                 min: xmin,
                 max: xmax
-                // mode: 'time',
-                // tickSize: [2, 'hour'],
-                // tickFormatter: time_tick_formatter,
-                // zoomRange: [4 * MS_HOUR, 24 * MS_HOUR] // 4 hours - 24 hours
             },
             yaxes: [
                 {
-                    //min: -1,
-                    //max: 4,
-                    //tickSize: 1,
                     tickFormatter: function (v) { return fastToFixed(v, 2) + " " + graph_info.unit; },
-                    //panRange: [-1, null], // no upper limit
                     panRange: false,
                     zoomRange: false
                 },
@@ -615,22 +547,169 @@ $(document).ready(function () {
         return plot;
     };
 
-    // set up start button
-    {
-        $('#start-btn').click(function (event) {
-            refresh_prediction_data();
-        });
-    }
+    /**
+     * Parse values from the UI's input controls and return a query string for them.
+     */
+    var get_query_params = function (graph_type) {
+        // build query string based on user input
+        var query = {
+            graph_type: graph_type,
+            format: 'json',
+            desired_fill: $('#desired-fill-slider').slider('value'),
+            demand_diff: $('#demand-diff-slider').slider('value'),
+            date: new Date().getTime() // add dummy date to simulate REST like behaviour, but in reality the server-time is used
+        };
 
-    // set up advanced graph buttons
-    {
-        $('.advanced-graph').click(function (event) {
-            var graph_type = $(this).attr('data-graph-type');
-            get_advanced_graph(graph_type);
-            return false;
+        // append debug parameters
+        if (debug) {
+            $.extend(query, {
+                hours_diff: eval($('#debug-hours-diff').val()),
+                rain_exaggerate_factor: eval($('#debug-rain-exaggerate-factor').val())
+            });
+        }
+
+        return $.param(query);
+    };
+
+    var $overflow_visualization_container = $('#overflow-visualization-container');
+    var $overflow_visualization = $('#overflow-visualization');
+
+    var load_prediction_data = function () {
+        var $fill_graph_container = $('#fill-graph-container');
+        var $spinner = build_spinner();
+        $fill_graph_container.empty().append($spinner);
+
+        // hide the 'bakjes' visualization
+        //$overflow_visualization_container.hide();
+
+        // submit requests to the server
+        var query_params = get_query_params('prediction');
+        $.ajax({
+            url: data_url + '?' + query_params,
+            success: function (response) {
+                // clear the graph container (remove spinner)
+                $fill_graph_container.empty();
+
+                // plot the graph
+                plot_fill_graph(response.graph_info, $fill_graph_container);
+
+                // show the 'bakjes' visualization
+                // draw_overflow_visualization(response.overflow);
+
+                // set current fill slider label position and text
+                var current_fill = response.current_fill.toFixed();
+                $('#current-fill-label').html(current_fill + ' % -');
+                $('#current-fill-label').css({bottom: (current_fill - 2) + '%'});
+
+                // set the demand text
+                $('#demand-value').html(Math.round(response.demand_24h) + ' m<sup>3</sup>');
+
+                // set the "omslagpunt" text
+                var omslagpunt = response.graph_info.x_marking_omslagpunt;
+                if (omslagpunt) {
+                    $('#omslagpunt-value').html(full_time_format(omslagpunt));
+                }
+                else {
+                    $('#omslagpunt-value').html('N.v.t.');
+                }
+
+                $('#overflow-value').html(Math.round(response.overflow_24h) + ' m<sup>3</sup>');
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                var $error = $('<p>Fout bij het laden van de grafiekdata: ' + errorThrown + '</p>');
+                $fill_graph_container.empty().append($error);
+            }
         });
-    }
+    };
+
+    var load_rain_data = function () {
+        var $rain_graph_container = $('#rain-graph-container');
+        var $spinner = build_spinner();
+        $rain_graph_container.empty().append($spinner);
+
+        var query_params = get_query_params('rain');
+        $.ajax({
+            url: data_url + '?' + query_params,
+            success: function (response) {
+                // clear the graph container (remove spinner)
+                $rain_graph_container.empty();
+
+                // plot the graph
+                plot_rain_graph(response.rain_graph_info, $rain_graph_container);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                var $error = $('<p>Fout bij het laden van de grafiekdata: ' + errorThrown + '</p>');
+                $rain_graph_container.empty().append($error);
+            }
+        });
+    };
+
+    var load_advanced_data = function (graph_type) {
+        // generate query
+        var query_params = get_query_params(graph_type);
+        var $container = $('#advanced-graph-container');
+        $.ajax({
+            url: data_url + '?' + query_params,
+            success: function (response) {
+                // clean and show the container
+                $container.empty();
+                $container.show();
+                plot_advanced_graph(response.graph_info, $container);
+            }
+        });
+    };
+
+    var update_advanced_graph = function () {
+        var graph_type = $('#advanced-graph-form input[name="advanced-graph-radio"]:checked').attr('data-graph-type');
+        var $container = $('#advanced-graph-container');
+        if (graph_type === 'none') {
+            $container.hide();
+            $container.empty();
+        }
+        else {
+            var $spinner = build_spinner();
+            $container.empty().append($spinner);
+
+            load_advanced_data(graph_type);
+        }
+    };
+
+    var refresh_graphs = function () {
+        load_prediction_data();
+        load_rain_data();
+        update_advanced_graph();
+    };
+
+    // var draw_overflow_visualization = function (amount) {
+        // $overflow_visualization.empty();
+        // if (amount === 0) {
+            // $('<p class="no-overflow">Geen</p>').appendTo($overflow_visualization);
+        // }
+        // else {
+            // for (var i = 0; i < amount; i++) {
+                // var $image = $('<img width="64" height="64" />').attr('src', url_base + 'bakje.jpg');
+                // $overflow_visualization.append($image);
+            // }
+        // }
+        // // show self
+        // $overflow_visualization_container.show();
+    // };
+
+    /**
+     * Set up advanced graph form.
+     */
+    var setup_advanced_graph_form = function () {
+        // disable submitting the form
+        $('#advanced-graph-form').submit(function () { return false; });
+        $('#advanced-graph-form input[name="advanced-graph-radio"]').change(update_advanced_graph);
+    };
+    setup_advanced_graph_form();
+
+    // set up start button
+    $('#start-btn').click(function (event) {
+        refresh_graphs();
+    });
 
     // initial data on page load
-    refresh_prediction_data();
+    refresh_graphs();
 });

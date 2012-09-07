@@ -7,6 +7,7 @@ import datetime
 
 from django.conf import settings
 
+from controlnext.utils import cache_result
 from controlnext import constants
 
 import pytz
@@ -36,6 +37,7 @@ class DemandTable(object):
     def __init__(self):
         self.data = self._read_demand_csv()
 
+    @cache_result(3600, ignore_cache=False, instancemethod=True)
     def _read_demand_csv(self):
         '''
         Reads the demand csv file and return its contents in a dict
