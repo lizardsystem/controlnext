@@ -218,14 +218,21 @@ input[type="image"], input[type="checkbox"], input[type="radio"] {
 
 #upper {
     position:relative;
-    width:100%;
+    width:97%;
     height:380px;
 }
 
 #lower {
     border-top:1px solid #C0C0BC;
     position:relative;
-    width:100%;
+    width:97%;
+    height:380px;
+}
+
+#lowest {
+    border-top:1px solid #C0C0BC;
+    position:relative;
+    width:97%;
     height:380px;
 }
 
@@ -249,6 +256,12 @@ input[type="image"], input[type="checkbox"], input[type="radio"] {
     width:280px;
 }
 
+#lowestleft {
+    position:absolute;
+    height:100%;
+    width:280px;
+}
+
 #weerwidget {
     margin-left:74px;
     margin-top:20px;
@@ -256,10 +269,16 @@ input[type="image"], input[type="checkbox"], input[type="radio"] {
 
 #advanced-graph-form-container {
     margin-left:10px;
-    margin-top:138px;
 }
 
 #lright {
+    position:absolute;
+    left:280px;
+    right:0;
+    height:100%;
+}
+
+#lowestright {
     position:absolute;
     left:280px;
     right:0;
