@@ -317,6 +317,7 @@
 
     {# Minimized jquery and bootstrap scripts. Minimizing with #}
     {# django-compressor failed. #}
+    <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="{{ STATIC_URL }}jquery-flot/excanvas.min.js"></script><![endif]-->
     <script type="text/javascript"
             src="{{ STATIC_URL }}jquery/jquery.min.js"></script>
     <script type="text/javascript"

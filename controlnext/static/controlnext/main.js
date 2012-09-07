@@ -32,6 +32,21 @@ $(document).ready(function () {
     var MS_MONTH = 30 * MS_DAY;
     var MS_YEAR = 365 * MS_DAY;
 
+    var isIE = false;
+    var ieVersion = 0;
+    var determine_ie_version = function () {
+        if (navigator.appName == 'Microsoft Internet Explorer') {
+            isIE = true;
+            var ua = navigator.userAgent;
+            var re = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+            if (re.exec(ua) != null) {
+                var rv = parseFloat(RegExp.$1);
+                ieVersion = rv;
+            }
+        }
+    };
+    determine_ie_version();
+
     // var tick_size_map = [
         // [100 * MS_YEAR,  999 * MS_YEAR,   [50, 'year']],
         // [ 10 * MS_YEAR,  100 * MS_YEAR,   [10, 'year']],
@@ -64,6 +79,11 @@ $(document).ready(function () {
         zoom: { interactive: true }
     };
 
+    // fix IE messing up crosshair
+    if (isIE && ieVersion < 9) {
+        delete default_flot_options.crosshair;
+    }
+
     /**
      * Combine custom flot options with the default option set.
      */
@@ -84,19 +104,12 @@ $(document).ready(function () {
      * Fixes a weird redraw bug, which only occurs in IE8...
      */
     var fixIE8DrawBug = function (plot) {
-        if (navigator.appName == 'Microsoft Internet Explorer') {
-            var ua = navigator.userAgent;
-            var re = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
-            if (re.exec(ua) != null) {
-                var rv = parseFloat(RegExp.$1);
-                if (rv == 8) {
-                    setTimeout(function () {
-                        plot.resize();
-                        plot.setupGrid();
-                        plot.draw();
-                    }, 100);
-                }
-            }
+        if (isIE && ieVersion == 8) {
+            setTimeout(function () {
+                plot.resize();
+                plot.setupGrid();
+                plot.draw();
+            }, 100);
         }
     };
 
@@ -120,6 +133,11 @@ $(document).ready(function () {
         });
     };
     var bindPanZoomEvents = function ($graph) {
+        // fix IE performance
+        if (isIE && ieVersion < 9) {
+            return;
+        }
+
         $graph.bind('plotzoom', function (event, plot) {
             panAndZoomOtherGraphs(plot);
         });
