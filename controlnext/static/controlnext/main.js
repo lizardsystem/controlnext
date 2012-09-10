@@ -426,7 +426,7 @@ $(document).ready(function () {
             { color: '#f6f6f6', yaxis: { from: graph_info.y_marking_min, to: 0 } },
             { color: '#f6f6f6', yaxis: { from: 120, to: graph_info.y_marking_max } },
             { color: '#12d',    yaxis: { from: graph_info.y_marking_min, to: graph_info.y_marking_min } },
-            { color: '#e22',    yaxis: { from: graph_info.y_marking_max, to: graph_info.y_marking_max } },
+            { color: '#12d',    yaxis: { from: graph_info.y_marking_max, to: graph_info.y_marking_max } },
             { color: '#2a2',    yaxis: { from: graph_info.desired_fill, to: graph_info.desired_fill } },
             { color: '#000',    xaxis: { from: graph_info.x0, to: graph_info.x0 }, lineWidth: 1 }
         ];
