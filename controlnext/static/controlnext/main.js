@@ -418,7 +418,7 @@ $(document).ready(function () {
         var lines = [
             { id: 'min',     data: graph_info.data.min,     yaxis: 1, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'mean' },
             { id: 'mean',    data: graph_info.data.mean,    yaxis: 1, lines: { show: true, lineWidth: 7 }, color: "#0026FF", label: 'voorspelling vulgraad' },
-            { id: 'max',     data: graph_info.data.max,     yaxis: 1, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#EFC9FF", fillBetween: 'mean' },
+            { id: 'max',     data: graph_info.data.max,     yaxis: 1, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'mean' },
             { id: 'history', data: graph_info.data.history, yaxis: 1, lines: { show: true, lineWidth: 7 }, color: "yellow", label: 'meting vulgraad' },
             { id: 'dummy1',  data: [0, 0],                  yaxis: 2 }
         ];
@@ -426,7 +426,7 @@ $(document).ready(function () {
             { color: '#f6f6f6', yaxis: { from: graph_info.y_marking_min, to: 0 } },
             { color: '#f6f6f6', yaxis: { from: 120, to: graph_info.y_marking_max } },
             { color: '#12d',    yaxis: { from: graph_info.y_marking_min, to: graph_info.y_marking_min } },
-            { color: '#12d',    yaxis: { from: graph_info.y_marking_max, to: graph_info.y_marking_max } },
+            { color: '#e22',    yaxis: { from: graph_info.y_marking_max, to: graph_info.y_marking_max } },
             { color: '#2a2',    yaxis: { from: graph_info.desired_fill, to: graph_info.desired_fill } },
             { color: '#000',    xaxis: { from: graph_info.x0, to: graph_info.x0 }, lineWidth: 1 }
         ];
