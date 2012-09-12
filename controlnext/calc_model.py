@@ -29,7 +29,7 @@ def cross(series, cross=0, direction='cross'):
     Direction can be 'rising' (for rising edge), 'falling' (for only falling
     edge), or 'cross' for both edges.
     """
-    # Find if values are above or bellow yvalue crossing:
+    # Find if values are above or below yvalue crossing:
     above = series.values > cross
     below = np.logical_not(above)
     left_shifted_above = above[1:]
@@ -70,55 +70,43 @@ class CalculationModel(object):
         toestroom_m3 = rain_mm * (opp_invloed_regen_m2 / 1000)
         vaste_verandering = toestroom_m3 - demand_m3 # + current_fill_m3
         vaste_verandering_summed = vaste_verandering.cumsum()
-        result_met_max_uitstroom = vaste_verandering_summed + current_fill_m3 - max_uitstroom_m3
 
-        # zoek eerste waarde waar de gewenste vulling bereikt wordt
-        omslagpunt = None
-        cross_desired = cross(result_met_max_uitstroom, desired_fill_m3)
-        if len(cross_desired) > 0:
-            # gewenste vulling wordt bereikt
-            omslagpunt = cross_desired[0]
-            uitstroom_m3 = max_uitstroom_m3.copy()
-            # uitstroom 'kraan' kan dicht als het omslagpunt bereikt is
-            uitstroom_m3[omslagpunt:] = uitstroom_m3[omslagpunt]
-        else:
-            uitstroom_m3 = max_uitstroom_m3
-        result = vaste_verandering_summed + current_fill_m3 - uitstroom_m3
+        variabele_verandering = np.zeros(len(vaste_verandering))
+        totale_verandering = vaste_verandering + variabele_verandering
+        result = totale_verandering.cumsum() + current_fill_m3
+        for i in xrange(len(vaste_verandering) - 1):
+            if result[i + 1] > desired_fill_m3:
+                # volgende tijdstap wordt gewenste vulgraad overschreden, dus
+                # zet de uitstroom aan
+                variabele_verandering[i] = -max_uitstroom_per_tijdstap_m3
+                # bereken de nieuwe situatie
+                totale_verandering = vaste_verandering + variabele_verandering
+                result = totale_verandering.cumsum() + current_fill_m3
 
-#        #TEMP:
-#        #import pdb; pdb.set_trace()
-#        #result -= max_uitstroom_m3
-#        #import pdb; pdb.set_trace()
-#        result = vaste_verandering_summed + current_fill_m3
-#        #ts = pd.Series(values, dates, name='uitstroom')
-#        while True:
-#            cross_desired = cross(result, desired_fill_m3)
-#            if len(cross_desired) > 0:
-#            else:
-#                break
-#
-#        uitstroom_m3 = max_uitstroom_m3 # TODO
-#        omslagpunt = result.index[-1] # TODO
+        uitstroom_m3 = pd.Series(
+            variabele_verandering,
+            index=result.index,
+            name='uitstroom'
+        )
+        omslagpunten = cross(result, desired_fill_m3)
+        omslagpunt = omslagpunten[0] if len(omslagpunten) > 0 else None
 
         # sommeer waarden boven de max berging
         result_24h = result[:_from + datetime.timedelta(hours=24)]
         overstort_24h = result_24h[result_24h.values > max_berging_m3]
         if len(overstort_24h) > 0:
-            overstort_24h -= max_berging_m3
-            overstort_24h = overstort_24h.sum()
+            overstort_24h = result[overstort_24h.index].max() - max_berging_m3
         else:
             # geen overstort
             overstort_24h = 0
         # nu ook voor 5 dagen...
         overstort_5d = result[result.values > max_berging_m3]
         if len(overstort_5d) > 0:
-            overstort_5d -= max_berging_m3
-            overstort_5d = overstort_5d.sum()
+            overstort_5d = result[overstort_5d.index].max() - max_berging_m3
         else:
             # geen overstort
             overstort_5d = 0
 
-        #result += current_fill_m3
         # terug naar percentages
         result = fill_m3_to_pct(result)
 

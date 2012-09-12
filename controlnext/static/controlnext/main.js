@@ -375,19 +375,19 @@ $(document).ready(function () {
         plot.hooks.shutdown.push(cleanup);
 
         $graph.bind("plothover", function (event, pos, item) {
-            // var i;
-            // // find the nearest points, x-wise
-            // for (i = 0; i < values.length; ++i)
-                // if (values[i][0] > pos.x)
-                    // break;
-            // var p1 = values[i - 1];
-            // var p2 = values[i];
-            // // now interpolate
-            // var y;
-            // if (p1 == null || p2 == null)
-                // y = null; //p2[1] || p1[1];
-            // else
-                // y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
+            var i;
+            // find the nearest points, x-wise
+            for (i = 0; i < values.length; ++i)
+                if (values[i][0] > pos.x)
+                    break;
+            var p1 = values[i - 1];
+            var p2 = values[i];
+            // now interpolate
+            var y;
+            if (p1 == null || p2 == null)
+                y = null; //p2[1] || p1[1];
+            else
+                y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
             // format the label
             // presentation, so don't use UTC, but the localized date instead.
             var time = new Date(pos.x);
@@ -396,13 +396,14 @@ $(document).ready(function () {
                  + '-' + time.getFullYear()
                  + ' ' + pad(time.getHours(), 2)
                  + ':' + pad(time.getMinutes(), 2);
-            // var y_formatted;
-            // if (y !== null)
+            var y_formatted = null;
+            if (y !== null)
                 // y_formatted = plot.getYAxes()[0].tickFormatter(fastToFixed(y, 2));
-            // else
-                // y_formatted = 'n.v.t.';
-            // var label = time + ": " + y_formatted;
-            var label = time;
+                y_formatted = fastToFixed(y, 2);
+            else
+                y_formatted = 'n.v.t.';
+            var label = time + ": " + y_formatted;
+            // var label = time;
             // position it
             $tt.css({
                 top: pos.pageY + 20,
@@ -579,7 +580,7 @@ $(document).ready(function () {
         // order of following elements is also drawing order
         var lines = [
             { id: 'value', data: graph_info.data, lines: { show: true, lineWidth: 1 },
-              color: "#222222", label: 'waarde in ' + graph_info.unit }
+              color: "#222222", label: 'waarde' }
         ];
         var markings = [
             { color: '#000',    xaxis: { from: graph_info.x0, to: graph_info.x0 }, lineWidth: 1 }

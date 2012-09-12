@@ -1,4 +1,4 @@
-{% extends "lizard_ui/realbase.html" %}
+{% extends "controlnext/realbase.html" %}
 
 {% block css %}
 {{ block.super }}
@@ -171,12 +171,12 @@ t0 verschil (uren): <input type="text" id="debug-hours-diff" name="debug-hours-d
                    />Geen</label>
             <label><input type="radio" name="advanced-graph-radio" value="1"
                           data-graph-type="demand"
-                          data-graph-title="Watervraag (m3)"
+                          data-graph-title="Watervraag (m3 / 15m)"
                    />Watervraag</label>
             <label><input type="radio" name="advanced-graph-radio" value="2"
                           data-graph-type="uitstroom"
-                          data-graph-title="Uitstroom (cumulatief, m3)"
-                   />Uitstroom (cumulatief)</label>
+                          data-graph-title="Uitstroom (m3 / 15m)"
+                   />Uitstroom</label>
             <label><input type="radio" name="advanced-graph-radio" value="3"
                           data-graph-type="max_uitstroom"
                           data-graph-title="Maximale uitstroom (m3, cumulatief)"
