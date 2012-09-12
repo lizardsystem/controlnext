@@ -292,3 +292,18 @@ label input[type="radio"] {
     color:#104661;
     margin-left:40px;
 }
+
+
+/* fix lizard overflow */
+#page, body, #content, #sidebar, .sidebar-inner {
+    overflow:visible !important;
+}
+
+html {
+    overflow:auto !important;
+}
+
+#content, #sidebar {
+    bottom:auto !important;
+    height:1142px;
+}

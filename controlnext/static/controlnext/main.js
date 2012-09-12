@@ -355,14 +355,21 @@ $(document).ready(function () {
                + ':' + pad(time.getMinutes(), 2);
     };
 
+    var shutdownOldPlot = function ($el) {
+        $el.children().each(function () {
+            var plot = $(this).data('plot');
+            if (plot)
+                plot.shutdown();
+        });
+    };
     /**
      * Add a mouse tooltip to flot graphs.
      */
     var add_tooltip = function (plot, values) {
         // build a tooltip element
         var $graph = plot.getPlaceholder();
-        var $tt = $('<div class="flot-tooltip tickLabels" style="display:none; clear:none; position:fixed; left:0; top:0; z-index:1000;"/>');
-        $graph.parent().append($tt);
+        var $tt = $('<div class="flot-tooltip tickLabels" style="display:none; clear:none; position:absolute; left:0; top:0; z-index:1000;"/>');
+        $('body').append($tt);
         $graph.hover(
             function () { $tt.show(); },
             function () { $tt.hide(); }
@@ -637,9 +644,10 @@ $(document).ready(function () {
     var $overflow_visualization = $('#overflow-visualization');
 
     var load_prediction_data = function () {
-        var $fill_graph_container = $('#fill-graph-container');
+        var $container = $('#fill-graph-container');
+        shutdownOldPlot($container);
         var $spinner = build_spinner();
-        $fill_graph_container.empty().append($spinner);
+        $container.empty().append($spinner);
 
         // hide the 'bakjes' visualization
         //$overflow_visualization_container.hide();
@@ -650,10 +658,10 @@ $(document).ready(function () {
             url: data_url + '?' + query_params,
             success: function (response) {
                 // clear the graph container (remove spinner)
-                $fill_graph_container.empty();
+                $container.empty();
 
                 // plot the graph
-                plot_fill_graph(response.graph_info, $fill_graph_container);
+                plot_fill_graph(response.graph_info, $container);
 
                 // show the 'bakjes' visualization
                 // draw_overflow_visualization(response.overflow);
@@ -681,37 +689,41 @@ $(document).ready(function () {
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 var $error = $('<p>Fout bij het laden van de grafiekdata: ' + errorThrown + '</p>');
-                $fill_graph_container.empty().append($error);
+                $container.empty().append($error);
             }
         });
     };
 
     var load_rain_data = function () {
-        var $rain_graph_container = $('#rain-graph-container');
+        var $container = $('#rain-graph-container');
+        shutdownOldPlot($container);
         var $spinner = build_spinner();
-        $rain_graph_container.empty().append($spinner);
+        $container.empty().append($spinner);
 
         var query_params = get_query_params('rain');
         $.ajax({
             url: data_url + '?' + query_params,
             success: function (response) {
                 // clear the graph container (remove spinner)
-                $rain_graph_container.empty();
+                $container.empty();
 
                 // plot the graph
-                plot_rain_graph(response.rain_graph_info, $rain_graph_container);
+                plot_rain_graph(response.rain_graph_info, $container);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 var $error = $('<p>Fout bij het laden van de grafiekdata: ' + errorThrown + '</p>');
-                $rain_graph_container.empty().append($error);
+                $container.empty().append($error);
             }
         });
     };
 
     var load_advanced_data = function (graph_type) {
-        // generate query
-        var query_params = get_query_params(graph_type);
         var $container = $('#advanced-graph-container');
+        shutdownOldPlot($container);
+        var $spinner = build_spinner();
+        $container.empty().append($spinner);
+
+        var query_params = get_query_params(graph_type);
         $.ajax({
             url: data_url + '?' + query_params,
             success: function (response) {
@@ -737,12 +749,7 @@ $(document).ready(function () {
         }
         else {
             $('h3', $panel).html(title);
-
-            var $spinner = build_spinner();
-            $graph_container.empty().append($spinner);
-
             $panel.show();
-
             load_advanced_data(graph_type);
         }
     };
