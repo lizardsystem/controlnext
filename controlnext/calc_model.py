@@ -68,8 +68,9 @@ class CalculationModel(object):
 
     def predict_scenario(self, _from, current_fill_m3, desired_fill_m3, demand_m3, rain_mm, max_uitstroom_m3):
         toestroom_m3 = rain_mm * (opp_invloed_regen_m2 / 1000)
-        vaste_verandering = (toestroom_m3 - demand_m3).cumsum() # + current_fill_m3
-        result_met_max_uitstroom = vaste_verandering + current_fill_m3 - max_uitstroom_m3
+        vaste_verandering = toestroom_m3 - demand_m3 # + current_fill_m3
+        vaste_verandering_summed = vaste_verandering.cumsum()
+        result_met_max_uitstroom = vaste_verandering_summed + current_fill_m3 - max_uitstroom_m3
 
         # zoek eerste waarde waar de gewenste vulling bereikt wordt
         omslagpunt = None
@@ -82,18 +83,40 @@ class CalculationModel(object):
             uitstroom_m3[omslagpunt:] = uitstroom_m3[omslagpunt]
         else:
             uitstroom_m3 = max_uitstroom_m3
-        result = vaste_verandering + current_fill_m3 - uitstroom_m3
+        result = vaste_verandering_summed + current_fill_m3 - uitstroom_m3
 
-        # sommer waarden boven de max berging
-        #import pdb; pdb.set_trace()
+#        #TEMP:
+#        #import pdb; pdb.set_trace()
+#        #result -= max_uitstroom_m3
+#        #import pdb; pdb.set_trace()
+#        result = vaste_verandering_summed + current_fill_m3
+#        #ts = pd.Series(values, dates, name='uitstroom')
+#        while True:
+#            cross_desired = cross(result, desired_fill_m3)
+#            if len(cross_desired) > 0:
+#            else:
+#                break
+#
+#        uitstroom_m3 = max_uitstroom_m3 # TODO
+#        omslagpunt = result.index[-1] # TODO
+
+        # sommeer waarden boven de max berging
         result_24h = result[:_from + datetime.timedelta(hours=24)]
-        overstort = result_24h[result_24h.values > max_berging_m3]
-        if len(overstort) > 0:
-            overstort -= max_berging_m3
-            overstort = overstort.sum()
+        overstort_24h = result_24h[result_24h.values > max_berging_m3]
+        if len(overstort_24h) > 0:
+            overstort_24h -= max_berging_m3
+            overstort_24h = overstort_24h.sum()
         else:
             # geen overstort
-            overstort = 0
+            overstort_24h = 0
+        # nu ook voor 5 dagen...
+        overstort_5d = result[result.values > max_berging_m3]
+        if len(overstort_5d) > 0:
+            overstort_5d -= max_berging_m3
+            overstort_5d = overstort_5d.sum()
+        else:
+            # geen overstort
+            overstort_5d = 0
 
         #result += current_fill_m3
         # terug naar percentages
@@ -102,7 +125,8 @@ class CalculationModel(object):
         return {
             'prediction': result,
             'omslagpunt': omslagpunt,
-            'overstort': overstort,
+            'overstort_24h': overstort_24h,
+            'overstort_5d': overstort_5d,
             'intermediate': {
                 'uitstroom': uitstroom_m3,
                 'toestroom': toestroom_m3.cumsum(),
@@ -142,8 +166,9 @@ class CalculationModel(object):
             rain_mean *= rain_exaggerate
             rain_max *= rain_exaggerate
 
-        # retrieve fill
-        current_fill = self.fews_data.get_current_fill(_from)
+        # retrieve fill: just take any data we have,
+        # so we can compare measurements with predictions
+        current_fill = self.fews_data.get_current_fill(to)
         current_fill_m3 = current_fill['current_fill_m3']
 
         # bereken watervraag over deze periode

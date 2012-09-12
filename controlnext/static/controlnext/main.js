@@ -70,7 +70,13 @@ $(document).ready(function () {
             zoomRange: [1 * MS_HOUR, 40 * MS_DAY],
             timeformat: '%H:%M<br/>%d %b<br/>(%a)',
             monthNames: ['jan', 'feb', 'mar', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'],
-            dayNames: ['zo', 'ma', 'di', 'wo', 'do', 'vr', 'za']
+            dayNames: ['zo', 'ma', 'di', 'wo', 'do', 'vr', 'za'],
+            labelWidth: 24,
+            labelHeight: null // font line height
+        },
+        yaxis: {
+            labelWidth: 24,
+            labelHeight: null // font line height
         },
         legend: { position: 'ne' },
         grid: { hoverable: true, autoHighlight: false, labelMargin: 10 },
@@ -399,7 +405,7 @@ $(document).ready(function () {
             var label = time;
             // position it
             $tt.css({
-                top: pos.pageY,
+                top: pos.pageY + 20,
                 left: pos.pageX + 20
             });
             // set label content
@@ -417,10 +423,9 @@ $(document).ready(function () {
         // order of following elements is also drawing order
         var lines = [
             { id: 'min',     data: graph_info.data.min,     yaxis: 1, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'mean' },
-            { id: 'mean',    data: graph_info.data.mean,    yaxis: 1, lines: { show: true, lineWidth: 7 }, color: "#0026FF", label: 'voorspelling vulgraad' },
+            { id: 'mean',    data: graph_info.data.mean,    yaxis: 1, lines: { show: true, lineWidth: 7 }, color: "#0026FF", label: 'voorspeld' },
             { id: 'max',     data: graph_info.data.max,     yaxis: 1, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'mean' },
-            { id: 'history', data: graph_info.data.history, yaxis: 1, lines: { show: true, lineWidth: 7 }, color: "yellow", label: 'meting vulgraad' },
-            { id: 'dummy1',  data: [0, 0],                  yaxis: 2 }
+            { id: 'history', data: graph_info.data.history, yaxis: 1, lines: { show: true, lineWidth: 7 }, color: "yellow", label: 'gemeten' }
         ];
         var markings = [
             { color: '#f6f6f6', yaxis: { from: graph_info.y_marking_min, to: 0 } },
@@ -431,10 +436,10 @@ $(document).ready(function () {
             { color: '#000',    xaxis: { from: graph_info.x0, to: graph_info.x0 }, lineWidth: 1 }
         ];
         var omslagpunt = graph_info.x_marking_omslagpunt;
-        if (omslagpunt) {
-            var m = { color: '#2a2', xaxis: { from: omslagpunt, to: omslagpunt }, lineWidth: 2 };
-            markings.push(m);
-        }
+        // if (omslagpunt) {
+            // var m = { color: '#2a2', xaxis: { from: omslagpunt, to: omslagpunt }, lineWidth: 2 };
+            // markings.push(m);
+        // }
         var xmin = graph_info.x0 - 2 * MS_DAY;
         var xmax = graph_info.x0 + 5 * MS_DAY;
         var options = {
@@ -453,24 +458,18 @@ $(document).ready(function () {
                 {
                     min: 0,
                     max: 120,
-                    labelWidth: 30,
-                    tickFormatter: function (v, axis) { return v + " %"; },
-                    panRange: false,
-                    zoomRange: false,
-                    position: 'left'
-                },
-                {
-                    min: 0,
-                    max: 120,
-                    labelWidth: 100,
+                    // static ticks due to speed (IE)
+                    //tickFormatter: function (v, axis) { return v + " %"; },
                     ticks: [
-                        [graph_info.y_marking_min, 'Min. voorraad'],
-                        [graph_info.y_marking_max, 'Max. voorraad'],
-                        [graph_info.desired_fill, 'Gewenste vulgraad']
+                        [0,   '0 %'],
+                        [25,  '25 %'],
+                        [50,  '50 %'],
+                        [75,  '75 %'],
+                        [100, '100 %'],
                     ],
                     panRange: false,
                     zoomRange: false,
-                    position: 'right'
+                    position: 'left'
                 }
             ],
             grid: { markings: markings }
@@ -480,20 +479,35 @@ $(document).ready(function () {
         add_tooltip(plot, graph_info.data.mean);
 
         // add marking labels
-        // var add_label = function (text, left, top) {
-            // var $label = $('<div class="marking-label"/>').css({
-                // left: left,
-                // top: top
-            // }).html(text);
-            // $container.append($label);
-        // };
-        // var o;
-        // o = plot.pointOffset({ x: plot.getOptions().xaxis.max, y: graph_info.y_marking_min});
-        // add_label('Min. voorraad', o.left, o.top);
-        // o = plot.pointOffset({ x: plot.getOptions().xaxis.max, y: graph_info.y_marking_max});
-        // add_label('Max. voorraad', o.left, o.top);
-        // o = plot.pointOffset({ x: plot.getOptions().xaxis.max, y: graph_info.desired_fill});
-        // add_label('Gewenste vulgraad', o.left, o.top);
+        // position labels (unused, but useful for x labels)
+        var position_labels = function () {
+            var left = $graph.width();
+            $('div.marking-label', $container).each(function() {
+                var y_value = parseFloat($(this).attr('data-y-value'));
+                var o = plot.pointOffset({ y: y_value});
+                $(this).css({
+                    position:'absolute',
+                    left: left,
+                    top: o.top + 15
+                });
+            });
+        };
+        var add_label = function (text, y_value) {
+            var o = plot.pointOffset({ y: y_value});
+            var $label = $('<div class="marking-label"/>')
+                .css({
+                    position:'absolute',
+                    width: 120,
+                    right: -120,
+                    top: o.top - 8
+                })
+                .attr('data-y-value', y_value)
+                .html(text);
+            $graph.append($label);
+        };
+        add_label('Min. voorraad', graph_info.y_marking_min);
+        add_label('Max. voorraad', graph_info.y_marking_max);
+        add_label('Gewenste vulgraad', graph_info.desired_fill);
 
         fixIE8DrawBug(plot);
         bindPanZoomEvents($graph);
@@ -537,16 +551,10 @@ $(document).ready(function () {
             yaxes: [
                 {
                     tickSize: 0.5,
-                    tickFormatter: function (v) { return v.toFixed(1) + " mm"; },
-                    labelWidth: 30,
+                    tickFormatter: function (v) { return v.toFixed(1); },
                     panRange: false,
                     zoomRange: false,
                     position: 'left'
-                },
-                {
-                    reserveSpace: true,
-                    labelWidth: 100,
-                    position: 'right'
                 }
             ],
             grid: { markings: markings }
@@ -573,6 +581,9 @@ $(document).ready(function () {
             { id: 'value', data: graph_info.data, lines: { show: true, lineWidth: 1 },
               color: "#222222", label: 'waarde in ' + graph_info.unit }
         ];
+        var markings = [
+            { color: '#000',    xaxis: { from: graph_info.x0, to: graph_info.x0 }, lineWidth: 1 }
+        ];
         var xmin = graph_info.x0 - 2 * MS_DAY;
         var xmax = graph_info.x0 + 5 * MS_DAY;
         var options = {
@@ -582,17 +593,12 @@ $(document).ready(function () {
             },
             yaxes: [
                 {
-                    tickFormatter: function (v) { return fastToFixed(v, 2) + " " + graph_info.unit; },
+                    tickFormatter: function (v) { return fastToFixed(v, 2); },
                     panRange: false,
                     zoomRange: false
-                },
-                {
-                    reserveSpace: true,
-                    labelWidth: 100,
-                    position: 'right'
                 }
             ],
-            grid: { hoverable: true, autoHighlight: false, labelMargin: 10 }
+            grid: { markings: markings }
         };
         options = add_default_flot_options(options);
         var plot = $.plot($graph, lines, options);
@@ -657,7 +663,8 @@ $(document).ready(function () {
                 $('#current-fill-label').css({bottom: (current_fill - 2) + '%'});
 
                 // set the demand text
-                $('#demand-value').html(Math.round(response.demand_24h) + ' m<sup>3</sup>');
+                $('#demand-value-24h').html(Math.round(response.demand_24h) + ' m<sup>3</sup>');
+                $('#demand-value-week').html(response.demand_week + ' m<sup>3</sup>');
 
                 // set the "omslagpunt" text
                 var omslagpunt = response.graph_info.x_marking_omslagpunt;
@@ -668,7 +675,8 @@ $(document).ready(function () {
                     $('#omslagpunt-value').html('N.v.t.');
                 }
 
-                $('#overflow-value').html(Math.round(response.overflow_24h) + ' m<sup>3</sup>');
+                $('#overflow-24h-value').html(Math.round(response.overflow_24h) + ' m<sup>3</sup>');
+                $('#overflow-5d-value').html(Math.round(response.overflow_5d) + ' m<sup>3</sup>');
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 var $error = $('<p>Fout bij het laden van de grafiekdata: ' + errorThrown + '</p>');
@@ -715,15 +723,24 @@ $(document).ready(function () {
     };
 
     var update_advanced_graph = function () {
-        var graph_type = $('#advanced-graph-form input[name="advanced-graph-radio"]:checked').attr('data-graph-type');
-        var $container = $('#advanced-graph-container');
+        var $radio = $('#advanced-graph-form input[name="advanced-graph-radio"]:checked')
+        var graph_type = $radio.attr('data-graph-type');
+        var title = $radio.attr('data-graph-title');
+
+        var $panel = $('#advanced-graph-panel');
+        var $graph_container = $('#advanced-graph-container');
+
         if (graph_type === 'none') {
-            $container.hide();
-            $container.empty();
+            $panel.hide();
+            $graph_container.empty();
         }
         else {
+            $('h3', $panel).html(title);
+
             var $spinner = build_spinner();
-            $container.empty().append($spinner);
+            $graph_container.empty().append($spinner);
+
+            $panel.show();
 
             load_advanced_data(graph_type);
         }

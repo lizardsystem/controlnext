@@ -107,7 +107,9 @@ class DataService(JsonView):
         }
         result = {
             'graph_info': graph_info,
-            'overflow_24h': prediction['scenarios']['mean']['overstort'],
+            'overflow_24h': prediction['scenarios']['mean']['overstort_24h'],
+            'overflow_5d': prediction['scenarios']['mean']['overstort_5d'],
+            'demand_week': tbl.get_week_demand_on(t0),
             'demand_24h': tbl.get_total_demand(t0, t0 + datetime.timedelta(hours=24)),
             'current_fill': prediction['current_fill'],
         }

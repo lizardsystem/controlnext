@@ -110,6 +110,13 @@ MIDDLEWARE_CLASSES = (
     'tls.TLSRequestMiddleware',
     )
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(BUILDOUT_DIR, 'var', 'cache'),
+    }
+}
+
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = ['--with-doctest', '--verbosity=3']
 SOUTH_TESTS_MIGRATE = False

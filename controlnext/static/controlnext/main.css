@@ -1,8 +1,8 @@
 #fill-container {
     position:relative;
     width:215px;
-    height:300px;
-    margin:40px auto 0 32px;
+    height:310px;
+    margin:0 auto 0 32px;
 }
 
 /* ************************ */
@@ -148,7 +148,7 @@
     margin-left:10px;
 }
 
-#demand-value, #omslagpunt-value, #overflow-value {
+.textual-value {
     font-weight:bold;
     margin-left:10px;
 }
@@ -161,11 +161,9 @@
 }
 
 div.marking-label {
-    position:absolute;
+    background-color:#fff;
     color:#666;
     font-size:smaller;
-    width:120px;
-    margin-left:7px;
 }
 
 div.flot-tooltip {
@@ -210,6 +208,9 @@ input[type="image"], input[type="checkbox"], input[type="radio"] {
     margin:0 !important;
     height:inherit !important;
     width:inherit !important;
+}
+label input[type="radio"] {
+    margin-right:5px !important;
 }
 
 .inner {
@@ -275,6 +276,7 @@ input[type="image"], input[type="checkbox"], input[type="radio"] {
     position:absolute;
     left:280px;
     right:0;
+    border-left:1px solid #C0C0BC;
     height:100%;
 }
 
@@ -282,6 +284,7 @@ input[type="image"], input[type="checkbox"], input[type="radio"] {
     position:absolute;
     left:280px;
     right:0;
+    border-left:1px solid #C0C0BC;
     height:100%;
 }
 

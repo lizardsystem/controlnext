@@ -9,7 +9,13 @@
 
 {% block map-javascript %}
 <script type="text/javascript"
+        src="{{ STATIC_URL }}controlnext/jquery.flot.js"></script>
+<script type="text/javascript"
+        src="{{ STATIC_URL }}jquery-flot/jquery.flot.time.js"></script>
+<script type="text/javascript"
         src="{{ STATIC_URL }}controlnext/jquery.cookie.js"></script>
+<script type="text/javascript"
+        src="{{ STATIC_URL }}controlnext/jquery.flot.resize.js"></script>
 <script type="text/javascript"
         src="{{ STATIC_URL }}controlnext/jquery.flot.fillbetween.js"></script>
 <script type="text/javascript"
@@ -57,6 +63,7 @@
     </table>
 </div>
 
+<p style="margin-top:20px; text-align:center;">Kies gewenste vullingsgraad:</p>
 <div id="fill-container" class="has_popover_east"
      data-title="Gewenste vulgraad"
      data-content="Selecteer hier de gewenste vulgraad.">
@@ -115,12 +122,20 @@ t0 verschil (uren): <input type="text" id="debug-hours-diff" name="debug-hours-d
 <div id="left">
     <div class="inner">
         <img id="situation-image" src="{{ STATIC_URL }}controlnext/situation.jpg" width="200" height="200" />
-        <div>Watervraag 24 uur:</div>
-        <div id="demand-value"></div>
+        <div>Standaard watervraag 24 uur:</div>
+        <div class="textual-value" id="demand-value-24h"></div>
+        <div>Standaard watervraag week:</div>
+        <div class="textual-value" id="demand-value-week"></div>
         <div>Gewenste niveau wordt bereikt op:</div>
-        <div id="omslagpunt-value"></div>
-        <div>Verwachte overstort 24 uur:</div>
-        <div id="overflow-value"></div>
+        <div class="textual-value" id="omslagpunt-value"></div>
+        <div>
+            <span>Verwachte overstort 24 uur:</span>
+            <span class="textual-value" id="overflow-24h-value"></span>
+        </div>
+        <div>
+            <span>Verwachte overstort 5 dagen:</span>
+            <span class="textual-value" id="overflow-5d-value"></span>
+        </div>
         <div id="overflow-visualization-container" style="display:none;">
             <div id="overflow-visualization"></div>
         </div>
@@ -141,7 +156,7 @@ t0 verschil (uren): <input type="text" id="debug-hours-diff" name="debug-hours-d
     </div>
 </div>
 <div id="lright">
-    <h3 class="graph-header">Neerslag</h3>
+    <h3 class="graph-header">Neerslag (mm)</h3>
     <div id="rain-graph-container"></div>
 </div>
 </div>
@@ -150,16 +165,34 @@ t0 verschil (uren): <input type="text" id="debug-hours-diff" name="debug-hours-d
 <div id="lowestleft">
     <div id="advanced-graph-form-container">
         <form id="advanced-graph-form" action="GET">
-            <label><input type="radio" name="advanced-graph-radio" value="0" data-graph-type="none" checked="checked"/>Geen</label>
-            <label><input type="radio" name="advanced-graph-radio" value="1" data-graph-type="demand"/>Watervraag</label>
-            <label><input type="radio" name="advanced-graph-radio" value="2" data-graph-type="uitstroom"/>Uitstroom (cumulatief)</label>
-            <label><input type="radio" name="advanced-graph-radio" value="3" data-graph-type="max_uitstroom"/>Maximaal mogelijke uitstroom (cumulatief)</label>
-            <label><input type="radio" name="advanced-graph-radio" value="4" data-graph-type="toestroom"/>Toestroom (cumulatief)</label>
+            <label><input type="radio" name="advanced-graph-radio" value="0"
+                          data-graph-type="none" checked="checked"
+                          data-graph-title=""
+                   />Geen</label>
+            <label><input type="radio" name="advanced-graph-radio" value="1"
+                          data-graph-type="demand"
+                          data-graph-title="Watervraag (m3)"
+                   />Watervraag</label>
+            <label><input type="radio" name="advanced-graph-radio" value="2"
+                          data-graph-type="uitstroom"
+                          data-graph-title="Uitstroom (cumulatief, m3)"
+                   />Uitstroom (cumulatief)</label>
+            <label><input type="radio" name="advanced-graph-radio" value="3"
+                          data-graph-type="max_uitstroom"
+                          data-graph-title="Maximale uitstroom (m3, cumulatief)"
+                   />Maximale uitstroom (cumulatief)</label>
+            <label><input type="radio" name="advanced-graph-radio" value="4"
+                          data-graph-type="toestroom"
+                          data-graph-title="Toestroom (m3, cumulatief)"
+                   />Toestroom (cumulatief)</label>
         </form>
     </div>
 </div>
 <div id="lowestright">
-    <div id="advanced-graph-container"></div>
+    <div id="advanced-graph-panel">
+        <h3 class="graph-header"></h3>
+        <div id="advanced-graph-container"></div>
+    </div>
 </div>
 </div>
 {% endspaceless %}
