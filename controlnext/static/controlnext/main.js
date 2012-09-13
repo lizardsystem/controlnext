@@ -469,11 +469,11 @@ $(document).ready(function () {
                     // static ticks due to speed (IE)
                     //tickFormatter: function (v, axis) { return v + " %"; },
                     ticks: [
-                        [0,   '0 %'],
-                        [25,  '25 %'],
-                        [50,  '50 %'],
-                        [75,  '75 %'],
-                        [100, '100 %'],
+                        [0,   '0'],
+                        [25,  '25'],
+                        [50,  '50'],
+                        [75,  '75'],
+                        [100, '100'],
                     ],
                     panRange: false,
                     zoomRange: false,
@@ -535,7 +535,7 @@ $(document).ready(function () {
             { id: 'min',  data: graph_info.data.min,  lines: { show: true, lineWidth: 1, fill: 0.4 },
               color: "#7FC9FF", fillBetween: 'mean' },
             { id: 'mean', data: graph_info.data.mean, lines: { show: true, lineWidth: 2 },
-              color: "#222222", label: 'regen in mm/h' },
+              color: "#222222", label: 'regen in mm / h' },
             { id: 'max',  data: graph_info.data.max,  lines: { show: true, lineWidth: 1, fill: 0.4 },
               color: "#7FC9FF", fillBetween: 'mean' }
         ];
