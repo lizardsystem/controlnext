@@ -24,7 +24,7 @@ frequency = datetime.timedelta(minutes=15)
 min_berging_pct = 20
 max_berging_pct = 100
 max_berging_m3 = 15527 # in m^3
-opp_invloed_regen_m2 = 95000 # in m^2
+opp_invloed_regen_m2 = 94000 # in m^2
 max_uitstroom_per_tijdstap_m3 = 4.5 # in m^3
 bovenkant_bak_cm = 265 # in cm
 hoogte_niveaumeter_cm = 205 # in cm
