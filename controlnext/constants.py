@@ -27,7 +27,7 @@ max_berging_m3 = 15527 # in m^3
 opp_invloed_regen_m2 = 94000 # in m^2
 max_uitstroom_per_tijdstap_m3 = 4.5 # in m^3
 bovenkant_bak_cm = 265 # in cm
-hoogte_niveaumeter_cm = 205 # in cm
+hoogte_niveaumeter_cm = 265 # in cm
 
 def round_date(date):
     minutes = date.minute - (date.minute % 15)
