@@ -13,7 +13,7 @@ install_requires = [
     'django-extensions',
     'django-nose',
     'python-dateutil == 1.5',
-    'lizard-ui',
+    'lizard-ui >= 4.10',
     'lizard-map >= 4.7',
     'lizard-fewsjdbc >= 2.7',
     'pytz',
