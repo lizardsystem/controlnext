@@ -11,6 +11,7 @@ from controlnext.demand_table import DemandTable
 from controlnext.calc_model import CalculationModel
 from controlnext.fews_data import FewsJdbcDataSource
 from controlnext.constants import *
+from controlnext.utils import round_date, mktim
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +106,7 @@ class CalculationModelTest(TestCase):
     def test_calc_model(self):
         now = mktim(2012, 8, 5, 8, 0) # some rain fell here
         now = round_date(datetime.datetime.now(tz=pytz.utc))
-        future = now + fill_predict_future
+        future = now + settings.CONTROLNEXT_FILL_PREDICT_FUTURE
 
         ts = self.model.predict_fill(now, future, 20, 100)
 

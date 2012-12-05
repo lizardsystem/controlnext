@@ -7,8 +7,7 @@ import datetime
 
 from django.conf import settings
 
-from controlnext.utils import cache_result
-from controlnext import constants
+from controlnext.utils import cache_result, validate_date, mktim
 
 import pytz
 import pandas as pd
@@ -16,22 +15,22 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-demand_table_path = getattr(settings, 'DEMAND_TABLE_PATH', None)
+DEMAND_TABLE_PATH = getattr(settings, 'DEMAND_TABLE_PATH', None)
 
-if not demand_table_path:
+if not DEMAND_TABLE_PATH:
     logger.warn('DEMAND_TABLE_PATH is not configured.')
-elif not os.path.isfile(demand_table_path):
-    logger.warn('Could not find a file at %s.', demand_table_path)
+elif not os.path.isfile(DEMAND_TABLE_PATH):
+    logger.warn('Could not find a file at %s.', DEMAND_TABLE_PATH)
 
 # semi configurable constants
-csv_col_delimiter = ';'
-demand_column_name = 'demand_m3'
-week_column_name = 'week_number'
+CSV_COL_DELIMITER = ';'
+DEMAND_COLUMN_NAME = 'demand_m3'
+WEEK_COLUMN_NAME = 'week_number'
 
 def get_week(date):
     return date.isocalendar()[1]
 
-one_week = datetime.timedelta(weeks=1)
+ONE_WEEK = datetime.timedelta(weeks=1)
 
 class DemandTable(object):
     def __init__(self):
@@ -46,19 +45,20 @@ class DemandTable(object):
         '''
         # dont use the csv module here, its ancient (no unicode)
         # and less dependencies is generally better
-        logging.debug('Reading %s', demand_table_path)
+        logging.debug('Reading %s', DEMAND_TABLE_PATH)
         result = {}
-        with open(demand_table_path, 'rb') as file:
-            cols = file.next().strip().split(csv_col_delimiter)
+        with open(DEMAND_TABLE_PATH, 'rb') as file:
+            cols = file.next().strip().split(CSV_COL_DELIMITER)
             # do some validation, raises value error on missing column
-            week_column = cols.index(week_column_name)
-            demand_column = cols.index(demand_column_name)
+            week_column = cols.index(WEEK_COLUMN_NAME)
+            demand_column = cols.index(DEMAND_COLUMN_NAME)
             for line in file:
-                row = line.strip().split(csv_col_delimiter)
+                row = line.strip().split(CSV_COL_DELIMITER)
                 # convert everything to ints
                 row = map(int, row)
                 result[row[week_column]] = row[demand_column]
-        # table doesn't define anything for week 0 (the days between new year and first sunday)
+        # table doesn't define anything for week 0 (the days between new year
+        # and first sunday)
         if not 0 in result:
             # just copy the values from week 1
             result[0] = result[1]
@@ -85,13 +85,14 @@ class DemandTable(object):
         return self.get_demand_for_week(week)
 
     def get_demand(self, _from, to):
-        constants.validate_date(_from)
-        constants.validate_date(to)
+        validate_date(_from)
+        validate_date(to)
 
         # ensure we deal with values for _from which are mid-week
-        from_adj = _from - 2 * one_week
-        to_adj = to + 2 * one_week
-        weekly = pd.date_range(from_adj, to_adj, freq='W-MON', tz=pytz.utc) # week changes on monday
+        from_adj = _from - 2 * ONE_WEEK
+        to_adj = to + 2 * ONE_WEEK
+        # week changes on monday
+        weekly = pd.date_range(from_adj, to_adj, freq='W-MON', tz=pytz.utc)
         values = [self.get_week_demand_on(date) for date in weekly]
 
         ts = pd.Series(values, weekly, name='demand')
@@ -110,7 +111,7 @@ class DemandTable(object):
         Useful for debugging.
         '''
         import matplotlib.pyplot as plt
-        ts = self.get_demand(constants.mktim(2012, 1, 1), constants.mktim(2013, 1, 1))
+        ts = self.get_demand(mktim(2012, 1, 1), mktim(2013, 1, 1))
         fig = plt.figure(figsize=(24, 6))
         axes = ts.plot()
         fig.add_subplot(axes)
