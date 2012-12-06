@@ -16,6 +16,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from djangorestframework.views import View as JsonView
 
 from lizard_ui.views import UiView
+from lizard_map.views import AppView
 
 from controlnext import models
 from controlnext.demand_table import DemandTable
@@ -37,6 +38,17 @@ def datetime_to_js(dt):
 def series_to_js(pdseries):
     pdseries = pdseries.fillna(None)
     return [(datetime_to_js(dt), value) for dt, value in pdseries.iterkv()]
+
+
+class DashboardView(AppView):
+    template_name = 'controlnext/dashboard.html'
+    page_title = _('ControlNEXT sturing Delfland dashboard')
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(DashboardView, self).get_context_data(*args, **kwargs)
+        context['growers'] = GrowerInfo.objects.all()
+        return context
+
 
 class MainView(UiView):
     template_name = 'controlnext/main.html'

@@ -307,3 +307,8 @@ html {
     bottom:auto !important;
     height:1142px;
 }
+
+ul.sidebar-list {
+    list-style-type: none;
+    margin-left: 0;
+}
