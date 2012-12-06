@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models
+from django.contrib.gis.db import models as geomodels
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 
@@ -17,6 +18,7 @@ class GrowerInfo(models.Model):
     # TODO: consider making crop a separate model
     crop = models.CharField(max_length=100, blank=True, null=True,
         verbose_name=_("type of crop"))
+    location = geomodels.PointField(blank=True, null=True)
 
     # fill info
     # fill_filter_id = 'waterstand_basins' # Waterstanden
