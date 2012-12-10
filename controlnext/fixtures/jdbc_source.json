@@ -1,1 +1,16 @@
-[{"pk": 1, "model": "lizard_fewsjdbc.jdbcsource", "fields": {"slug": "controlnext", "filter_tree_root": "", "jdbc_tag_name": "controlnext_delfland", "usecustomfilter": false, "customfilter": "", "connector_string": "jdbc:vjdbc:rmi://p-fews-jd-d3.external-nens.local:2001/VJdbc,FewsDataStore", "jdbc_url": "http://p-fews-ei-00-d3.external-nens.local:8080/Jdbc2Ei/test", "name": "controlnext"}}]
+[
+	{
+		"fields": {
+			"connector_string": "jdbc:vjdbc:rmi://p-fews-jd-d3.external-nens.local:2001/VJdbc,FewsDataStore",
+			"customfilter": "",
+			"filter_tree_root": "",
+			"jdbc_tag_name": "controlnext_delfland",
+			"jdbc_url": "http://p-fews-ei-00-d3.external-nens.local:8080/Jdbc2Ei/test",
+			"name": "controlnext",
+			"slug": "controlnext",
+			"usecustomfilter": false
+		},
+		"model": "lizard_fewsjdbc.jdbcsource",
+		"pk": 1
+	}
+]

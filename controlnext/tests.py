@@ -24,17 +24,21 @@ def plot(name, *args):
     fig.savefig('plot_' + name + '.png')
 
 
-w26_0 = mktim(2012, 6, 25, 0, 0, 0)     # monday, 0:00, week 26 (d = 20000)
-w27_0 = mktim(2012, 7, 2, 0, 0, 0)      # monday, 0:00, week 27 (d = 20000)
+w26_0 = mktim(2012, 6, 25, 0, 0)   # monday, 0:00, week 26 (d = 20000)
+w27_0 = mktim(2012, 7, 2, 0, 0)    # monday, 0:00, week 27 (d = 20000)
 
-w28_0 = mktim(2012, 7, 9, 0, 0, 0)      # monday, 0:00, week 28 (d = 19000)
-w28_5 = mktim(2012, 7, 12, 12, 0, 0)  # middle of week 28
+w28_0 = mktim(2012, 7, 9, 0, 0)    # monday, 0:00, week 28 (d = 19000)
+w28_5 = mktim(2012, 7, 12, 12, 0)  # middle of week 28
 
-w29_0 = mktim(2012, 7, 16, 0, 0, 0)     # sunday, 0:00, week 29 (d = 18000)
-w29_5 = mktim(2012, 7, 19, 12, 0, 0)    # middle of week 29
+w29_0 = mktim(2012, 7, 16, 0, 0)   # sunday, 0:00, week 29 (d = 18000)
+w29_5 = mktim(2012, 7, 19, 12, 0)  # middle of week 29
 
-w30_0 = mktim(2012, 7, 23, 0, 0, 0)     # sunday, 0:00, week 30 (d = 17000)
-w30_5 = mktim(2012, 7, 26, 12, 0, 0)    # middle of week 30 (d = 17000)
+w30_0 = mktim(2012, 7, 23, 0, 0)   # sunday, 0:00, week 30 (d = 17000)
+w30_5 = mktim(2012, 7, 26, 12, 0)  # middle of week 30 (d = 17000)
+
+# TODO: setup dynamically, otherwise tests will fail after a while
+wNOW = mktim(2012, 12, 5, 0, 0)
+wNOW_5 = mktim(2012, 12, 8, 12, 0)
 
 
 class DemandTableTest(TestCase):
@@ -70,7 +74,7 @@ class FewsJdbcDataSourceTest(TestCase):
         self.ds = FewsJdbcDataSource()
 
     def test_connection(self):
-        fews_data = self.ds.get_fill(w30_0, w30_5)
+        fews_data = self.ds.get_fill(wNOW, wNOW_5)
         self.assertGreater(len(fews_data), 10)
 
 
@@ -98,9 +102,12 @@ class CalculationModelTest(TestCase):
         now = datetime.datetime.now(pytz.utc)
         history = now - datetime.timedelta(days=1)
         future = now + datetime.timedelta(days=5)
-#        d1 = self.tbl.get_demand(w28_0, w29_5)
-#        d2 = self.ds.get_fill(w28_0, w29_5)
-#        d3 = self.ds.get_rain('mean', w28_0, w29_5)
+        # d1 = self.tbl.get_demand(w28_0, w29_5)
+        # d2 = self.ds.get_fill(w28_0, w29_5)
+        # d3 = self.ds.get_rain('mean', w28_0, w29_5)
+        now = round_date(now)
+        history = round_date(history)
+        future = round_date(future)
         self.mkplot('history', history, now)
         self.mkplot('span', history, future)
         self.mkplot('future', now, future)
@@ -110,13 +117,15 @@ class CalculationModelTest(TestCase):
         now = round_date(datetime.datetime.now(tz=pytz.utc))
         future = now + settings.CONTROLNEXT_FILL_PREDICT_FUTURE
 
-        ts = self.model.predict_fill(now, future, 20, 100)
+        ts = self.model.predict_fill(now, future, 20, 100, 100)
 
         self.assertGreater(len(ts['scenarios']['mean']['prediction']), 10)
         plot('predict_fill', ts['scenarios']['mean']['prediction'],
              ts['history'])
-        plot('predict_fill_rain', ts['rain'])
-        plot('predict_fill_uitstroom', ts['scenarios']['mean']['uitstroom'])
-        plot('predict_fill_toestroom', ts['scenarios']['mean']['toestroom'])
-        plot('predict_fill_max_uitstroom', ts['max_uitstroom'])
-        plot('predict_fill_watervraag', ts['demand'])
+        # plot('predict_fill_rain', ts['rain'])
+        plot('predict_fill_uitstroom',
+             ts['scenarios']['mean']['intermediate']['uitstroom'])
+        plot('predict_fill_toestroom',
+             ts['scenarios']['mean']['intermediate']['toestroom'])
+        plot('predict_fill_max_uitstroom', ts['intermediate']['max_uitstroom'])
+        plot('predict_fill_watervraag', ts['intermediate']['demand'])
