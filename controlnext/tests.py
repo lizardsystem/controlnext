@@ -5,9 +5,9 @@ import pytz
 
 from django.test import TestCase
 
-from controlnext.demand_table import DemandTable
 from controlnext.calc_model import CalculationModel
 from controlnext.conf import settings
+from controlnext.demand_table import DemandTable
 from controlnext.fews_data import FewsJdbcDataSource
 from controlnext.utils import round_date, mktim
 
