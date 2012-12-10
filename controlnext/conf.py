@@ -2,7 +2,9 @@
 from __future__ import unicode_literals
 import datetime
 
-from django.conf import settings
+# django.conf.settings need to be imported here, because when importing this
+# module, you also get the django.conf.settings
+from django.conf import settings  # noqa
 
 from appconf import AppConf
 

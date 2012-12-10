@@ -2,18 +2,17 @@ import datetime
 import logging
 
 import pytz
-import numpy as np
-import pandas as pd
 
 from django.test import TestCase
 
 from controlnext.demand_table import DemandTable
 from controlnext.calc_model import CalculationModel
+from controlnext.conf import settings
 from controlnext.fews_data import FewsJdbcDataSource
-from controlnext.constants import *
 from controlnext.utils import round_date, mktim
 
 logger = logging.getLogger(__name__)
+
 
 def plot(name, *args):
     if not name:
@@ -36,6 +35,7 @@ w29_5 = mktim(2012, 7, 19, 12, 0, 0)    # middle of week 29
 
 w30_0 = mktim(2012, 7, 23, 0, 0, 0)     # sunday, 0:00, week 30 (d = 17000)
 w30_5 = mktim(2012, 7, 26, 12, 0, 0)    # middle of week 30 (d = 17000)
+
 
 class DemandTableTest(TestCase):
     def setUp(self):
@@ -62,6 +62,7 @@ class DemandTableTest(TestCase):
         expected = self.tbl.get_demand_for_week(29)
         self.assertAlmostEqual(res, expected, delta=500)
 
+
 class FewsJdbcDataSourceTest(TestCase):
     fixtures = ['jdbc_source.json']
 
@@ -71,6 +72,7 @@ class FewsJdbcDataSourceTest(TestCase):
     def test_connection(self):
         fews_data = self.ds.get_fill(w30_0, w30_5)
         self.assertGreater(len(fews_data), 10)
+
 
 class CalculationModelTest(TestCase):
     fixtures = ['jdbc_source.json']
@@ -96,22 +98,23 @@ class CalculationModelTest(TestCase):
         now = datetime.datetime.now(pytz.utc)
         history = now - datetime.timedelta(days=1)
         future = now + datetime.timedelta(days=5)
-        d1 = self.tbl.get_demand(w28_0, w29_5)
-        d2 = self.ds.get_fill(w28_0, w29_5)
-        d3 = self.ds.get_rain('mean', w28_0, w29_5)
+#        d1 = self.tbl.get_demand(w28_0, w29_5)
+#        d2 = self.ds.get_fill(w28_0, w29_5)
+#        d3 = self.ds.get_rain('mean', w28_0, w29_5)
         self.mkplot('history', history, now)
         self.mkplot('span', history, future)
         self.mkplot('future', now, future)
 
     def test_calc_model(self):
-        now = mktim(2012, 8, 5, 8, 0) # some rain fell here
+        now = mktim(2012, 8, 5, 8, 0)  # some rain fell here
         now = round_date(datetime.datetime.now(tz=pytz.utc))
         future = now + settings.CONTROLNEXT_FILL_PREDICT_FUTURE
 
         ts = self.model.predict_fill(now, future, 20, 100)
 
         self.assertGreater(len(ts['scenarios']['mean']['prediction']), 10)
-        plot('predict_fill', ts['scenarios']['mean']['prediction'], ts['history'])
+        plot('predict_fill', ts['scenarios']['mean']['prediction'],
+             ts['history'])
         plot('predict_fill_rain', ts['rain'])
         plot('predict_fill_uitstroom', ts['scenarios']['mean']['uitstroom'])
         plot('predict_fill_toestroom', ts['scenarios']['mean']['toestroom'])

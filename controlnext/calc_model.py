@@ -1,11 +1,8 @@
 # (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.rst.
 from __future__ import unicode_literals
 from __future__ import division
-import os
 import logging
 import datetime
-
-from django.conf import settings
 
 import pytz
 import pandas as pd
@@ -16,11 +13,12 @@ from controlnext.utils import round_date, validate_date
 
 # optionally import matplotlib which can be used to debugging
 try:
-    import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt  # noqa
 except ImportError:
     pass
 
 logger = logging.getLogger(__name__)
+
 
 def cross(series, cross=0, direction='cross'):
     """
@@ -49,10 +47,12 @@ def cross(series, cross=0, direction='cross'):
     result = series.index[idxs]
     return result
 
+
 def fill_m3_to_pct(ts, max_storage):
     ts /= max_storage
     ts *= 100
     return ts
+
 
 class CalculationModel(object):
     def __init__(self, demand_table, fews_data):
@@ -62,17 +62,21 @@ class CalculationModel(object):
 
     def calc_max_uitstroom(self, _from, periods):
         # tel ook eerste en laatste periode mee
-        totale_uitstroom_m3 = periods * self.constants.max_uitstroom_per_tijdstap_m3
-        values = np.arange(0.0, float(totale_uitstroom_m3),
+        totale_uitstroom_m3 = (periods *
+                               self.constants.max_uitstroom_per_tijdstap_m3)
+        values = np.arange(
+            0.0, float(totale_uitstroom_m3),
             float(self.constants.max_uitstroom_per_tijdstap_m3))
-        dates = pd.date_range(_from, periods=periods, freq='15min', tz=pytz.utc)
+        dates = pd.date_range(_from, periods=periods, freq='15min',
+                              tz=pytz.utc)
         ts = pd.Series(values, dates, name='uitstroom')
         return ts
 
-    def predict_scenario(self, _from, current_fill_m3, desired_fill_m3, demand_m3, rain_mm, max_uitstroom_m3):
+    def predict_scenario(self, _from, current_fill_m3, desired_fill_m3,
+                         demand_m3, rain_mm, max_uitstroom_m3):
         toestroom_m3 = rain_mm * (self.constants.opp_invloed_regen_m2 / 1000)
-        vaste_verandering = toestroom_m3 - demand_m3 # + current_fill_m3
-        vaste_verandering_summed = vaste_verandering.cumsum()
+        vaste_verandering = toestroom_m3 - demand_m3  # + current_fill_m3
+        # vaste_verandering_summed = vaste_verandering.cumsum()
 
         variabele_verandering = np.zeros(len(vaste_verandering))
         totale_verandering = vaste_verandering + variabele_verandering
@@ -81,7 +85,8 @@ class CalculationModel(object):
             if result[i + 1] > desired_fill_m3:
                 # volgende tijdstap wordt gewenste vulgraad overschreden, dus
                 # zet de uitstroom aan
-                variabele_verandering[i] = -self.constants.max_uitstroom_per_tijdstap_m3
+                variabele_verandering[i] = -self.constants.\
+                    max_uitstroom_per_tijdstap_m3
                 # bereken de nieuwe situatie
                 totale_verandering = vaste_verandering + variabele_verandering
                 result = totale_verandering.cumsum() + current_fill_m3
@@ -96,16 +101,19 @@ class CalculationModel(object):
 
         # sommeer waarden boven de max berging
         result_24h = result[:_from + datetime.timedelta(hours=24)]
-        overstort_24h = result_24h[result_24h.values > self.constants.max_berging_m3]
+        overstort_24h = result_24h[result_24h.values > self.constants.
+                                   max_berging_m3]
         if len(overstort_24h) > 0:
-            overstort_24h = result[overstort_24h.index].max() - self.constants.max_berging_m3
+            overstort_24h = (result[overstort_24h.index].max() -
+                             self.constants.max_berging_m3)
         else:
             # geen overstort
             overstort_24h = 0
         # nu ook voor 5 dagen...
         overstort_5d = result[result.values > self.constants.max_berging_m3]
         if len(overstort_5d) > 0:
-            overstort_5d = result[overstort_5d.index].max() - self.constants.max_berging_m3
+            overstort_5d = (result[overstort_5d.index].max() -
+                            self.constants.max_berging_m3)
         else:
             # geen overstort
             overstort_5d = 0
@@ -124,8 +132,10 @@ class CalculationModel(object):
             },
         }
 
-    def predict_fill(self, _from, to, desired_fill_pct, demand_exaggerate_pct, rain_exaggerate_pct):
-        # do some input validation here, to ensure we are dealing with sane numbers
+    def predict_fill(self, _from, to, desired_fill_pct, demand_exaggerate_pct,
+                     rain_exaggerate_pct):
+        # do some input validation here, to ensure we are dealing with sane
+        # numbers
         validate_date(_from)
         validate_date(to)
         if 0 > desired_fill_pct > 100:
@@ -136,18 +146,21 @@ class CalculationModel(object):
             raise ValueError('value should be a percentage > 0')
 
         # determine desired fill in m^3
-        desired_fill_m3 = self.constants.max_berging_m3 * (desired_fill_pct / 100)
+        desired_fill_m3 = (self.constants.max_berging_m3 *
+                           (desired_fill_pct / 100))
 
         rain_mean = self.fews_data.get_rain('mean', _from, to)
         if to < round_date(datetime.datetime.now(tz=pytz.utc)):
-            # HACK: indien data uit het verleden wordt opgevraagd, zit er geen min en max meer in FEWS
+            # HACK: indien data uit het verleden wordt opgevraagd, zit er geen
+            # min en max meer in FEWS
             rain_min = rain_max = rain_mean
         else:
             rain_min = self.fews_data.get_rain('min', _from, to)
             rain_max = self.fews_data.get_rain('max', _from, to)
 
-        # gebruik de datum van de laatst beschikbaar regenvoorspelling als from en to waarden
-        _from = rain_mean.index[0] 
+        # gebruik de datum van de laatst beschikbaar regenvoorspelling als
+        # from en to waarden
+        _from = rain_mean.index[0]
         to = rain_mean.index[-1]
 
         # optionele overdrijf factor voor regen
@@ -177,15 +190,17 @@ class CalculationModel(object):
         # bereken uitstroom
         max_uitstroom_m3 = self.calc_max_uitstroom(_from, periods)
         if len(max_uitstroom_m3) != len(rain_mean):
-            raise Exception('%s != %s' % (len(max_uitstroom_m3), len(rain_mean)))
+            raise Exception('%s != %s' % (len(max_uitstroom_m3),
+                                          len(rain_mean)))
 
         # return ook tussentijdse waarden, vnml. voor debugging
         result = {
             'scenarios': {},
-            'history': fill_m3_to_pct(current_fill['fill_history_m3'],
+            'history': fill_m3_to_pct(
+                current_fill['fill_history_m3'],
                 self.constants.max_berging_m3),
-            'current_fill': fill_m3_to_pct(current_fill_m3,
-                self.constants.max_berging_m3),
+            'current_fill': fill_m3_to_pct(
+                current_fill_m3, self.constants.max_berging_m3),
             'intermediate': {
                 'rain_mean': rain_mean,
                 'max_uitstroom': max_uitstroom_m3,
@@ -201,8 +216,8 @@ class CalculationModel(object):
         }
 
         for scenario, rain in calc_scenarios.items():
-            result['scenarios'][scenario] = self.predict_scenario(_from, current_fill_m3, desired_fill_m3, demand_m3, rain, max_uitstroom_m3)
-
-        #import pdb; pdb.set_trace()
+            result['scenarios'][scenario] = self.predict_scenario(
+                _from, current_fill_m3, desired_fill_m3, demand_m3, rain,
+                max_uitstroom_m3)
 
         return result

@@ -1,22 +1,17 @@
 # (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.rst.
 from __future__ import unicode_literals
-import os
 import logging
 import datetime
-
-from django.conf import settings
 
 import iso8601
 import pytz
 import pandas as pd
-import numpy as np
 
 from controlnext.utils import cache_result, validate_date
 from controlnext.conf import settings
 from controlnext.models import Constants
 
 from lizard_fewsjdbc.models import JdbcSource
-from lizard_fewsjdbc.models import FewsJdbcQueryError
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +21,7 @@ RAIN_PARAMETER_IDS = {
     'max': 'P.max'    # Maximum
 }
 FREQUENCY = datetime.timedelta(minutes=15)
+
 
 def do_check_frequency(row_data):
     prev_date = None
@@ -37,18 +33,19 @@ def do_check_frequency(row_data):
                 raise Exception(msg)
         prev_date = date
 
+
 class FewsJdbcDataSource(object):
     def __init__(self, grower_info=None):
         try:
             self.jdbc_source = JdbcSource.objects.get(
                 slug=settings.CONTROLNEXT_JDBC_SOURCE_SLUG)
         except JdbcSource.DoesNotExist:
-            raise Exception("Jdbc source %s does not exist." % \
+            raise Exception("Jdbc source %s does not exist." %
                             settings.CONTROLNEXT_JDBC_SOURCE_SLUG)
         self.grower_info = grower_info
 
     @cache_result(settings.CONTROLNEXT_FEWSJDBC_CACHE_SECONDS,
-        ignore_cache=False, instancemethod=True)
+                  ignore_cache=False, instancemethod=True)
     def get_rain(self, which, _from, to):
         validate_date(_from)
         validate_date(to)
@@ -74,7 +71,7 @@ class FewsJdbcDataSource(object):
         return rain
 
     @cache_result(settings.CONTROLNEXT_FEWSJDBC_CACHE_SECONDS,
-        ignore_cache=False, instancemethod=True)
+                  ignore_cache=False, instancemethod=True)
     def get_fill(self, _from, to):
         validate_date(_from)
         validate_date(to)
@@ -104,7 +101,7 @@ class FewsJdbcDataSource(object):
         return ts
 
     @cache_result(settings.CONTROLNEXT_FEWSJDBC_CACHE_SECONDS,
-        ignore_cache=False, instancemethod=True)
+                  ignore_cache=False, instancemethod=True)
     def get_current_fill(self, _from, history_timedelta=None):
         '''
         returns latest available fill AND its series
@@ -123,10 +120,11 @@ class FewsJdbcDataSource(object):
             'fill_history_m3': fill_history_m3
         }
 
-    def _get_timeseries_as_pd_series(self, filter_id, location_id,
-            parameter_id, _from, to, name=None, check_frequency=False):
+    def _get_timeseries_as_pd_series(
+            self, filter_id, location_id, parameter_id, _from, to, name=None,
+            check_frequency=False):
         row_data = self._get_timeseries(filter_id, location_id,
-            parameter_id, _from, to)
+                                        parameter_id, _from, to)
 
         if len(row_data) == 0:
             raise Exception('No data available')
@@ -157,8 +155,9 @@ class FewsJdbcDataSource(object):
         Custom implementation of JdbcSource's get_timeseries().
         '''
         if not _from.tzinfo or not to.tzinfo:
-            raise ValueError('Please refrain from using naive datetime '
-                'objects for _from and to.')
+            raise ValueError(
+                'Please refrain from using naive datetime objects for _from '
+                'and to.')
 
         q = ("select time, value from "
              "extimeseries where filterid='%s' and locationid='%s' "

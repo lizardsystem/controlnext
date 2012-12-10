@@ -14,27 +14,15 @@ urlpatterns = patterns(
     '',
     url(r'^ui/', include('lizard_ui.urls')),
     # url(r'^map/', include('lizard_map.urls')),
-    #url(r'^admin/', include(admin.site.urls)),
-    url(r'^old_main/$',
-        views.MainView.as_view(),
-        name='controlnext-main'
-    ),
-    url(r'^$',
-        views.DashboardView.as_view(),
-        name='controlnext-dashboard'
-    ),
-    url(r'^(?P<grower_id>\d+)$',
-        views.GrowerView.as_view(),
-        name='controlnext-grower'
-    ),
-    url(r'^data_service/$',
-        views.DataService.as_view(),
-        name='controlnext-data-service'
-    ),
-    url(r'^data_service/(?P<grower_id>\d+)/$',
-        views.DataServiceByID.as_view(),
-        name='controlnext-data-service-by-id'
-    ),
+    # url(r'^admin/', include(admin.site.urls)),
+    url(r'^old_main/$', views.MainView.as_view(), name='controlnext-main'),
+    url(r'^$', views.DashboardView.as_view(), name='controlnext-dashboard'),
+    url(r'^(?P<grower_id>\d+)$', views.GrowerView.as_view(),
+        name='controlnext-grower'),
+    url(r'^data_service/$', views.DataService.as_view(),
+        name='controlnext-data-service'),
+    url(r'^data_service/(?P<grower_id>\d+)/$', views.DataServiceByID.as_view(),
+        name='controlnext-data-service-by-id'),
     # TEMP
     #url(r'^fewsjdbc/', include('lizard_fewsjdbc.urls')),
 )

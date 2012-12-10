@@ -48,7 +48,7 @@ LOGGING = {
             'level': 'DEBUG',
         },
         'django.db.backends': {
-            'handlers': ['null'], # Quiet by default!
+            'handlers': ['null'],  # Quiet by default!
             'propagate': False,
             'level': 'DEBUG',
         },
@@ -74,8 +74,8 @@ DATABASES = {
         'PASSWORD': '',
         'HOST': '',  # empty string for localhost.
         'PORT': '',  # empty string for default.
-        }
     }
+}
 SITE_ID = 1
 SECRET_KEY = 'This is not secret but that is ok.'
 INSTALLED_APPS = [
@@ -96,7 +96,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.gis',
     'django.contrib.sites',
-    ]
+]
 ROOT_URLCONF = 'controlnext.urls'
 
 MIDDLEWARE_CLASSES = (
@@ -108,7 +108,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'lizard_security.middleware.SecurityMiddleware',
     'tls.TLSRequestMiddleware',
-    )
+)
 
 CACHES = {
     'default': {
@@ -130,10 +130,11 @@ MEDIA_ROOT = os.path.join(BUILDOUT_DIR, 'var', 'media')
 STATICFILES_FINDERS = STATICFILES_FINDERS
 
 DEMAND_TABLE_PATH = os.path.join(BUILDOUT_DIR, 'demand_table.csv')
-REQUESTED_VALUES_CSV_PATH = os.path.join(BUILDOUT_DIR, 'var', 'analysis', 'requested_values.csv')
+REQUESTED_VALUES_CSV_PATH = os.path.join(BUILDOUT_DIR, 'var', 'analysis',
+                                         'requested_values.csv')
 
 try:
     # Import local settings that aren't stored in svn/git.
-    from controlnext.local_testsettings import *
+    from controlnext.local_testsettings import *  # noqa
 except ImportError:
     pass

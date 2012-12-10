@@ -11,7 +11,6 @@ from controlnext.utils import cache_result, validate_date, mktim
 
 import pytz
 import pandas as pd
-import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -27,10 +26,12 @@ CSV_COL_DELIMITER = ';'
 DEMAND_COLUMN_NAME = 'demand_m3'
 WEEK_COLUMN_NAME = 'week_number'
 
+
 def get_week(date):
     return date.isocalendar()[1]
 
 ONE_WEEK = datetime.timedelta(weeks=1)
+
 
 class DemandTable(object):
     def __init__(self):
@@ -70,7 +71,7 @@ class DemandTable(object):
 
     def get_demand_for_week(self, week):
         '''
-        Returns the demand on the given week, in m^3. 
+        Returns the demand on the given week, in m^3.
         '''
         # get demand for this week
         result = self.data[week]
@@ -78,7 +79,7 @@ class DemandTable(object):
 
     def get_week_demand_on(self, date):
         '''
-        Returns the week demand on the given date, in m^3. 
+        Returns the week demand on the given date, in m^3.
         '''
         # determine week number for given date
         week = get_week(date)
