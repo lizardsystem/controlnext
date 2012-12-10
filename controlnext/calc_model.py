@@ -85,8 +85,8 @@ class CalculationModel(object):
             if result[i + 1] > desired_fill_m3:
                 # volgende tijdstap wordt gewenste vulgraad overschreden, dus
                 # zet de uitstroom aan
-                variabele_verandering[i] = -self.constants.\
-                    max_uitstroom_per_tijdstap_m3
+                variabele_verandering[i] = (
+                    -self.constants.max_uitstroom_per_tijdstap_m3)
                 # bereken de nieuwe situatie
                 totale_verandering = vaste_verandering + variabele_verandering
                 result = totale_verandering.cumsum() + current_fill_m3
