@@ -60,12 +60,10 @@ class MainView(UiView):
 
 class GrowerView(UiView):
     template_name = 'controlnext/grower_detail.html'
-    page_title = _('ControlNEXT sturing Delfland')
+    page_title = _('ControlNEXT')
 
     def get_context_data(self, *args, **kwargs):
-        self.oppervlakte = self.grower_info.opp_invloed_regen_m2
-        self.max_voorraad = self.grower_info.max_berging_m3
-        self.grower_id = self.grower_info.id
+        self.grower = self.grower_info
         return super(GrowerView, self).get_context_data(*args, **kwargs)
 
     def get(self, request, grower_id, *args, **kwargs):
