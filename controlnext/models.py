@@ -64,6 +64,9 @@ class GrowerInfo(models.Model):
         blank=True, null=True,
         verbose_name=_("height of level indicator (cm)"))
 
+    jdbc_source = models.ForeignKey('lizard_fewsjdbc.JdbcSource', blank=True,
+                                    null=True)
+
     class Meta:
         ordering = ('name',)
         verbose_name = _("grower info")

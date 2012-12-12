@@ -36,12 +36,6 @@ def do_check_frequency(row_data):
 
 class FewsJdbcDataSource(object):
     def __init__(self, grower_info=None):
-        try:
-            self.jdbc_source = JdbcSource.objects.get(
-                slug=settings.CONTROLNEXT_JDBC_SOURCE_SLUG)
-        except JdbcSource.DoesNotExist:
-            raise Exception("Jdbc source %s does not exist." %
-                            settings.CONTROLNEXT_JDBC_SOURCE_SLUG)
         self.grower_info = grower_info
 
     @cache_result(settings.CONTROLNEXT_FEWSJDBC_CACHE_SECONDS,
@@ -166,7 +160,7 @@ class FewsJdbcDataSource(object):
               _from.strftime(settings.CONTROLNEXT_JDBC_DATE_FORMAT),
               to.strftime(settings.CONTROLNEXT_JDBC_DATE_FORMAT)))
 
-        result = self.jdbc_source.query(q)
+        result = self.grower_info.jdbc_source.query(q)
 
         for row in result:
             # Expecting dateTime.iso8601 in a mixed format (basic date +
