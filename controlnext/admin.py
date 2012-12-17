@@ -5,7 +5,12 @@ from django.contrib import admin
 from django.contrib.gis.admin import GeoModelAdmin
 from django.utils.translation import ugettext_lazy as _
 
-from controlnext.models import GrowerInfo
+from controlnext.models import GrowerInfo, Basin
+
+
+class BasinInline(admin.TabularInline):
+    model = Basin
+    extra = 1
 
 
 class GrowerInfoAdmin(GeoModelAdmin):
@@ -32,5 +37,7 @@ class GrowerInfoAdmin(GeoModelAdmin):
             'fields': ('location',)
         }),
     )
+    inlines = [BasinInline, ]
+
 
 admin.site.register(GrowerInfo, GrowerInfoAdmin)

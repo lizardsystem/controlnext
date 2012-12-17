@@ -45,6 +45,8 @@ setup(name='controlnext',
       tests_require=tests_require,
       extras_require = {'test': tests_require},
       entry_points={
-          'console_scripts': [
-          ]},
+          'console_scripts': [],
+          'lizard_map.adapter_class': [
+              'adapter_basin_fill = controlnext.layers:BasinsAdapter',
+          ]}
       )

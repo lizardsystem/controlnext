@@ -12,6 +12,7 @@ from djangorestframework.views import View as JsonView
 import pytz
 
 from lizard_ui.views import UiView
+from lizard_map.models import WorkspaceEdit
 from lizard_map.views import AppView
 
 from controlnext import models
@@ -46,6 +47,17 @@ class DashboardView(AppView):
         context = super(DashboardView, self).get_context_data(*args, **kwargs)
         context['growers'] = GrowerInfo.objects.all()
         return context
+
+    def dispatch(self, request, *args, **kwargs):
+        """Add in the omnipresent workspace item, then proceed as normal."""
+
+        workspace_edit = WorkspaceEdit.get_or_create(
+            request.session.session_key, request.user)
+
+        workspace_edit.add_workspace_item(
+            "Basins", "adapter_basin_fill", "{}")
+
+        return super(DashboardView, self).dispatch(request, *args, **kwargs)
 
 
 class MainView(UiView):
