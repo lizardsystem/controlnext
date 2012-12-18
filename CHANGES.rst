@@ -2,7 +2,7 @@ Changelog of controlnext
 ===================================================
 
 
-0.1 (unreleased)
+0.1 (2012-12-18)
 ----------------
 
 - Initial project structure created with nensskel 1.26.dev0.
