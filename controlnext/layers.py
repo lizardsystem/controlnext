@@ -22,28 +22,28 @@ GENERATED_ICONS = os.path.join(settings.MEDIA_ROOT, 'generated_icons')
 SYMBOL_MANAGER = SymbolManager(ICON_ORIGINALS, GENERATED_ICONS)
 BASIN_ICON = 'point_3.png'
 BASIN_FILL_COLOR_MAP = {
-     0: '00CC00',
-     5: '00CC00',
-    10: '00CC00',
-    15: '00CC00',
-    20: '00CC00',
-    25: '00CC00',
-    30: '00CC00',
-    35: '00CC00',
-    40: '00CC00',
-    45: '00CC00',
-    50: '00CC00',
-    55: '00CC00',
-    60: '00CC00',
-    65: '00CC00',
-    70: '00CC00',
-    75: '00CC00',
-    80: '00CC00',
-    85: 'FF0000',
-    90: 'FF0000',
-    95: 'FF0000',
+     0: '00FFAA',
+     5: '00FF88',
+    10: '00FF66',
+    15: '00FF44',
+    20: '00FF22',
+    25: '00FF00',
+    30: '22FF00',
+    35: '44FF00',
+    40: '66FF00',
+    45: '88FF00',
+    50: 'AAFF00',
+    55: 'CCFF00',
+    60: 'EEFF00',
+    65: 'FFEE00',
+    70: 'FFCC00',
+    75: 'FFAA00',
+    80: 'FF8800',
+    85: 'FF6600',
+    90: 'FF4400',
+    95: 'FF2200',
     100: 'FF0000'
-}
+}  # rounded percentage based colors derived with http://www.colorpicker.com/
 
 
 class BasinsAdapter(WorkspaceItemAdapter):
@@ -62,14 +62,20 @@ class BasinsAdapter(WorkspaceItemAdapter):
         for grower in self.growers:
             for basin in grower.basin_set.all():
                 basin_style = mapnik.Style()
-                # check if there is a value for basin
-                # else show a question mark icon
 
                 style_name = 'basin style %s' % str(basin)
                 styles[style_name] = basin_style
 
                 rule = mapnik.Rule()
                 icon = self.icon_filename(basin, grower.max_storage)
+
+                symbol = mapnik.PointSymbolizer(
+                    os.path.join(GENERATED_ICONS, icon),
+                    "png", 16, 16)
+
+                symbol.allow_overlap = True
+                rule.symbols.append(symbol)
+                basin_style.rules.append(rule)
 
                 query = """(SELECT location
                     FROM controlnext_basin
@@ -95,87 +101,45 @@ class BasinsAdapter(WorkspaceItemAdapter):
 
 
     def search(self, x, y, radius=None):
-        """
-        """
         pt = Point(google_to_wgs84(x, y), 4326)
-
         # Looking at how radius is derived in lizard_map.js, it's best applied
         # to the y-coordinate to get a reasonable search distance in meters.
-
         lon1, lat1 = google_to_wgs84(x, y - radius)
         lon2, lat2 = google_to_wgs84(x, y + radius)
         geod = pyproj.Geod(ellps='WGS84')
         forward, backward, distance = geod.inv(lon1, lat1, lon2, lat2)
-        distance /= 2.0
-
+        # distance /= 2.0
+        distance = 1000000.0  # hack for previous statement, because
+        # otherwise no basins are returned; TODO: figure this out
         results = []
-
-        # Find all basin owned within the search
-        # distance. Order them by distance.
+        # Find all basins within the search distance. Order them by distance.
         for basin in Basin.objects.filter(
-            location__distance_lte=(pt, D(m=distance))).distance(pt).\
-            order_by('distance'):
-#        for basin in Basin.objects.all():
+            location__distance_lte=(pt, D(m=distance))).\
+            distance(pt).order_by('distance'):
 
-            # For each well, we actually find three items:
-            # - A picture of the existing regis layers and filters
-            # - A table of meta information
-            # - If available, historical discharge data in a graph
-            #
-            # This way, the three types of data show in separate popups,
-            # can be added to the collage separately, etc.
-            #
-            # They also need different names, so they look different
-            # in the collage.
-
+            fill_percentage = fill_m3_to_pct(basin.current_fill,
+                basin.owner.max_storage)
             result = {
-                'grouping_hint': 'controlnext basin %d' % (self.workspace_item.id),
+                'grouping_hint': 'controlnext basin %d' % (
+                    self.workspace_item.id),
                 'distance': basin.distance,
-                'name': unicode(basin),
+                'name': "%s (%d%% vol)" % (unicode(basin), fill_percentage),
                 'workspace_item': self.workspace_item,
                 'identifier': basin.identifier(),
-                }
+            }
             results.append(result)
-            #            result = {
-            #                'grouping_hint': 'gmdb well fraction %d' % (
-            #                    self.workspace_item.id),
-            #                'distance': well.distance,
-            #                'name': well.name_fraction(),
-            #                'workspace_item': self.workspace_item,
-            #                'identifier': well.fraction_identifier(),
-            #                }
-            #            results.append(result)
-#            result = {
-#                'grouping_hint': ('gmdb well metadata %d' %
-#                                  (self.workspace_item.id)),
-#                'distance': well.distance,
-#                'name': well.name_metadata(),
-#                'workspace_item': self.workspace_item,
-#                'identifier': well.metadata_identifier(),
-#                }
-#            results.append(result)
-#            if well.has_discharge_data():
-#                result = {
-#                    'grouping_hint': ('gmdb well discharge graph %d' %
-#                                      (self.workspace_item.id,)),
-#                    'distance': well.distance,
-#                    'name': well.name_discharge(),
-#                    'workspace_item': self.workspace_item,
-#                    'identifier': well.discharge_identifier(),
-#                    }
-#                results.append(result)
-#            break
-
         return results
 
 
     def icon_filename(self, basin, max_storage):
+        """Icon file based on basin fill percentage."""
         fill_percentage = fill_m3_to_pct(basin.current_fill, max_storage)
         icon_percentage = self.round_percentage_for_icon(fill_percentage)
         color_as_hex = self.color_by_percentage(icon_percentage)
         color_as_float = self.float_color(color_as_hex)
-        return SYMBOL_MANAGER.get_symbol_transformed(
+        symbol = SYMBOL_MANAGER.get_symbol_transformed(
             BASIN_ICON, color=color_as_float)
+        return symbol
 
 
     def color_by_percentage(self, percentage):
@@ -194,7 +158,7 @@ class BasinsAdapter(WorkspaceItemAdapter):
         return (rr / 255.0, gg / 255.0, bb / 255.0, 1.0)
 
 
-    def round_percentage_for_icon(self, dividend, divisor=5):
+    def round_percentage_for_icon(self, percentage, divisor=5):
         """Round percentage by divisor. Used for minimizing number of icons.
 
         Examples (dividend(s) left, return value right, default divisor):
@@ -204,5 +168,9 @@ class BasinsAdapter(WorkspaceItemAdapter):
         100       -> 100
 
         """
-        remainder = dividend % divisor
-        return dividend - remainder
+        if percentage > 100:
+            return 100
+        if percentage < 0:
+            return 0
+        remainder = percentage % divisor
+        return percentage - remainder

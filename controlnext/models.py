@@ -163,9 +163,21 @@ class Basin(geomodels.Model):
 
     def identifier(self):
         return {
-            'well': self.pk,
+            'basin': self.pk,
             'type': 'basin',
         }
+
+    def metadata_identifier(self):
+        return {
+            'basin': self.pk,
+            'type': 'metadata',
+        }
+
+    def metadata_identifier_json(self):
+        return json.dumps(self.metadata_identifier())
+
+    def name_metadata(self):
+        return "%s - metadata" % unicode(self)
 
 
 class Constants(object):
