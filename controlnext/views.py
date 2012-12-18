@@ -35,7 +35,7 @@ def datetime_to_js(dt):
 
 
 def series_to_js(pdseries):
-    pdseries = pdseries.fillna(None)
+    pdseries = pdseries.fillna(method='pad')
     return [(datetime_to_js(dt), value) for dt, value in pdseries.iterkv()]
 
 

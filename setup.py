@@ -18,7 +18,7 @@ install_requires = [
     'lizard-fewsjdbc >= 2.7',
     'pytz',
     'djangorestframework',
-    'pandas == 0.9.0',
+    'pandas >= 0.9.0',
     'numpy >= 1.6'
     ],
 
