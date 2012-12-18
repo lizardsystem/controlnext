@@ -2,7 +2,7 @@ Changelog of controlnext
 ===================================================
 
 
-0.2 (unreleased)
+0.2 (2012-12-18)
 ----------------
 
 - Use pad method for pandas fillna call, because fillna(None) is not allowed 
