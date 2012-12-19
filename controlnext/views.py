@@ -22,8 +22,9 @@ from controlnext.conf import settings
 from controlnext.fews_data import FewsJdbcDataSource
 from controlnext import constants as legacy_constants
 from controlnext.utils import round_date
-from controlnext.models import GrowerInfo, Constants
-from controlnext.view_helpers import handle_basins_without_point_info
+from controlnext.models import GrowerInfo, Constants, Basin
+from controlnext.view_helpers import update_basin_coordinates, \
+    update_current_fill
 
 logger = logging.getLogger(__name__)
 
@@ -58,8 +59,14 @@ class DashboardView(AppView):
         workspace_edit.add_workspace_item(
             "Basins", "adapter_basin_fill", "{}")
 
-        # get coordinates for basins without coordinates
-        handle_basins_without_point_info()
+        # check basin coordinates and update current fill
+        basins = Basin.objects.all()
+        for basin in basins:
+            if not basin.location:
+                # ^^^ only get coordinates for basins without coordinates
+                update_basin_coordinates(basin)
+            update_current_fill(basin)  # is cached, no need to update on
+            # every request
 
         return super(DashboardView, self).dispatch(request, *args, **kwargs)
 

@@ -38,7 +38,7 @@ class FewsJdbcDataSource(object):
 
     @cache_result(settings.CONTROLNEXT_FEWSJDBC_CACHE_SECONDS,
                   ignore_cache=False, instancemethod=True)
-    def get_rain(self, which, _from, to):
+    def get_rain(self, which, _from, to, *args, **kwargs):
         validate_date(_from)
         validate_date(to)
 
@@ -64,7 +64,7 @@ class FewsJdbcDataSource(object):
 
     @cache_result(settings.CONTROLNEXT_FEWSJDBC_CACHE_SECONDS,
                   ignore_cache=False, instancemethod=True)
-    def get_fill(self, _from, to):
+    def get_fill(self, _from, to, *args, **kwargs):
         validate_date(_from)
         validate_date(to)
 
@@ -94,7 +94,7 @@ class FewsJdbcDataSource(object):
 
     @cache_result(settings.CONTROLNEXT_FEWSJDBC_CACHE_SECONDS,
                   ignore_cache=False, instancemethod=True)
-    def get_current_fill(self, _from, history_timedelta=None):
+    def get_current_fill(self, _from, history_timedelta=None, **kwargs):
         '''
         returns latest available fill AND its series
         '''
@@ -102,7 +102,8 @@ class FewsJdbcDataSource(object):
         if not history_timedelta:
             history_timedelta = settings.CONTROLNEXT_FILL_HISTORY
 
-        fill_history_m3 = self.get_fill(_from - history_timedelta, _from)
+        fill_history_m3 = self.get_fill(_from - history_timedelta, _from,
+                                        **kwargs)
 
         # take last measured value as 'current' fill
         current_fill_m3 = fill_history_m3[-1]
