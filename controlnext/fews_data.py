@@ -175,6 +175,12 @@ class FewsJdbcDataSource(object):
         return result
 
     def get_coordinates(self, location_id):
+        """Retrieve coordinates by location_id.
+
+        JDBC query is expected to return a list with one row of x and y values
+        in rd format, something like [[ 74352.0, 440129.0 ]].
+
+        """
         q = "select x, y from locations where id='%s'" % location_id
         result = self.grower_info.jdbc_source.query(q)
         if not result:
