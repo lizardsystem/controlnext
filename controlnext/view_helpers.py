@@ -1,9 +1,12 @@
 # (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.rst.
 from __future__ import unicode_literals
 import datetime
+from decimal import Decimal
 import logging
 
 import pytz
+
+from django.db.backends.util import format_number
 
 from lizard_map.coordinates import transform_point
 
@@ -47,7 +50,9 @@ def update_current_fill(basin):
     current_fill = ds.get_current_fill(to, history_timedelta,
                                        cache_key=unique_cache_key)
     current_fill_m3 = current_fill['current_fill_m3']
-    if not basin.current_fill == current_fill_m3:
+    # need to format to Decimal with same decimal places as basin.current_fill
+    current_formatted = Decimal(format_number(current_fill_m3, 10, 2))
+    if not basin.current_fill == current_formatted:
         basin.current_fill = current_fill_m3
         basin.current_fill_updated = now
         basin.save()
