@@ -11,8 +11,6 @@ from controlnext.utils import cache_result, validate_date
 from controlnext.conf import settings
 from controlnext.models import Constants
 
-from lizard_fewsjdbc.models import JdbcSource
-
 logger = logging.getLogger(__name__)
 
 RAIN_PARAMETER_IDS = {
@@ -175,3 +173,16 @@ class FewsJdbcDataSource(object):
                 pytz.utc)
 
         return result
+
+    def get_coordinates(self, location_id):
+        q = "select x, y from locations where id='%s'" % location_id
+        result = self.grower_info.jdbc_source.query(q)
+        if not result:
+            logger.error("no results for get_coordinates fewsjdbc call "
+                         "(location_id: %s)" % location_id)
+            return None
+        elif len(result) > 1:
+            logger.error("too many results for get_coordinates fewsjdbc "
+                         "call, only need one (location_id: %s)" %
+                         location_id)
+        return result[0]
