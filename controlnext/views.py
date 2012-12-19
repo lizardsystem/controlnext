@@ -7,7 +7,8 @@ import datetime
 from django.http import Http404
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ObjectDoesNotExist
-from djangorestframework.views import View as JsonView
+from rest_framework.response import Response as RestResponse
+from rest_framework.views import APIView
 
 import pytz
 
@@ -88,9 +89,7 @@ class GrowerView(UiView):
         return super(GrowerView, self).get(request, *args, **kwargs)
 
 
-class DataService(JsonView):
-    _IGNORE_IE_ACCEPT_HEADER = False  # Keep this, if you want IE to work
-
+class DataService(APIView):
     def store_parameters(self, desired_fill, demand_exaggerate,
                          rain_exaggerate, extra=''):
         path = settings.REQUESTED_VALUES_CSV_PATH
@@ -125,15 +124,16 @@ class DataService(JsonView):
             t0 += datetime.timedelta(hours=int(hours_diff))
 
         if graph_type == 'rain':
-            return self.rain(t0, rain_exaggerate)
+            response = self.rain(t0, rain_exaggerate)
         elif graph_type == 'prediction':
             self.store_parameters(desired_fill, demand_exaggerate,
                                   rain_exaggerate)
-            return self.prediction(t0, desired_fill, demand_exaggerate,
+            response = self.prediction(t0, desired_fill, demand_exaggerate,
                                    rain_exaggerate)
         else:
-            return self.advanced(t0, desired_fill, demand_exaggerate,
+            response = self.advanced(t0, desired_fill, demand_exaggerate,
                                  rain_exaggerate, graph_type)
+        return RestResponse(response)
 
     def prediction(self, t0, desired_fill_pct, demand_exaggerate,
                    rain_exaggerate):
@@ -236,9 +236,7 @@ class DataService(JsonView):
         }
 
 
-class DataServiceByID(JsonView):
-    _IGNORE_IE_ACCEPT_HEADER = False  # Keep this, if you want IE to work
-
+class DataServiceByID(APIView):
     def store_parameters(self, desired_fill, demand_exaggerate,
                          rain_exaggerate, extra=''):
         path = settings.REQUESTED_VALUES_CSV_PATH
@@ -280,15 +278,16 @@ class DataServiceByID(JsonView):
             t0 += datetime.timedelta(hours=int(hours_diff))
 
         if graph_type == 'rain':
-            return self.rain(t0, rain_exaggerate)
+            response = self.rain(t0, rain_exaggerate)
         elif graph_type == 'prediction':
             self.store_parameters(desired_fill, demand_exaggerate,
                                   rain_exaggerate)
-            return self.prediction(t0, desired_fill, demand_exaggerate,
+            response = self.prediction(t0, desired_fill, demand_exaggerate,
                                    rain_exaggerate)
         else:
-            return self.advanced(t0, desired_fill, demand_exaggerate,
+            response = self.advanced(t0, desired_fill, demand_exaggerate,
                                  rain_exaggerate, graph_type)
+        return RestResponse(response)
 
     def prediction(self, t0, desired_fill_pct, demand_exaggerate,
                    rain_exaggerate):

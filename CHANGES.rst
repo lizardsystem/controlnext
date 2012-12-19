@@ -5,7 +5,7 @@ Changelog of controlnext
 0.3 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Added support for djangorestframeworks 2.x branch.
 
 
 0.2 (2012-12-18)
