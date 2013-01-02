@@ -7,9 +7,9 @@ import datetime
 from django.http import Http404
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ObjectDoesNotExist
-from djangorestframework.views import View as JsonView
 
 import pytz
+from rest_framework.views import View as JsonView
 
 from lizard_ui.views import UiView
 from lizard_map.models import WorkspaceEdit
