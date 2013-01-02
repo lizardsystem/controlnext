@@ -8,9 +8,10 @@ from django.http import Http404
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ObjectDoesNotExist
 
-import pytz
-from rest_framework.views import APIView
 from rest_framework.response import Response as RestResponse
+from rest_framework.views import APIView
+
+import pytz
 
 from lizard_ui.views import UiView
 from lizard_map.models import WorkspaceEdit
@@ -103,8 +104,6 @@ class GrowerView(UiView):
 
 
 class DataService(APIView):
-    _IGNORE_IE_ACCEPT_HEADER = False  # Keep this, if you want IE to work
-
     def store_parameters(self, desired_fill, demand_exaggerate,
                          rain_exaggerate, extra=''):
         path = settings.REQUESTED_VALUES_CSV_PATH
@@ -252,8 +251,6 @@ class DataService(APIView):
 
 
 class DataServiceByID(APIView):
-    _IGNORE_IE_ACCEPT_HEADER = False  # Keep this, if you want IE to work
-
     def store_parameters(self, desired_fill, demand_exaggerate,
                          rain_exaggerate, extra=''):
         path = settings.REQUESTED_VALUES_CSV_PATH
