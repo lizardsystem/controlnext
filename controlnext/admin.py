@@ -41,3 +41,4 @@ class GrowerInfoAdmin(GeoModelAdmin):
 
 
 admin.site.register(GrowerInfo, GrowerInfoAdmin)
+admin.site.register(Basin)

@@ -146,6 +146,9 @@ class Basin(geomodels.Model):
     jdbc_source = models.ForeignKey('lizard_fewsjdbc.JdbcSource', blank=True,
         null=True)
 
+    # if true, icon is shown on main dashboard map
+    on_main_map = models.BooleanField(default=False)
+
     objects = geomodels.GeoManager()
 
     def google_coordinates(self):

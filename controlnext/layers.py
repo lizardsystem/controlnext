@@ -60,7 +60,7 @@ class BasinsAdapter(WorkspaceItemAdapter):
         database = settings.DATABASES[dbname]
 
         for grower in self.growers:
-            for basin in grower.basin_set.all():
+            for basin in grower.basin_set.filter(on_main_map=True):
                 basin_style = mapnik.Style()
 
                 style_name = 'basin style %s' % str(basin)

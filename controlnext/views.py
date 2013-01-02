@@ -9,7 +9,8 @@ from django.utils.translation import ugettext as _
 from django.core.exceptions import ObjectDoesNotExist
 
 import pytz
-from rest_framework.views import View as JsonView
+from rest_framework.views import APIView
+from rest_framework.response import Response as RestResponse
 
 from lizard_ui.views import UiView
 from lizard_map.models import WorkspaceEdit
@@ -47,7 +48,8 @@ class DashboardView(AppView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(DashboardView, self).get_context_data(*args, **kwargs)
-        context['growers'] = GrowerInfo.objects.all()
+        context['basins'] = Basin.objects.filter(on_main_map=True).order_by(
+            'owner__id')
         return context
 
     def dispatch(self, request, *args, **kwargs):
@@ -56,6 +58,7 @@ class DashboardView(AppView):
         workspace_edit = WorkspaceEdit.get_or_create(
             request.session.session_key, request.user)
 
+        # add default layer with selected basins (see layers.py)
         workspace_edit.add_workspace_item(
             "Basins", "adapter_basin_fill", "{}")
 
@@ -99,7 +102,7 @@ class GrowerView(UiView):
         return super(GrowerView, self).get(request, *args, **kwargs)
 
 
-class DataService(JsonView):
+class DataService(APIView):
     _IGNORE_IE_ACCEPT_HEADER = False  # Keep this, if you want IE to work
 
     def store_parameters(self, desired_fill, demand_exaggerate,
@@ -136,15 +139,16 @@ class DataService(JsonView):
             t0 += datetime.timedelta(hours=int(hours_diff))
 
         if graph_type == 'rain':
-            return self.rain(t0, rain_exaggerate)
+            response_dict = self.rain(t0, rain_exaggerate)
         elif graph_type == 'prediction':
             self.store_parameters(desired_fill, demand_exaggerate,
                                   rain_exaggerate)
-            return self.prediction(t0, desired_fill, demand_exaggerate,
-                                   rain_exaggerate)
+            response_dict = self.prediction(t0, desired_fill,
+                                            demand_exaggerate, rain_exaggerate)
         else:
-            return self.advanced(t0, desired_fill, demand_exaggerate,
-                                 rain_exaggerate, graph_type)
+            response_dict = self.advanced(t0, desired_fill, demand_exaggerate,
+                                          rain_exaggerate, graph_type)
+        return RestResponse(response_dict)
 
     def prediction(self, t0, desired_fill_pct, demand_exaggerate,
                    rain_exaggerate):
@@ -247,7 +251,7 @@ class DataService(JsonView):
         }
 
 
-class DataServiceByID(JsonView):
+class DataServiceByID(APIView):
     _IGNORE_IE_ACCEPT_HEADER = False  # Keep this, if you want IE to work
 
     def store_parameters(self, desired_fill, demand_exaggerate,
@@ -291,15 +295,16 @@ class DataServiceByID(JsonView):
             t0 += datetime.timedelta(hours=int(hours_diff))
 
         if graph_type == 'rain':
-            return self.rain(t0, rain_exaggerate)
+            response_dict = self.rain(t0, rain_exaggerate)
         elif graph_type == 'prediction':
             self.store_parameters(desired_fill, demand_exaggerate,
                                   rain_exaggerate)
-            return self.prediction(t0, desired_fill, demand_exaggerate,
-                                   rain_exaggerate)
+            response_dict = self.prediction(t0, desired_fill,
+                                            demand_exaggerate, rain_exaggerate)
         else:
-            return self.advanced(t0, desired_fill, demand_exaggerate,
-                                 rain_exaggerate, graph_type)
+            response_dict = self.advanced(t0, desired_fill, demand_exaggerate,
+                                          rain_exaggerate, graph_type)
+        return RestResponse(response_dict)
 
     def prediction(self, t0, desired_fill_pct, demand_exaggerate,
                    rain_exaggerate):
