@@ -6,6 +6,7 @@ Changelog of controlnext
 ----------------
 
 - Added support for djangorestframeworks 2.x branch.
+- Add on_main_map field to Basin model.
 
 
 0.2 (2012-12-18)
