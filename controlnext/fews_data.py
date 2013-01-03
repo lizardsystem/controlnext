@@ -7,6 +7,8 @@ import iso8601
 import pytz
 import pandas as pd
 
+from lizard_fewsjdbc.models import JdbcSource
+
 from controlnext.utils import cache_result, validate_date
 from controlnext.conf import settings
 from controlnext.models import Constants
@@ -159,7 +161,16 @@ class FewsJdbcDataSource(object):
               _from.strftime(settings.CONTROLNEXT_JDBC_DATE_FORMAT),
               to.strftime(settings.CONTROLNEXT_JDBC_DATE_FORMAT)))
 
-        result = self.grower_info.jdbc_source.query(q)
+        if self.grower_info:
+            jdbc_source = self.grower_info.jdbc_source
+        else:
+            try:
+                jdbc_source = JdbcSource.objects.get(
+                    slug=settings.CONTROLNEXT_JDBC_SOURCE_SLUG)
+            except JdbcSource.DoesNotExist:
+                raise Exception("Jdbc source %s does not exist." %
+                                settings.CONTROLNEXT_JDBC_SOURCE_SLUG)
+        result = jdbc_source.query(q)
 
         for row in result:
             # Expecting dateTime.iso8601 in a mixed format (basic date +

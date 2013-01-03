@@ -11,6 +11,7 @@ from appconf import AppConf
 
 class ControlNEXTConf(AppConf):
     """Configurable app settings."""
+    JDBC_SOURCE_SLUG = "controlnext"  # used for demo
     JDBC_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
     FEWSJDBC_CACHE_SECONDS = 15 * 60
 
