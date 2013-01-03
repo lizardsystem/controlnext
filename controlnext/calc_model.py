@@ -58,15 +58,15 @@ class CalculationModel(object):
     def __init__(self, demand_table, fews_data):
         self.demand_table = demand_table
         self.fews_data = fews_data
-        self.constants = Constants(self.fews_data.grower_info)
+        self.constants = fews_data.constants
 
     def calc_max_uitstroom(self, _from, periods):
         # tel ook eerste en laatste periode mee
         totale_uitstroom_m3 = (periods *
-                               self.constants.max_uitstroom_per_tijdstap_m3)
+                               self.constants.max_outflow_per_timeunit)
         values = np.arange(
             0.0, float(totale_uitstroom_m3),
-            float(self.constants.max_uitstroom_per_tijdstap_m3))
+            float(self.constants.max_outflow_per_timeunit))
         dates = pd.date_range(_from, periods=periods, freq='15min',
                               tz=pytz.utc)
         ts = pd.Series(values, dates, name='uitstroom')
@@ -74,7 +74,7 @@ class CalculationModel(object):
 
     def predict_scenario(self, _from, current_fill_m3, desired_fill_m3,
                          demand_m3, rain_mm, max_uitstroom_m3):
-        toestroom_m3 = rain_mm * (self.constants.opp_invloed_regen_m2 / 1000)
+        toestroom_m3 = rain_mm * (self.constants.rain_flood_surface / 1000)
         vaste_verandering = toestroom_m3 - demand_m3  # + current_fill_m3
         # vaste_verandering_summed = vaste_verandering.cumsum()
 
@@ -86,7 +86,7 @@ class CalculationModel(object):
                 # volgende tijdstap wordt gewenste vulgraad overschreden, dus
                 # zet de uitstroom aan
                 variabele_verandering[i] = (
-                    -self.constants.max_uitstroom_per_tijdstap_m3)
+                    -self.constants.max_outflow_per_timeunit)
                 # bereken de nieuwe situatie
                 totale_verandering = vaste_verandering + variabele_verandering
                 result = totale_verandering.cumsum() + current_fill_m3
@@ -102,24 +102,24 @@ class CalculationModel(object):
         # sommeer waarden boven de max berging
         result_24h = result[:_from + datetime.timedelta(hours=24)]
         overstort_24h = result_24h[result_24h.values > self.constants.
-                                   max_berging_m3]
+                                   max_storage]
         if len(overstort_24h) > 0:
             overstort_24h = (result[overstort_24h.index].max() -
-                             self.constants.max_berging_m3)
+                             self.constants.max_storage)
         else:
             # geen overstort
             overstort_24h = 0
         # nu ook voor 5 dagen...
-        overstort_5d = result[result.values > self.constants.max_berging_m3]
+        overstort_5d = result[result.values > self.constants.max_storage]
         if len(overstort_5d) > 0:
             overstort_5d = (result[overstort_5d.index].max() -
-                            self.constants.max_berging_m3)
+                            self.constants.max_storage)
         else:
             # geen overstort
             overstort_5d = 0
 
         # terug naar percentages
-        result = fill_m3_to_pct(result, self.constants.max_berging_m3)
+        result = fill_m3_to_pct(result, self.constants.max_storage)
 
         return {
             'prediction': result,
@@ -146,7 +146,7 @@ class CalculationModel(object):
             raise ValueError('value should be a percentage > 0')
 
         # determine desired fill in m^3
-        desired_fill_m3 = (self.constants.max_berging_m3 *
+        desired_fill_m3 = (self.constants.max_storage *
                            (desired_fill_pct / 100))
 
         rain_mean = self.fews_data.get_rain('mean', _from, to)
@@ -198,9 +198,9 @@ class CalculationModel(object):
             'scenarios': {},
             'history': fill_m3_to_pct(
                 current_fill['fill_history_m3'],
-                self.constants.max_berging_m3),
+                self.constants.max_storage),
             'current_fill': fill_m3_to_pct(
-                current_fill_m3, self.constants.max_berging_m3),
+                current_fill_m3, self.constants.max_storage),
             'intermediate': {
                 'rain_mean': rain_mean,
                 'max_uitstroom': max_uitstroom_m3,

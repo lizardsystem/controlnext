@@ -35,20 +35,21 @@ def do_check_frequency(row_data):
 
 
 class FewsJdbcDataSource(object):
-    def __init__(self, grower_info=None):
+    def __init__(self, grower_info=None, constants=None):
         self.grower_info = grower_info
+        # need to wrap for a dynamic (variables via GET) demo grower/basin
+        self.constants = (constants if constants else
+                          Constants(self.grower_info))
 
-    @cache_result(settings.CONTROLNEXT_FEWSJDBC_CACHE_SECONDS,
-                  ignore_cache=False, instancemethod=True)
+#    @cache_result(settings.CONTROLNEXT_FEWSJDBC_CACHE_SECONDS,
+#                  ignore_cache=False, instancemethod=True)
     def get_rain(self, which, _from, to, *args, **kwargs):
         validate_date(_from)
         validate_date(to)
 
-        constants = Constants(self.grower_info)
-
         rain = self._get_timeseries_as_pd_series(
-            constants.rain_filter_id,
-            constants.rain_location_id,
+            self.constants.rain_filter_id,
+            self.constants.rain_location_id,
             RAIN_PARAMETER_IDS[which],
             _from, to, 'rain_' + which
         )
@@ -64,19 +65,17 @@ class FewsJdbcDataSource(object):
 
         return rain
 
-    @cache_result(settings.CONTROLNEXT_FEWSJDBC_CACHE_SECONDS,
-                  ignore_cache=False, instancemethod=True)
+#    @cache_result(settings.CONTROLNEXT_FEWSJDBC_CACHE_SECONDS,
+#                  ignore_cache=False, instancemethod=True)
     def get_fill(self, _from, to, *args, **kwargs):
         validate_date(_from)
         validate_date(to)
 
-        constants = Constants(self.grower_info)
-
         # waarden zijn in cm onder overstortbuis
         ts = self._get_timeseries_as_pd_series(
-            constants.fill_filter_id,
-            constants.fill_location_id,
-            constants.fill_parameter_id,
+            self.constants.fill_filter_id,
+            self.constants.fill_location_id,
+            self.constants.fill_parameter_id,
             _from, to, 'fill'
         )
 
@@ -86,16 +85,16 @@ class FewsJdbcDataSource(object):
         #ts = ts.fillna(0)
 
         # zet om in cm vanaf bodem bak
-        ts += constants.hoogte_niveaumeter_cm
+        ts += self.constants.level_indicator_height
         # zet om naar fractie totale bak
-        ts /= constants.bovenkant_bak_cm
+        ts /= self.constants.basin_top
         # zet om naar m3
-        ts *= constants.max_berging_m3
+        ts *= self.constants.max_storage
 
         return ts
 
-    @cache_result(settings.CONTROLNEXT_FEWSJDBC_CACHE_SECONDS,
-                  ignore_cache=False, instancemethod=True)
+#    @cache_result(settings.CONTROLNEXT_FEWSJDBC_CACHE_SECONDS,
+#                  ignore_cache=False, instancemethod=True)
     def get_current_fill(self, _from, history_timedelta=None, **kwargs):
         '''
         returns latest available fill AND its series

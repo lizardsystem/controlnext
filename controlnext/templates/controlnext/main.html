@@ -44,12 +44,13 @@
      data-max-voorraad="{{ view.max_voorraad }}"
      style="display:none;"></div>
 <div id="controls">
+{% block top_controls %}
 <div>
     <table class="table table-striped">
         <tbody>
             <tr>
                 <td>Lokatie</td>
-                <td>{% block location_name %}Lans{% endblock %}</td>
+                <td>Lans</td>
             </tr>
             <tr>
                 <td>Oppervlakte</td>
@@ -62,6 +63,7 @@
         </tbody>
     </table>
 </div>
+{% endblock %}
 
 <p style="margin-top:20px; text-align:center;">Kies gewenste vullingsgraad:</p>
 <div id="fill-container" class="has_popover_east"
@@ -109,7 +111,11 @@
 </div>
 
 <div id="debug-panel" style="display:none;">
-t0 verschil (uren): <input type="text" id="debug-hours-diff" name="debug-hours-diff" size="4" />
+<ul>
+    <li>t0 verschil (uren): <input type="text" id="debug-hours-diff" name="debug-hours-diff" size="4" /></li>
+    <li>basin oppervlakte: <input type="text" id="debug-basin-surface" name="debug-basin-surface" size="10" /></li>
+    <li>inhoud bassin: <input type="text" id="debug-basin-storage" name="debug-basin-storage" size="10" /></li>
+</ul>
 </div>
 
 </div>

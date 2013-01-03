@@ -18,10 +18,8 @@ urlpatterns = patterns(
     url(r'^$', views.DashboardView.as_view(), name='controlnext-dashboard'),
     url(r'^(?P<grower_id>\d+)$', views.GrowerView.as_view(),
         name='controlnext-grower'),
-    url(r'^data_service/$', views.DataService.as_view(),
+    url(r'^data_service/(?P<grower_id>\d+)/$', views.DataService.as_view(),
         name='controlnext-data-service'),
-    url(r'^data_service/(?P<grower_id>\d+)/$', views.DataServiceByID.as_view(),
-        name='controlnext-data-service-by-id'),
     # TEMP
     #url(r'^fewsjdbc/', include('lizard_fewsjdbc.urls')),
 )

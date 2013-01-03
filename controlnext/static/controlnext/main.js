@@ -94,7 +94,7 @@ $(document).ready(function () {
      * Combine custom flot options with the default option set.
      */
     var add_default_flot_options = function (options) {
-        // first {} = make a copy instead of destroying original 
+        // first {} = make a copy instead of destroying original
         return $.extend(true, {}, default_flot_options, options);
     };
 
@@ -633,7 +633,9 @@ $(document).ready(function () {
         // append debug parameters
         if (debug) {
             $.extend(query, {
-                hours_diff: eval($('#debug-hours-diff').val())
+                hours_diff: eval($('#debug-hours-diff').val()),
+                basin_surface: eval($('#debug-basin-surface').val()),
+                basin_storage: eval($('#debug-basin-storage').val())
             });
         }
 
