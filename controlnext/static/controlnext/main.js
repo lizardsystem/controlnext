@@ -675,7 +675,7 @@ $(document).ready(function () {
 
                 // set the demand text
                 $('#demand-value-24h').html(Math.round(response.demand_24h) + ' m<sup>3</sup>');
-                $('#demand-value-week').html(response.demand_week + ' m<sup>3</sup>');
+                $('#demand-value-week').html(Math.round(response.demand_week) + ' m<sup>3</sup>');
 
                 // set the "omslagpunt" text
                 var omslagpunt = response.graph_info.x_marking_omslagpunt;

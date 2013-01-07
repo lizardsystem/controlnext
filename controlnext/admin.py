@@ -22,9 +22,9 @@ class GrowerInfoAdmin(GeoModelAdmin):
     fieldsets = (
         (None, {
             'classes': ['wide'],
-            'fields': ('name', 'crop', 'jdbc_source', 'rain_location_id',
-            'rain_filter_id', 'fill_location_id', 'fill_filter_id',
-            'fill_parameter_id')
+            'fields': ('name', 'crop', 'crop_surface', 'jdbc_source',
+            'rain_location_id', 'rain_filter_id', 'fill_location_id',
+            'fill_filter_id', 'fill_parameter_id')
         }),
         (_('basin parameters'), {
             'classes': ['wide'],

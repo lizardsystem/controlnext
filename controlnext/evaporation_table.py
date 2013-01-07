@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 from __future__ import division
 import os
+import datetime
 import logging
 
 from django.conf import settings
@@ -25,6 +26,7 @@ if not EVAPORATION_TABLE_PATH:
 CSV_COL_DELIMITER = ';'
 EVAPORATION_COLUMN_NAME = 'evaporation'
 DAY_COLUMN_NAME = 'day_number'
+ACRE_IN_M2 = 10000  # one acre is 10000 square meters
 
 
 def get_day(date):
@@ -32,8 +34,9 @@ def get_day(date):
 
 
 class EvaporationTable(object):
-    def __init__(self, crop_type):
+    def __init__(self, crop_type, crop_surface):
         self.crop_type = crop_type
+        self.crop_surface = crop_surface
         self.data = self._read_csv()
 
 #    @cache_result(3600, ignore_cache=False, instancemethod=True)
@@ -41,7 +44,7 @@ class EvaporationTable(object):
         '''
         Reads the evaporation csv file and return its contents in a dict
         int(day number) -> int(evaporation_value).
-        Evaporation values are in kilogram/acre.
+        Evaporation values are in m3 / acre.
         '''
         # dont use the csv module here, its ancient (no unicode)
         # and less dependencies is generally better
@@ -64,7 +67,7 @@ class EvaporationTable(object):
 
     def get_evaporation_for_day(self, day_number):
         '''
-        Returns the demand on the given day, in kilogram per acre.
+        Returns the demand on the given day, in m3 per acre.
         '''
         # get evaporation value for this day
         result = self.data[day_number]
@@ -72,7 +75,7 @@ class EvaporationTable(object):
 
     def get_day_evaporation_on(self, date):
         '''
-        Returns the week demand on the given date, in kilogram per acre.
+        Returns the week demand on the given date, in m3 per acre.
         '''
         # determine day number for given date
         day_number = get_day(date)
@@ -81,6 +84,11 @@ class EvaporationTable(object):
         elif day_number == 366:
             day_number = 365
         return self.get_evaporation_for_day(day_number)
+
+    def get_week_demand_on(self, start_date):
+        # needed for calc model
+        end_date = start_date + datetime.timedelta(days=7)
+        return self.get_total_demand(start_date, end_date)
 
     def get_demand(self, _from, to):
         validate_date(_from)
@@ -97,7 +105,11 @@ class EvaporationTable(object):
         ts.fillna(method='ffill', inplace=True)
         # divide by amount of quarter hours in a day
         ts /= 24 * 4
-        return ts[_from:to]
+        # correct for crop surface
+        surface_correction_factor = self.crop_surface / ACRE_IN_M2
+        ts *= surface_correction_factor
+        result = ts[_from:to]
+        return result
 
     def get_total_demand(self, _from, to):
         return self.get_demand(_from, to).sum()
@@ -112,6 +124,6 @@ class EvaporationTable(object):
         fig = plt.figure(figsize=(24, 6))
         axes = ts.plot()
         fig.add_subplot(axes)
-        axes.set_ylabel('evaporation (in kg/acre/15min) (crop: %s)' %
+        axes.set_ylabel('evaporation (in m3/acre/15min) (crop: %s)' %
                         self.crop_type)
         fig.savefig('evaporation_plot_%s.png' % self.crop_type)

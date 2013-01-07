@@ -8,7 +8,6 @@ import pytz
 import pandas as pd
 import numpy as np
 
-from controlnext.models import Constants
 from controlnext.utils import round_date, validate_date
 
 # optionally import matplotlib which can be used to debugging

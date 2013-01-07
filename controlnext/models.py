@@ -1,10 +1,13 @@
 # (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.rst.
 from __future__ import unicode_literals
+import json
 import logging
 
 from django.db import models
 from django.contrib.gis.db import models as geomodels
 from django.utils.translation import ugettext_lazy as _
+
+from lizard_map.coordinates import transform_point
 
 SRID_WGS84 = 4326
 SRID = SRID_WGS84
@@ -14,12 +17,22 @@ logger = logging.getLogger(__name__)
 
 class GrowerInfo(models.Model):
     """Model for holding grower info."""
+    # crop type constants
+    TOMATO = 'tomato'
+    CHRYSANTHEMUM = 'chrysanthemum'
+    CROP_CHOICES = (
+        (TOMATO, _("tomato")),
+        (CHRYSANTHEMUM, _("chrysanthemum")),
+    )
     # general info
     name = models.CharField(max_length=100, blank=True, null=True,
                             verbose_name=_("name of the grower"))
     # TODO: consider making crop a separate model
     crop = models.CharField(max_length=100, blank=True, null=True,
-                            verbose_name=_("type of crop"))
+                            verbose_name=_("type of crop"),
+                            choices=CROP_CHOICES)
+    crop_surface = models.IntegerField(
+        blank=True, null=True, verbose_name=_("crop surface area (m2)"))
     location = geomodels.PointField(blank=True, null=True, srid=SRID)
     # fill info
     # fill_filter_id = 'waterstand_basins' # Waterstanden
@@ -45,14 +58,11 @@ class GrowerInfo(models.Model):
         verbose_name=_("maximum storage capacity (m3)"))
     # orig: min_berging_pct = 20
     min_storage_pct = models.IntegerField(
-        blank=True, null=True,
-        verbose_name=_("minimum storage capacity (%)"))
+        blank=True, null=True, verbose_name=_("minimum storage capacity (%)"))
     max_storage_pct = models.IntegerField(
-        blank=True, null=True,
-        verbose_name=_("maximum storage capacity (%)"))
+        blank=True, null=True, verbose_name=_("maximum storage capacity (%)"))
     rain_flood_surface = models.IntegerField(
-        blank=True, null=True,
-        verbose_name=_("rain flood surface (m2)"))
+        blank=True, null=True, verbose_name=_("rain flood surface (m2)"))
     max_outflow_per_timeunit = models.DecimalField(
         max_digits=10, decimal_places=2, blank=True, null=True,
         verbose_name=_("maximum outflow per time unit (m3)"))
@@ -81,8 +91,8 @@ class Basin(geomodels.Model):
     """
     owner = models.ForeignKey(GrowerInfo)
     name = models.CharField(max_length=100, blank=True, null=True,
-        verbose_name=_("name of the basin"), help_text=_("must be unique for"
-        "grower"))
+                            verbose_name=_("name of the basin"),
+                            help_text=_("must be unique for grower"))
     location = geomodels.PointField(blank=True, null=True, srid=SRID)
     filter_id = models.CharField(
         max_length=100, blank=True, null=True,
@@ -91,11 +101,11 @@ class Basin(geomodels.Model):
         max_length=100, blank=True, null=True,
         help_text=_("e.g. OPP1 (i.e. Oranjebinnenpolder Oost)"))
     parameter_id = models.CharField(max_length=100, blank=True,
-        null=True)
+                                    null=True)
     # rain info
     # rain_filter_id = 'neerslag_combo' # Neerslag gecombimeerd
     rain_filter_id = models.CharField(max_length=100, blank=True, null=True,
-        help_text=_("e.g. neerslag_combo"))
+                                      help_text=_("e.g. neerslag_combo"))
     # rain_location_id = 'OPP1'  # Oranjebinnenpolder Oost
     rain_location_id = models.CharField(
         max_length=100, blank=True, null=True,
@@ -134,7 +144,7 @@ class Basin(geomodels.Model):
     current_fill_updated = models.DateTimeField(blank=True, null=True)
 
     jdbc_source = models.ForeignKey('lizard_fewsjdbc.JdbcSource', blank=True,
-        null=True)
+                                    null=True)
 
     # if true, icon is shown on main dashboard map
     on_main_map = models.BooleanField(default=False)

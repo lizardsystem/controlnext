@@ -21,6 +21,7 @@ from controlnext import models
 from controlnext.demand_table import DemandTable
 from controlnext.calc_model import CalculationModel
 from controlnext.conf import settings
+from controlnext.evaporation_table import EvaporationTable
 from controlnext.fews_data import FewsJdbcDataSource
 from controlnext.utils import round_date
 from controlnext.models import GrowerInfo, Constants, Basin
@@ -38,7 +39,8 @@ def datetime_to_js(dt):
 
 
 def series_to_js(pdseries):
-    pdseries = pdseries.fillna(method='pad')
+    # bfill because sometimes first element is a NaN
+    pdseries = pdseries.fillna(method='bfill')
     return [(datetime_to_js(dt), value) for dt, value in pdseries.iterkv()]
 
 
@@ -154,9 +156,18 @@ class DataService(APIView):
                                           rain_exaggerate, graph_type)
         return RestResponse(response_dict)
 
+    def get_demand_table(self):
+        if self.grower_info.crop and self.grower_info.crop_surface:
+            table = EvaporationTable(self.grower_info.crop,
+                                     self.grower_info.crop_surface)
+        else:
+            # fallback to generic demand table (not linked to crop)
+            table = DemandTable()
+        return table
+
     def prediction(self, t0, desired_fill_pct, demand_exaggerate,
                    rain_exaggerate):
-        tbl = DemandTable()
+        tbl = self.get_demand_table()
         ds = FewsJdbcDataSource(self.grower_info, constants=self.constants)
         model = CalculationModel(tbl, ds)
 
@@ -192,7 +203,7 @@ class DataService(APIView):
 
     def advanced(self, t0, desired_fill_pct, demand_exaggerate,
                  rain_exaggerate, graph_type):
-        tbl = DemandTable()
+        tbl = self.get_demand_table()
         ds = FewsJdbcDataSource(self.grower_info, constants=self.constants)
         model = CalculationModel(tbl, ds)
 
