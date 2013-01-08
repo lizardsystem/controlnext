@@ -21,3 +21,4 @@ class DemoMainView(UiView):
             # needed for view.grower access in template
             self.grower = demo_grower
         return context
+

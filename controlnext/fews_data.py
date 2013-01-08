@@ -62,7 +62,6 @@ class FewsJdbcDataSource(object):
         #if np.nan in rain:
         #    raise Exception('Found NaN in results')
         #rain = rain.fillna(0)
-
         return rain
 
 #    @cache_result(settings.CONTROLNEXT_FEWSJDBC_CACHE_SECONDS,

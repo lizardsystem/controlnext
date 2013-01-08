@@ -101,7 +101,6 @@ class DemandTable(object):
         ts = ts.interpolate()
         # divide by amount of quarter hours in a week
         ts /= 7 * 24 * 4
-        #import pdb; pdb.set_trace()
         return ts[_from:to]
 
     def get_total_demand(self, _from, to):
