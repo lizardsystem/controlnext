@@ -27,6 +27,7 @@ CSV_COL_DELIMITER = ';'
 EVAPORATION_COLUMN_NAME = 'evaporation'
 DAY_COLUMN_NAME = 'day_number'
 ACRE_IN_M2 = 10000  # one acre is 10000 square meters
+ONE_DAY = datetime.timedelta(days=1)
 
 
 def get_day(date):
@@ -94,7 +95,10 @@ class EvaporationTable(object):
         validate_date(_from)
         validate_date(to)
 
-        dayly = pd.date_range(_from, to, freq='D', tz=pytz.utc)
+        # ensure we deal with broader range to avoid resample edge problems
+        from_adj = _from - ONE_DAY
+        to_adj = to + ONE_DAY
+        dayly = pd.date_range(from_adj, to_adj, freq='D', tz=pytz.utc)
         values = [self.get_day_evaporation_on(date) for date in dayly]
 
         ts = pd.Series(values, dayly, name='evaporation')
