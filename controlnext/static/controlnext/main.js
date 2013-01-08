@@ -617,9 +617,9 @@ $(document).ready(function () {
     };
 
     /**
-     * Get the value of a GET parameter from the URL
+     * Get the value of a GET parameter from the URL.
      *
-     * @param name name if the url parameter
+     * @param name name of the url parameter
      * @return parameter value
      *
      */
