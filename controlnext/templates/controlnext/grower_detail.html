@@ -129,8 +129,12 @@
         <div id="upper">
             <div id="left">
                 <div class="inner">
-                    <img id="situation-image" src="{{ STATIC_URL }}controlnext/situation.jpg" width="200" height="200" />
-                    <div>Standaard watervraag 24 uur:</div>
+	                {% if view.crop_type %}
+		                <img id="situation-image" src="{{ STATIC_URL }}controlnext/{{ view.crop_type }}.jpg" width="200" height="200" />
+	                {% else %}
+                        <img id="situation-image" src="{{ STATIC_URL }}controlnext/situation.jpg" width="200" height="200" />
+                    {% endif %}
+	                <div>Standaard watervraag 24 uur:</div>
                     <div class="textual-value" id="demand-value-24h"></div>
                     <div>Standaard watervraag week:</div>
                     <div class="textual-value" id="demand-value-week"></div>

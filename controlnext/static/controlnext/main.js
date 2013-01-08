@@ -617,6 +617,19 @@ $(document).ready(function () {
     };
 
     /**
+     * Get the value of a GET parameter from the URL
+     *
+     * @param name name if the url parameter
+     * @return parameter value
+     *
+     */
+    var getURLParameter = function getURLParameter(name) {
+        return decodeURIComponent(
+            (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,""])[1]
+        );
+    };
+
+    /**
      * Parse values from the UI's input controls and return a query string for them.
      */
     var get_query_params = function (graph_type) {
@@ -630,6 +643,14 @@ $(document).ready(function () {
             date: new Date().getTime() // add dummy date to simulate REST like behaviour, but in reality the server-time is used
         };
 
+        // if given, add the crop type to the query
+        var crop_type = getURLParameter('crop');
+        if (crop_type) {
+            $.extend(query, {
+                crop: crop_type
+            });
+        }
+
         // append debug parameters
         if (debug) {
             $.extend(query, {
@@ -638,7 +659,6 @@ $(document).ready(function () {
                 basin_storage: eval($('#debug-basin-storage').val())
             });
         }
-
         return $.param(query);
     };
 

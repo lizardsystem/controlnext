@@ -84,6 +84,19 @@ class GrowerInfo(models.Model):
         return self.name
 
 
+def is_valid_crop_type(crop_type):
+    """Check whether crop type is valid.
+
+    N.B.: each crop type should also have a <crop_type>.jpg in the static/
+        directory!
+
+    """
+    crop_types= zip(*GrowerInfo.CROP_CHOICES)[0]
+    if crop_type.lower() in crop_types:
+        return True
+    return False
+
+
 class Basin(geomodels.Model):
     """Basin specific model.
 

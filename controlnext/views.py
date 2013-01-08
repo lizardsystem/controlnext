@@ -24,7 +24,8 @@ from controlnext.conf import settings
 from controlnext.evaporation_table import EvaporationTable
 from controlnext.fews_data import FewsJdbcDataSource
 from controlnext.utils import round_date
-from controlnext.models import GrowerInfo, Constants, Basin
+from controlnext.models import GrowerInfo, Constants, Basin,\
+    is_valid_crop_type
 from controlnext.view_helpers import update_basin_coordinates, \
     update_current_fill
 
@@ -91,6 +92,9 @@ class GrowerView(UiView):
             raise Http404
         else:
             self.grower_info = models.Constants(grower_info)
+            if (self.grower_info.crop and
+                    is_valid_crop_type(self.grower_info.crop)):
+                self.crop_type = self.grower_info.crop
         return super(GrowerView, self).get(request, *args, **kwargs)
 
 
@@ -157,7 +161,12 @@ class DataService(APIView):
         return RestResponse(response_dict)
 
     def get_demand_table(self):
-        if self.grower_info.crop and self.grower_info.crop_surface:
+        # first try to get crop and surface from request
+        crop = self.request.GET.get('crop')  # None if none given
+        if crop and is_valid_crop_type(crop):
+            # also need a <crop>.jpg in the static/ directory
+            table = EvaporationTable(crop, self.grower_info.crop_surface)
+        elif self.grower_info.crop and self.grower_info.crop_surface:
             table = EvaporationTable(self.grower_info.crop,
                                      self.grower_info.crop_surface)
         else:
