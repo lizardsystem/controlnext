@@ -1,0 +1,130 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-01-09 07:01-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: admin.py:29
+msgid "basin parameters"
+msgstr ""
+
+#: admin.py:35
+msgid "location"
+msgstr "lokatie"
+
+#: models.py:24
+msgid "tomato"
+msgstr "tomaat"
+
+#: models.py:25
+msgid "chrysanthemum"
+msgstr "chrysant"
+
+#: models.py:29
+msgid "name of the grower"
+msgstr "naam van de tuinder"
+
+#: models.py:32
+msgid "type of crop"
+msgstr "soort gewas"
+
+#: models.py:35
+msgid "crop surface area (m2)"
+msgstr "gewas oppervlakte (m2)"
+
+#: models.py:41 models.py:112
+msgid "e.g. waterstand_basins"
+msgstr "b.v. waterstand_basins"
+
+#: models.py:50 models.py:121
+msgid "e.g. neerslag_combo"
+msgstr "b.v. neerslag_combo"
+
+#: models.py:54 models.py:115 models.py:125
+msgid "e.g. OPP1 (i.e. Oranjebinnenpolder Oost)"
+msgstr "b.v. OPP1 (i.e. Oranjebinnenpolder Oost)"
+
+#: models.py:58 models.py:130
+msgid "maximum storage capacity (m3)"
+msgstr "maximum opslag capaciteit (m3)"
+
+#: models.py:61 models.py:133
+msgid "minimum storage capacity (%)"
+msgstr "minimum opslag capaciteit (%)"
+
+#: models.py:63 models.py:137
+msgid "maximum storage capacity (%)"
+msgstr "maximum opslag capaciteit (%)"
+
+#: models.py:65 models.py:140
+msgid "rain flood surface (m2)"
+msgstr "regen uitstroom oppervlakte (m2)"
+
+#: models.py:68 models.py:144
+msgid "maximum outflow per time unit (m3)"
+msgstr "maximale uitstroom per tijdseenheid (m3)"
+
+#: models.py:70 models.py:147
+msgid "top of basin (cm)"
+msgstr "bovenkant bassin (cm)"
+
+#: models.py:73 models.py:151
+msgid "height of level indicator (cm)"
+msgstr "hoogte van niveau meter (cm)"
+
+#: models.py:80 models.py:81
+msgid "grower info"
+msgstr "tuinder info"
+
+#: models.py:107
+msgid "name of the basin"
+msgstr "bassin naam"
+
+#: models.py:108
+msgid "must be unique for grower"
+msgstr "dient uniek te zijn per tuinder"
+
+#: models.py:156
+msgid "current fill (m3)"
+msgstr "huidige vulling (m3)"
+
+#: models.py:173
+msgid "basin"
+msgstr "bassin"
+
+#: models.py:174
+msgid "basins"
+msgstr "bassins"
+
+#: views.py:50
+msgid "ControlNEXT sturing Delfland dashboard"
+msgstr ""
+
+#: views.py:82
+msgid "ControlNEXT"
+msgstr "ControlNEXT"
+
+#: templates/controlnext/dashboard.html:11
+msgid "These are the connected grower basins."
+msgstr "Dit zijn de aangesloten bassins."
+
+#: templates/controlnext/dashboard.html:11
+msgid "Growers"
+msgstr "Tuinders"
+
+#: templates/controlnext/realbase.html:85
+msgid "Back to homepage"
+msgstr "Terug naar begin"
