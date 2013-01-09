@@ -65,8 +65,9 @@ class DashboardView(AppView):
         workspace_edit.add_workspace_item(
             "Basins", "adapter_basin_fill", "{}")
 
-        # check basin coordinates and update current fill
-        basins = Basin.objects.all()
+        # check basin coordinates and update current fill when the basin is
+        # shown on the main map
+        basins = Basin.objects.filter(on_main_map=True)
         for basin in basins:
             if not basin.location:
                 # ^^^ only get coordinates for basins without coordinates
