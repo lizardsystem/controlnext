@@ -182,10 +182,10 @@ class DataService(APIView):
         crop = self.request.GET.get('crop')  # None if none given
         if crop and is_valid_crop_type(crop):
             # also need a <crop>.jpg in the static/ directory
-            table = EvaporationTable(crop, self.grower_info.crop_surface)
-        elif self.grower_info.crop and self.grower_info.crop_surface:
+            table = EvaporationTable(crop, self.constants.rain_flood_surface)
+        elif self.grower_info.crop:
             table = EvaporationTable(self.grower_info.crop,
-                                     self.grower_info.crop_surface)
+                                     self.constants.rain_flood_surface)
         else:
             # fallback to generic demand table (not linked to crop)
             table = DemandTable()
