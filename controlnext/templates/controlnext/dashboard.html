@@ -16,3 +16,14 @@
 {% endfor %}
 </ul>
 {% endblock %}
+
+{% block bottom-extras %}
+	<script type="text/javascript">
+		/**
+		 * set first breadcrumb href (Home) to root
+		 */
+		$(document).ready(function () {
+		    $('#breadcrumbs ul li a').first().attr("href", "/");
+		});
+	</script>
+{% endblock bottom-extras %}

@@ -823,6 +823,11 @@ $(document).ready(function () {
     // };
 
     /**
+     * set first breadcrumb href (Home) to root
+     */
+    $('#breadcrumbs ul li a').first().attr("href", "/");
+
+    /**
      * Set up advanced graph form.
      */
     var setup_advanced_graph_form = function () {
