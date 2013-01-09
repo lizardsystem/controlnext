@@ -651,6 +651,20 @@ $(document).ready(function () {
             });
         }
 
+        // add custom variables to query if available
+        var rain_flood_surface_element = $('#rain-flood-surface');
+        if (rain_flood_surface_element.length > 0) {
+            $.extend(query, {
+                rain_flood_surface: rain_flood_surface_element.val()
+            });
+        }
+        var basin_storage_element = $('#basin-storage');
+        if (basin_storage_element.length > 0) {
+            $.extend(query, {
+                basin_storage: basin_storage_element.val()
+            });
+        }
+
         // append debug parameters
         if (debug) {
             $.extend(query, {
@@ -708,6 +722,16 @@ $(document).ready(function () {
 
                 $('#overflow-24h-value').html(Math.round(response.overflow_24h) + ' m<sup>3</sup>');
                 $('#overflow-5d-value').html(Math.round(response.overflow_5d) + ' m<sup>3</sup>');
+
+                // set custom values
+                var rain_flood_surface_element = $('#rain-flood-surface');
+                if (rain_flood_surface_element.length > 0) {
+                    rain_flood_surface_element.val(response.graph_info.rain_flood_surface);
+                }
+                var basin_storage_element = $('#basin-storage');
+                if (basin_storage_element.length > 0) {
+                    basin_storage_element.val(response.graph_info.basin_storage);
+                }
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 var $error = $('<p>Fout bij het laden van de grafiekdata: ' + errorThrown + '</p>');

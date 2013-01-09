@@ -125,16 +125,32 @@ class DataService(APIView):
             raise Http404
 
         graph_type = request.GET.get('graph_type', None)
-        hours_diff = request.GET.get('hours_diff', None)
+        hours_diff = request.GET.get('hours_diff', None)  # debug param
 
         # overridable variables for demo purposes
-        basin_surface = request.GET.get('basin_surface', None)
+        rain_flood_surface = request.GET.get('rain_flood_surface', None)
+
+        # debug params
+        if not rain_flood_surface:
+            rain_flood_surface = request.GET.get('basin_surface', None)
         basin_storage = request.GET.get('basin_storage', None)
 
-        if basin_surface:
-            self.constants.rain_flood_surface = int(basin_surface)
+        if rain_flood_surface:
+            try:
+                # basic validation, if not integer, default value is used
+                # other validations can be put here, like upper bounds
+                self.constants.rain_flood_surface = int(rain_flood_surface)
+            except ValueError:
+                logger.error("invalid value for rain_flood_surface: %s" %
+                             rain_flood_surface)
         if basin_storage:
-            self.constants.max_storage = int(basin_storage)
+            try:
+                # basic validation, if not integer, default value is used
+                # other validations can be put here, like upper bounds
+                self.constants.max_storage = int(basin_storage)
+            except ValueError:
+                logger.error("invalid value for basin_storage: %s" %
+                             basin_storage)
 
         desired_fill = request.GET.get('desired_fill')
         demand_exaggerate = request.GET.get('demand_exaggerate')
@@ -198,6 +214,8 @@ class DataService(APIView):
                 prediction['scenarios']['mean']['omslagpunt']),
             'y_marking_desired_fill': desired_fill_pct,
             'desired_fill': desired_fill_pct,
+            'rain_flood_surface': self.constants.rain_flood_surface,
+            'basin_storage': self.constants.max_storage
         }
         result = {
             'graph_info': graph_info,

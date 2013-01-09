@@ -47,13 +47,22 @@ def update_current_fill(basin):
     to = round_date(now)
     history_timedelta = datetime.timedelta(days=1)
     unique_cache_key = "%s:%s" % (unicode(basin), basin.id)
-    current_fill = ds.get_current_fill(to, history_timedelta,
-                                       cache_key=unique_cache_key)
-    current_fill_m3 = current_fill['current_fill_m3']
-    # need to format to Decimal with same decimal places as basin.current_fill
-    current_formatted = Decimal(format_number(current_fill_m3, 10, 2))
-    if not basin.current_fill == current_formatted:
-        basin.current_fill = current_fill_m3
-        basin.current_fill_updated = now
-        basin.save()
-        return current_formatted
+    try:
+        current_fill = ds.get_current_fill(to, history_timedelta,
+                                           cache_key=unique_cache_key)
+    except Exception, info:
+        msg = "error updating current fill data for basin '%s': %s" % (
+            basin, info)
+        logger.error(msg)
+    else:
+        current_fill_m3 = current_fill['current_fill_m3']
+        # need to format to Decimal with same decimal places as
+        # basin.current_fill
+        current_formatted = Decimal(format_number(current_fill_m3, 10, 2))
+        if not basin.current_fill == current_formatted:
+            logger.debug("updating current fill for basin '%s' from %s to %s" %
+                         basin, basin.current_fill, current_formatted)
+            basin.current_fill = current_fill_m3
+            basin.current_fill_updated = now
+            basin.save()
+            return current_formatted

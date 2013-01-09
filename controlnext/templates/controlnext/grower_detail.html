@@ -51,14 +51,18 @@
                         <td>Lokatie</td>
                         <td>{{ view.grower.name }}</td>
                     </tr>
+                    {% block rain_flood_surface %}
                     <tr>
                         <td>Oppervlakte</td>
                         <td>{{ view.grower.rain_flood_surface }} m<sup>2</sup></td>
                     </tr>
+                    {% endblock %}
+                    {% block basin_max_storage %}
                     <tr>
                         <td>Inhoud bassin</td>
                         <td>{{ view.grower.max_storage }} m<sup>3</sup></td>
                     </tr>
+                    {% endblock %}
                     </tbody>
                 </table>
             </div>

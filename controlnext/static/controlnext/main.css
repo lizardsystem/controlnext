@@ -24,6 +24,16 @@
 
 /* ************************ */
 
+#rain-flood-surface, #basin-storage {
+    width:50px;
+    height:15px;
+    margin:0 5px 0 0;
+    padding:0;
+    text-align:center;
+}
+
+/* ************************ */
+
 #desired-fill-slider {
     display:block;
     position:absolute;
