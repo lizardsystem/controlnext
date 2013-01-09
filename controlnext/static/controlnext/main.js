@@ -433,7 +433,8 @@ $(document).ready(function () {
             { id: 'min',     data: graph_info.data.min,     yaxis: 1, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'mean' },
             { id: 'mean',    data: graph_info.data.mean,    yaxis: 1, lines: { show: true, lineWidth: 7 }, color: "#0026FF", label: 'voorspeld' },
             { id: 'max',     data: graph_info.data.max,     yaxis: 1, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'mean' },
-            { id: 'history', data: graph_info.data.history, yaxis: 1, lines: { show: true, lineWidth: 7 }, color: "yellow", label: 'gemeten' }
+            { id: 'history', data: graph_info.data.history, yaxis: 1, lines: { show: true, lineWidth: 7 }, color: "yellow", label: 'gemeten' },
+            { id: 'no_rain', data: graph_info.data.no_rain, yaxis: 1, lines: { show: true, lineWidth: 1 }, color: "#FF5519", label: 'zonder regen'}
         ];
         var markings = [
             { color: '#f6f6f6', yaxis: { from: graph_info.y_marking_min, to: 0 } },
@@ -717,7 +718,7 @@ $(document).ready(function () {
                     $('#omslagpunt-value').html(full_time_format(omslagpunt));
                 }
                 else {
-                    $('#omslagpunt-value').html('N.v.t.');
+                    $('#omslagpunt-value').html('n.v.t.');
                 }
 
                 $('#overflow-24h-value').html(Math.round(response.overflow_24h) + ' m<sup>3</sup>');

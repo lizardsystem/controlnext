@@ -169,6 +169,11 @@ class CalculationModel(object):
             rain_mean *= rain_exaggerate
             rain_max *= rain_exaggerate
 
+        # create a no rain series
+        rain_zero = rain_min.copy()
+        rain_zero[...] = 0
+        rain_zero.name = 'rain_zero'
+
         # retrieve fill: just take any data we have,
         # so we can compare measurements with predictions
         current_fill = self.fews_data.get_current_fill(to)
@@ -209,6 +214,7 @@ class CalculationModel(object):
 
         # bereken de drie scenarios
         calc_scenarios = {
+            'no_rain': rain_zero,
             'min': rain_min,
             'mean': rain_mean,
             'max': rain_max,
