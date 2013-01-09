@@ -114,6 +114,7 @@ class BasinsAdapter(WorkspaceItemAdapter):
         results = []
         # Find all basins within the search distance. Order them by distance.
         for basin in Basin.objects.filter(
+            on_main_map=True,
             location__distance_lte=(pt, D(m=distance))).\
             distance(pt).order_by('distance'):
 
