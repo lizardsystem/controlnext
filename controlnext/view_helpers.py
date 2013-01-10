@@ -30,11 +30,17 @@ def update_basin_coordinates(basin):
         logger.debug("about to retrieve coordinates for location "
                      "with id = %s" % location_id)
         ds = FewsJdbcDataSource(basin.owner)
-        coordinates = ds.get_coordinates(location_id)
-        point = transform_point(coordinates[0], coordinates[1], 'rd',
-                                'wgs84')
-        basin.location = point
-        basin.save()
+        try:
+            coordinates = ds.get_coordinates(location_id)
+        except Exception, info:
+            msg = ("error retrieving coordinates for basin '%s' with "
+                   "location id %s: %s" % (basin, location_id, info))
+            logger.error(msg)
+        else:
+            point = transform_point(coordinates[0], coordinates[1], 'rd',
+                                    'wgs84')
+            basin.location = point
+            basin.save()
     else:
         logger.error('basin %s does not have a required location id' %
                      basin.id)
