@@ -3,7 +3,12 @@
 
 {% block css %}
     {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}controlnext/main.css" />
+	<style type="text/css">
+		ul.sidebar-list {
+			list-style-type: none;
+			margin-left: 0;
+		}
+	</style>
 {% endblock css %}
 
 {% block sidebar %}
@@ -15,7 +20,7 @@
     <li><a href="{% url controlnext-grower basin.owner.id %}">{{ basin }}</a></li>
 {% endfor %}
 </ul>
-{% endblock %}
+{% endblock sidebar %}
 
 {% block bottom-extras %}
 	<script type="text/javascript">
