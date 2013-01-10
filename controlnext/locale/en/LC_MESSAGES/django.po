@@ -1,114 +1,113 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
-# Translators:
-#   <sander.smits@nelen-schuurmans.nl>, 2013.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: controlnext\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-01-10 03:38-0600\n"
-"PO-Revision-Date: 2013-01-10 10:10+0000\n"
-"Last-Translator: admin <sander.smits@nelen-schuurmans.nl>\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: nl_NL\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
 #: admin.py:29
 msgid "basin parameters"
-msgstr "bassin parameters"
+msgstr ""
 
 #: admin.py:35
 msgid "location"
-msgstr "lokatie"
+msgstr ""
 
 #: models.py:24
 msgid "tomato"
-msgstr "tomaat"
+msgstr ""
 
 #: models.py:25
 msgid "chrysanthemum"
-msgstr "chrysant"
+msgstr ""
 
 #: models.py:29
 msgid "name of the grower"
-msgstr "naam van de tuinder"
+msgstr ""
 
 #: models.py:32
 msgid "type of crop"
-msgstr "soort gewas"
+msgstr ""
 
 #: models.py:35
 msgid "crop surface area (m2)"
-msgstr "gewas oppervlakte (m2)"
+msgstr ""
 
 #: models.py:41 models.py:112
 msgid "e.g. waterstand_basins"
-msgstr "b.v. waterstand_basins"
+msgstr ""
 
 #: models.py:50 models.py:121
 msgid "e.g. neerslag_combo"
-msgstr "b.v. neerslag_combo"
+msgstr ""
 
 #: models.py:54 models.py:115 models.py:125
 msgid "e.g. OPP1 (i.e. Oranjebinnenpolder Oost)"
-msgstr "b.v. OPP1 (i.e. Oranjebinnenpolder Oost)"
+msgstr ""
 
 #: models.py:58 models.py:130
 msgid "maximum storage capacity (m3)"
-msgstr "maximale opslagcapaciteit (m3)"
+msgstr ""
 
 #: models.py:61 models.py:133
 msgid "minimum storage capacity (%)"
-msgstr "minimale opslagcapaciteit (%)"
+msgstr ""
 
 #: models.py:63 models.py:137
 msgid "maximum storage capacity (%)"
-msgstr "maximale opslagcapaciteit (%)"
+msgstr ""
 
 #: models.py:65 models.py:140
 msgid "rain flood surface (m2)"
-msgstr "regen uitstroom oppervlakte (m2)"
+msgstr ""
 
 #: models.py:68 models.py:144
 msgid "maximum outflow per time unit (m3)"
-msgstr "maximale uitstroom per tijdseenheid (m3)"
+msgstr ""
 
 #: models.py:70 models.py:147
 msgid "top of basin (cm)"
-msgstr "bovenkant bassin (cm)"
+msgstr ""
 
 #: models.py:73 models.py:151
 msgid "height of level indicator (cm)"
-msgstr "hoogte van niveau meter (cm)"
+msgstr ""
 
 #: models.py:80 models.py:81
 msgid "grower info"
-msgstr "tuinder info"
+msgstr ""
 
 #: models.py:107
 msgid "name of the basin"
-msgstr "bassin naam"
+msgstr ""
 
 #: models.py:108
 msgid "must be unique for grower"
-msgstr "dient uniek te zijn per tuinder"
+msgstr ""
 
 #: models.py:156
 msgid "current fill (m3)"
-msgstr "huidige vulling (m3)"
+msgstr ""
 
 #: models.py:173
 msgid "basin"
-msgstr "bassin"
+msgstr ""
 
 #: models.py:174
 msgid "basins"
-msgstr "bassins"
+msgstr ""
 
 #: views.py:50
 msgid "ControlNEXT sturing Delfland dashboard"
@@ -116,18 +115,16 @@ msgstr ""
 
 #: views.py:83
 msgid "ControlNEXT"
-msgstr "ControlNEXT"
+msgstr ""
 
 #: templates/controlnext/dashboard.html:11
 msgid "These are the connected grower basins."
-msgstr "Dit zijn de aangesloten bassins."
+msgstr ""
 
 #: templates/controlnext/dashboard.html:11
 msgid "Growers"
-msgstr "Tuinders"
+msgstr ""
 
 #: templates/controlnext/realbase.html:85
 msgid "Back to homepage"
-msgstr "Terug naar begin"
-
-
+msgstr ""
