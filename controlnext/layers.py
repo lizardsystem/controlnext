@@ -108,9 +108,7 @@ class BasinsAdapter(WorkspaceItemAdapter):
         lon2, lat2 = google_to_wgs84(x, y + radius)
         geod = pyproj.Geod(ellps='WGS84')
         forward, backward, distance = geod.inv(lon1, lat1, lon2, lat2)
-        # distance /= 2.0
-        distance = 1000000.0  # hack for previous statement, because
-        # otherwise no basins are returned; TODO: figure this out
+        distance /= 4.0  # original is 2.0
         results = []
         # Find all basins within the search distance. Order them by distance.
         for basin in Basin.objects.filter(
@@ -175,3 +173,40 @@ class BasinsAdapter(WorkspaceItemAdapter):
             return 0
         remainder = percentage % divisor
         return percentage - remainder
+
+    def html(self, snippet_group=None, identifiers=None, layout_options=None):
+        """Overridden so we can put in basin specific info."""
+        basins = []
+        for identifier in identifiers:
+            basin_id = identifier['basin']
+            basins.append(Basin.objects.get(pk=basin_id))
+
+        extra_kwargs = {
+            'basins': basins
+        }
+
+        return super(BasinsAdapter, self).html_default(
+            snippet_group=snippet_group,
+            identifiers=identifiers,
+            layout_options=layout_options,
+            template='controlnext/basin_popup.html',
+            extra_render_kwargs=extra_kwargs)
+
+    def location(self, layout=None, **identifier):
+        basin_id = identifier['basin']
+        basin = Basin.objects.get(pk=basin_id)
+
+        if layout is not None:
+            identifier['layout'] = layout
+
+        x, y = wgs84_to_google(
+            basin.location.x,
+            basin.location.y)
+
+        return {
+            'name': unicode(basin),
+            'shortname': basin.name,
+            'workspace_item': self.workspace_item,
+            'identifier': identifier,
+            'google_coords': (x, y),
+            'object': basin}

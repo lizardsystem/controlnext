@@ -5,6 +5,7 @@ import logging
 
 from django.db import models
 from django.contrib.gis.db import models as geomodels
+from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from lizard_map.coordinates import transform_point
@@ -74,6 +75,9 @@ class GrowerInfo(models.Model):
 
     jdbc_source = models.ForeignKey('lizard_fewsjdbc.JdbcSource', blank=True,
                                     null=True)
+
+    def get_absolute_url(self):
+        return reverse('controlnext-grower', args=[str(self.id)])
 
     class Meta:
         ordering = ('name',)

@@ -1,0 +1,24 @@
+{% load workspaces %}
+
+{% block popup_title %}
+	{% if basins %}
+		<table class="table">
+		    <thead>
+            <tr>
+	            <th>tuinder</th>
+            </tr>
+		    </thead>
+		    <tbody>
+	        {% for basin in basins %}
+		    <tr>
+                <td><a href="{{ basin.owner.get_absolute_url }}">{{ basin }}</a></td>
+		    </tr>
+	        {% endfor %}
+		    </tbody>
+	    </table>
+		<hr/>
+		<small>Klik op bovenstaande tuinder om naar bijbehorende dashboard te gaan.</small>
+	{% else %}
+        <span>Geen gegevens gevonden.</span>
+	{% endif %}
+{% endblock %}

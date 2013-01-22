@@ -11,6 +11,7 @@ Changelog of controlnext
 - Prepared jQuery UI paths, which have slightly changed in the new lizard-ui.
 - Ensured URLs of dependencies (/map, /ui) aren't included twice when running
   as part of a site.
+- Add link to grower dashboard in popup, after clicking a basin.
 
 
 0.2 (2012-12-18)
