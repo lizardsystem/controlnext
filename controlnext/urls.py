@@ -12,7 +12,6 @@ admin.autodiscover()
 
 urlpatterns = patterns(
     '',
-    url(r'^ui/', include('lizard_ui.urls')),
     url(r'^$', views.DashboardView.as_view(), name='controlnext-dashboard'),
     url(r'^(?P<grower_id>\d+)$', views.GrowerView.as_view(),
         name='controlnext-grower'),
@@ -20,5 +19,12 @@ urlpatterns = patterns(
         name='controlnext-data-service'),
 )
 
-if settings.DEBUG:
+if getattr(settings, 'LIZARD_CONTROLNEXT_STANDALONE', False):
+    admin.autodiscover()
+    urlpatterns += patterns(
+        '',
+        (r'^ui/', include('lizard_ui.urls')),
+        (r'^map/', include('lizard_map.urls')),
+        (r'^admin/', include(admin.site.urls)),
+    )
     urlpatterns += debugmode_urlpatterns()
