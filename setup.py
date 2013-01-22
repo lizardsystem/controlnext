@@ -6,7 +6,7 @@ long_description = '\n\n'.join([
     open('README.rst').read(),
     open('CREDITS.rst').read(),
     open('CHANGES.rst').read(),
-    ])
+])
 
 install_requires = [
     'Django',
@@ -19,11 +19,11 @@ install_requires = [
     'pytz',
     'djangorestframework',
     'pandas >= 0.9.0',
-    'numpy >= 1.6'
-    ],
+    'numpy >= 1.6',
+    'factory_boy',
+],
 
-tests_require = [
-    ]
+tests_require = []
 
 setup(name='controlnext',
       version=version,
@@ -43,10 +43,10 @@ setup(name='controlnext',
       zip_safe=False,
       install_requires=install_requires,
       tests_require=tests_require,
-      extras_require = {'test': tests_require},
+      extras_require={'test': tests_require},
       entry_points={
           'console_scripts': [],
           'lizard_map.adapter_class': [
               'adapter_basin_fill = controlnext.layers:BasinsAdapter',
-          ]}
-      )
+          ]
+      })

@@ -83,7 +83,7 @@ INSTALLED_APPS = [
     'lizard_ui',
     'lizard_map',
     'lizard_fewsjdbc',
-    'djangorestframework',
+    'rest_framework',
     'staticfiles',
     'compressor',
     'south',

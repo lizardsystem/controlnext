@@ -206,8 +206,5 @@ class Constants(object):
 
     def __getattr__(self, item):
         if self.info:
-            try:
-                return getattr(self.info, item)
-            except AttributeError:
-                raise
-        raise
+            return getattr(self.info, item)
+        raise Exception("should never reach this point")
