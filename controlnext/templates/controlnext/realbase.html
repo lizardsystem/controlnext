@@ -27,7 +27,7 @@
       {% block css %}
         {# CSS for jqueryui: "smoothness" theme #}
         <link type="text/css"
-              href="{{ STATIC_URL }}jqueryui/smoothness/jquery-ui-1.8.23.custom.css"
+              href="{{ STATIC_URL }}jqueryui/smoothness/jquery-ui.css"
               rel="stylesheet"
               media="screen, projection" />
         {# Twitter bootstrap, but with an included #}
@@ -226,7 +226,7 @@
     <script type="text/javascript"
             src="{{ STATIC_URL }}lizard_ui/csrf.js"></script>
     <script type="text/javascript"
-            src="{{ STATIC_URL }}jqueryui/jqueryui.min.js"></script>
+            src="{{ STATIC_URL }}jqueryui/jquery-ui.js"></script>
   {% endblock javascript %}
 
     {% block map-javascript %}

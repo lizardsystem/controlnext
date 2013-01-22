@@ -7,6 +7,10 @@ Changelog of controlnext
 
 - Added support for djangorestframeworks 2.x branch.
 - Add on_main_map field to Basin model.
+- Fixed DATABASE and INSTALLED_APPS testsettings.
+- Prepared jQuery UI paths, which have slightly changed in the new lizard-ui.
+- Ensured URLs of dependencies (/map, /ui) aren't included twice when running
+  as part of a site.
 
 
 0.2 (2012-12-18)

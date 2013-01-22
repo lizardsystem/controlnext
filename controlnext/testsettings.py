@@ -69,7 +69,7 @@ DATABASES = {
     # that as an error.
     'default': {
         'NAME': os.path.join(BUILDOUT_DIR, 'var', 'sqlite', 'test.db'),
-        'ENGINE': 'django.db.backends.sqlite3',
+        'ENGINE': 'django.contrib.gis.db.backends.spatialite',
         'USER': '',
         'PASSWORD': '',
         'HOST': '',  # empty string for localhost.
@@ -83,7 +83,7 @@ INSTALLED_APPS = [
     'lizard_ui',
     'lizard_map',
     'lizard_fewsjdbc',
-    'djangorestframework',
+    'rest_framework',
     'staticfiles',
     'compressor',
     'south',
@@ -132,6 +132,8 @@ STATICFILES_FINDERS = STATICFILES_FINDERS
 DEMAND_TABLE_PATH = os.path.join(BUILDOUT_DIR, 'demand_table.csv')
 REQUESTED_VALUES_CSV_PATH = os.path.join(BUILDOUT_DIR, 'var', 'analysis',
                                          'requested_values.csv')
+
+LIZARD_CONTROLNEXT_STANDALONE = True
 
 try:
     # Import local settings that aren't stored in svn/git.
