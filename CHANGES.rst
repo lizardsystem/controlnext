@@ -5,7 +5,10 @@ Changelog of controlnext
 0.4 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Add controlnext_demo app to MANIFEST.in in order to get its templates dir
+  packages as well.
+- Update missing setup.py fields.
+- Add simple test factory for GrowerInfo.
 
 
 0.3 (2013-01-23)
@@ -23,7 +26,7 @@ Changelog of controlnext
 0.2 (2012-12-18)
 ----------------
 
-- Use pad method for pandas fillna call, because fillna(None) is not allowed 
+- Use pad method for pandas fillna call, because fillna(None) is not allowed
 anymore since pandas 0.10.0.
 
 
