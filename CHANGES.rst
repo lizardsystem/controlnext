@@ -2,7 +2,7 @@ Changelog of controlnext
 ===================================================
 
 
-0.4 (unreleased)
+0.4 (2013-01-23)
 ----------------
 
 - Add controlnext_demo app to MANIFEST.in in order to get its templates dir
