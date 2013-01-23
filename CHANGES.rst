@@ -2,7 +2,7 @@ Changelog of controlnext
 ===================================================
 
 
-0.3 (unreleased)
+0.3 (2013-01-23)
 ----------------
 
 - Added support for djangorestframeworks 2.x branch.
