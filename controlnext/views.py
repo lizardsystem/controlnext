@@ -202,6 +202,9 @@ class DataService(APIView):
         prediction = model.predict_fill(t0, future, desired_fill_pct,
                                         demand_exaggerate, rain_exaggerate)
 
+        if desired_fill_pct == 0:  # first load version
+            desired_fill_pct = prediction['current_fill']
+
         # TODO should use dict comprehension in py > 2.6
         data = dict([(name, series_to_js(scenario['prediction']))
                      for name, scenario in prediction['scenarios'].items()])

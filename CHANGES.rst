@@ -12,7 +12,7 @@ Changelog of controlnext
 - Ensured URLs of dependencies (/map, /ui) aren't included twice when running
   as part of a site.
 - Add link to grower dashboard in popup, after clicking a basin.
-
+- Set initial desired fill slide value to the current fill value.
 
 0.2 (2012-12-18)
 ----------------

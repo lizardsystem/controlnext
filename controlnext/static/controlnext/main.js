@@ -200,11 +200,7 @@ $(document).ready(function () {
      */
     var setup_fill_slider = function () {
         // load initial value of this slider from a cookie, if present
-        var initialValue = 50;
-        var cookieValue = $.cookie('desired_fill');
-        if (cookieValue !== null) {
-            initialValue = cookieValue;
-        }
+        var initialValue = 0;
 
         // construct the jQuery UI slider
         var $slider = $('#desired-fill-slider').slider({
@@ -239,9 +235,10 @@ $(document).ready(function () {
             update_label(ui.value);
         });
 
-        // update the cookie, when slider is released
+        // after setting the initial value to the current fill percentage the
+        // label should update as well
         $slider.bind('slidechange', function (event, ui) {
-            $.cookie('desired_fill', ui.value, { expires: 14 });
+            update_label(ui.value);
         });
 
         // do an initial update of the label
@@ -685,6 +682,7 @@ $(document).ready(function () {
         shutdownOldPlot($container);
         var $spinner = build_spinner();
         $container.empty().append($spinner);
+        var $slider = $('#desired-fill-slider');
 
         // hide the 'bakjes' visualization
         //$overflow_visualization_container.hide();
@@ -696,6 +694,9 @@ $(document).ready(function () {
             success: function (response) {
                 // clear the graph container (remove spinner)
                 $container.empty();
+
+                // set slider to desired_fill
+                $slider.slider("option", "value", response.graph_info.desired_fill);
 
                 // plot the graph
                 plot_fill_graph(response.graph_info, $container);
