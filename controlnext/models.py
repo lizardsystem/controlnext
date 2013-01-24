@@ -115,8 +115,7 @@ class Basin(geomodels.Model):
         max_length=100, blank=True, null=True,
         help_text=_("e.g. waterstand_basins"))
     location_id = models.CharField(
-        max_length=100, blank=True, null=True,
-        help_text=_("e.g. OPP1 (i.e. Oranjebinnenpolder Oost)"))
+        max_length=100, blank=True, null=True)
     parameter_id = models.CharField(max_length=100, blank=True,
                                     null=True)
     # rain info

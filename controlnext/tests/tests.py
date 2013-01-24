@@ -1,27 +1,28 @@
 import datetime
 import logging
 
+from django.test import TestCase
+
+import mock
+from pandas import Series
 import pytz
 
-from django.test import TestCase
+try:
+    # new style
+    from lizard_fewsjdbc.tests.factories import JdbcSourceFactory
+except ImportError:
+    # old style
+    from lizard_fewsjdbc.tests import JdbcSourceF as JdbcSourceFactory
 
 from controlnext.calc_model import CalculationModel
 from controlnext.conf import settings
 from controlnext.demand_table import DemandTable
 from controlnext.fews_data import FewsJdbcDataSource
 from controlnext.utils import round_date, mktim
+from controlnext.tests.factories import GrowerInfoFactory
+
 
 logger = logging.getLogger(__name__)
-
-
-def plot(name, *args):
-    if not name:
-        name = 'plot'
-    import matplotlib.pyplot as plt
-    fig = plt.figure(figsize=(24, 6))
-    for df in args:
-        fig.add_subplot(df.plot())
-    fig.savefig('plot_' + name + '.png')
 
 
 w26_0 = mktim(2012, 6, 25, 0, 0)   # monday, 0:00, week 26 (d = 20000)
@@ -39,6 +40,38 @@ w30_5 = mktim(2012, 7, 26, 12, 0)  # middle of week 30 (d = 17000)
 # TODO: setup dynamically, otherwise tests will fail after a while
 wNOW = mktim(2012, 12, 5, 0, 0)
 wNOW_5 = mktim(2012, 12, 8, 12, 0)
+
+
+MOCK_DATA_IMPORT_ERROR = ("error importing %s; you can generate mock data "
+                          "files with management command "
+                          "'cn_generate_test_data")
+
+
+def get_rain_mock_data(self, which, _from, to):
+    try:
+        module_name = "controlnext.tests.data.rain_%s_data" % which
+        data_module = __import__(
+            module_name, fromlist=["controlnext.tests.data"])
+    except ImportError, info:
+        msg = MOCK_DATA_IMPORT_ERROR % module_name
+        error_msg = "%s (%s)" % (msg, info)
+        logger.error(error_msg)
+        raise Exception(error_msg)
+    data_dict = dict(data_module.DATA)
+    return Series(data_dict)
+
+
+def get_fill_mock_data(self, _from, to):
+    try:
+        from controlnext.tests.data.fill_data import DATA
+    except ImportError, info:
+        module_name = "controlnext.tests.data.fill_data"
+        msg = MOCK_DATA_IMPORT_ERROR % module_name
+        error_msg = "%s (%s)" % (msg, info)
+        logger.error(error_msg)
+        raise Exception(error_msg)
+    data_dict = dict(DATA)
+    return Series(data_dict)
 
 
 class DemandTableTest(TestCase):
@@ -67,51 +100,36 @@ class DemandTableTest(TestCase):
         self.assertAlmostEqual(res, expected, delta=500)
 
 
-class FewsJdbcDataSourceTest(TestCase):
-    fixtures = ['jdbc_source.json']
-
-    def setUp(self):
-        self.ds = FewsJdbcDataSource()
-
-    def test_connection(self):
-        fews_data = self.ds.get_fill(wNOW, wNOW_5)
-        self.assertGreater(len(fews_data), 10)
-
-
 class CalculationModelTest(TestCase):
-    fixtures = ['jdbc_source.json']
 
     def setUp(self):
         tbl = DemandTable()
         self.tbl = tbl
 
-        ds = FewsJdbcDataSource()
+        jdbc_source = JdbcSourceFactory.create(
+            connector_string=('jdbc:vjdbc:rmi://p-fews-jd-d3.external-nens.'
+                              'local:2001/VJdbc,FewsDataStore'),
+            customfilter='',
+            filter_tree_root='',
+            jdbc_tag_name='controlnext_delfland',
+            jdbc_url=('jdbc:vjdbc:rmi://p-fews-jd-d3.external-nens.local:2001'
+                      '/VJdbc,FewsDataStore'),
+            name='controlnext',
+            slug='controlnext',
+            usecustomfilter=False,
+            timezone_string='UTC'
+        )
+        self.grower_info = GrowerInfoFactory.create(jdbc_source=jdbc_source)
+        ds = FewsJdbcDataSource(grower_info=self.grower_info)
         self.ds = ds
 
         model = CalculationModel(tbl, ds)
         self.model = model
 
-    def mkplot(self, name, t1, t2):
-        rains = []
-        for which in ['min', 'mean', 'max']:
-            rain = self.ds.get_rain(which, t1, t2)
-            rains.append(rain)
-        plot(name, *rains)
-
-    def test_make_some_plots(self):
-        now = datetime.datetime.now(pytz.utc)
-        history = now - datetime.timedelta(days=1)
-        future = now + datetime.timedelta(days=5)
-        # d1 = self.tbl.get_demand(w28_0, w29_5)
-        # d2 = self.ds.get_fill(w28_0, w29_5)
-        # d3 = self.ds.get_rain('mean', w28_0, w29_5)
-        now = round_date(now)
-        history = round_date(history)
-        future = round_date(future)
-        self.mkplot('history', history, now)
-        self.mkplot('span', history, future)
-        self.mkplot('future', now, future)
-
+    @mock.patch('controlnext.fews_data.FewsJdbcDataSource.get_fill',
+                get_fill_mock_data)
+    @mock.patch('controlnext.fews_data.FewsJdbcDataSource.get_rain',
+                get_rain_mock_data)
     def test_calc_model(self):
         now = mktim(2012, 8, 5, 8, 0)  # some rain fell here
         now = round_date(datetime.datetime.now(tz=pytz.utc))
@@ -120,12 +138,3 @@ class CalculationModelTest(TestCase):
         ts = self.model.predict_fill(now, future, 20, 100, 100)
 
         self.assertGreater(len(ts['scenarios']['mean']['prediction']), 10)
-        plot('predict_fill', ts['scenarios']['mean']['prediction'],
-             ts['history'])
-        # plot('predict_fill_rain', ts['rain'])
-        plot('predict_fill_uitstroom',
-             ts['scenarios']['mean']['intermediate']['uitstroom'])
-        plot('predict_fill_toestroom',
-             ts['scenarios']['mean']['intermediate']['toestroom'])
-        plot('predict_fill_max_uitstroom', ts['intermediate']['max_uitstroom'])
-        plot('predict_fill_watervraag', ts['intermediate']['demand'])

@@ -5,7 +5,10 @@ Changelog of controlnext
 0.5 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Change test infrastructure to be able to test offline and prepare for 
+  better tests (without fews connection).
+- Make current test(s) work with the mocked test data.
+- Add .travis.yml.
 
 
 0.4 (2013-01-23)
