@@ -19,6 +19,7 @@ from controlnext.conf import settings
 from controlnext.demand_table import DemandTable
 from controlnext.fews_data import FewsJdbcDataSource
 from controlnext.utils import round_date, mktim
+from controlnext.wur_data import WURService
 from controlnext.tests.factories import GrowerInfoFactory
 
 
@@ -138,3 +139,32 @@ class CalculationModelTest(TestCase):
         ts = self.model.predict_fill(now, future, 20, 100, 100)
 
         self.assertGreater(len(ts['scenarios']['mean']['prediction']), 10)
+
+
+def get_wur_service_mock_data(self):
+    try:
+        from controlnext.tests.data.wur_response_data import DATA
+    except ImportError, info:
+        module_name = "controlnext.tests.data.wur_response_data"
+        msg = MOCK_DATA_IMPORT_ERROR % module_name
+        error_msg = "%s (%s)" % (msg, info)
+        logger.error(error_msg)
+        raise Exception(error_msg)
+    return DATA
+
+
+class WURServiceTest(TestCase):
+
+    def setUp(self):
+        now = datetime.datetime.now()
+        _from = now - datetime.timedelta(days=2)
+        to = now
+        self.service = WURService(_from, to)
+
+    # TODO: mock suds response with wur_response.xml
+    @mock.patch('controlnext.wur_data.WURService.get_data',
+                get_wur_service_mock_data)
+    def test_get_data(self):
+        data = self.service.get_data()
+        self.assertEqual(len(data), 48)  # 2 days
+

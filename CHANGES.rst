@@ -9,6 +9,7 @@ Changelog of controlnext
   better tests (without fews connection).
 - Make current test(s) work with the mocked test data.
 - Add .travis.yml.
+- Add WURService class to consume Wageningen University webservice.
 
 
 0.4 (2013-01-23)

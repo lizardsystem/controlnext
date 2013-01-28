@@ -43,8 +43,8 @@ def cache_result(seconds=900, ignore_cache=False, instancemethod=False):
     return do_cache_result
 
 
-def round_date(date):
-    minutes = date.minute - (date.minute % 15)
+def round_date(date, divisor=15):
+    minutes = date.minute - (date.minute % divisor)
     return date.replace(minute=minutes, second=0, microsecond=0)
 
 

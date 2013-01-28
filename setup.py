@@ -21,6 +21,7 @@ install_requires = [
     'pandas >= 0.9.0',
     'numpy >= 1.6',
     'factory_boy',
+    'suds',
 ],
 
 tests_require = []
