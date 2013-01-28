@@ -5,7 +5,8 @@ Changelog of controlnext
 0.6 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Add intro and travis status image.
+- Add image field to GrowerInfo model. 
 
 
 0.5 (2013-01-28)
