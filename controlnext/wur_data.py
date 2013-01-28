@@ -103,6 +103,7 @@ class WURService(object):
     def get_data(self):
         """Get data based on start and end time. Data is returned based on
         an hourly interval, but does not include timestamps, only floats.
+        Data units are in m3 per acre per hour.
 
         """
         parameters = self._request_parameters()
