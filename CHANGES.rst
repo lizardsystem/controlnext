@@ -2,7 +2,7 @@ Changelog of controlnext
 ===================================================
 
 
-0.5 (unreleased)
+0.5 (2013-01-28)
 ----------------
 
 - Change test infrastructure to be able to test offline and prepare for 
