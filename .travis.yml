@@ -5,7 +5,7 @@ before_install:
   - wget -q http://packages.lizardsystem.nl/ubuntu/public.gpg -O- | sudo apt-key add -
   - echo 'deb http://packages.lizardsystem.nl/ubuntu/precise32/ ./' | sudo tee -a /etc/apt/sources.list
   - sudo aptitude update
-  - sudo apt-get install python-psycopg2 libgeos-dev python-matplotlib python-pyproj python-mapnik
+  - sudo apt-get install python-psycopg2 libgeos-dev python-matplotlib python-pyproj python-mapnik python-pysqlite2
 notifications:
   irc:
     channels: "irc.freenode.org#nens"
