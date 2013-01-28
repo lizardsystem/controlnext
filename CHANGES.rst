@@ -2,7 +2,7 @@ Changelog of controlnext
 ===================================================
 
 
-0.6 (unreleased)
+0.6 (2013-01-28)
 ----------------
 
 - Add intro and travis status image.
