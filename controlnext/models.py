@@ -4,6 +4,7 @@ import json
 import logging
 
 from django.db import models
+from django.conf import settings
 from django.contrib.gis.db import models as geomodels
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
@@ -72,6 +73,11 @@ class GrowerInfo(models.Model):
     level_indicator_height = models.IntegerField(
         blank=True, null=True,
         verbose_name=_("height of level indicator (cm)"))
+
+    # custom image field for logo, can be empty, if that case a default
+    # will be used
+    image = models.ImageField(verbose_name=_("image"), blank=True, null=True,
+                              upload_to='grower_images')
 
     jdbc_source = models.ForeignKey('lizard_fewsjdbc.JdbcSource', blank=True,
                                     null=True)

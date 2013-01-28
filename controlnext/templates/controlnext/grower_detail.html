@@ -133,7 +133,9 @@
         <div id="upper">
             <div id="left">
                 <div class="inner">
-	                {% if view.crop_type %}
+	                {% if view.grower.image %}
+		                <img id="situation-image" src="{{ view.grower.image.url }}" width="200" height="200" />
+	                {% elif view.crop_type %}
 		                <img id="situation-image" src="{{ STATIC_URL }}controlnext/{{ view.crop_type }}.jpg" width="200" height="200" />
 	                {% else %}
                         <img id="situation-image" src="{{ STATIC_URL }}controlnext/situation.jpg" width="200" height="200" />
