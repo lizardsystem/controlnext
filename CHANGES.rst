@@ -2,7 +2,7 @@ Changelog of controlnext
 ===================================================
 
 
-0.7 (unreleased)
+0.7 (2013-01-29)
 ----------------
 
 - Move basin specific data from GrowerInfo to Basin model.
