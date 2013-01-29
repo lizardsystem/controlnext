@@ -32,5 +32,25 @@ class GrowerInfoAdmin(GeoModelAdmin):
     inlines = [BasinInline, ]
 
 
+class BasinAdmin(GeoModelAdmin):
+    fieldsets = (
+        (None, {
+            'classes': ['wide'],
+            'fields': ('owner', 'name', 'filter_id', 'location_id',
+                       'parameter_id', 'own_meter_filter_id',
+                       'own_meter_location_id', 'own_meter_parameter_id',
+                       'rain_filter_id', 'rain_location_id', 'max_storage',
+                       'min_storage_pct', 'max_storage_pct',
+                       'rain_flood_surface', 'max_outflow_per_timeunit',
+                       'basin_top', 'level_indicator_height', 'jdbc_source',
+                       'on_main_map')
+        }),
+        (_("location"), {
+            'classes': ['collapse'],
+            'fields': ('location',)
+        }),
+    )
+
+
 admin.site.register(GrowerInfo, GrowerInfoAdmin)
-admin.site.register(Basin)
+admin.site.register(Basin, BasinAdmin)

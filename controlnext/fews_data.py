@@ -117,6 +117,51 @@ class FewsJdbcDataSource(object):
 
         return ts
 
+    def get_fill_from_own_meter(self, _from, to, *args, **kwargs):
+        """
+        Get basin fill values based on grower's own meter parameters.
+
+        :param _from: start date and time
+        :param to: end date and time
+        :param args: can be for specific caching with cache_result decorator
+        :param kwargs: idem as args
+        :return: timeseries instance with time (15 minute frequency) and fill
+            value (cubic meters) rows ranging from _from to to
+
+        Example query (Van Der Lans):
+        "select time, value from extimeseries where filterid='meetpunt' and
+         locationid='VP9508:SILO 1' and parameterid='priva.vullingsgraad' and
+         time between '2013-01-01 09:00:00' and '2013-01-29 09:00:00'"
+
+        """
+        validate_date(_from)
+        validate_date(to)
+
+        # basin parameters
+        fill_filter_id = self.basin.own_meter_filter_id
+        fill_location_id = self.basin.own_meter_location_id
+        fill_parameter_id = self.basin.own_meter_parameter_id
+        # max_storage could come from request, therefore use self.constants
+        max_storage = self.constants.max_storage
+
+        # waarden zijn in cm onder overstortbuis
+        ts = self._get_timeseries_as_pd_series(
+            fill_filter_id,
+            fill_location_id,
+            fill_parameter_id,
+            _from, to, 'fill'
+        )
+
+        # values are percentages (0-100)
+        ts /= 100
+        # convert to m3
+        ts *= max_storage
+
+        # data is in 5 minute intervals, so we need to resample to 15 minutes
+        ts = ts.resample('15Min')
+
+        return ts
+
 #    @cache_result(settings.CONTROLNEXT_FEWSJDBC_CACHE_SECONDS,
 #                  ignore_cache=False, instancemethod=True)
     def get_current_fill(self, _from, history_timedelta=None, **kwargs):

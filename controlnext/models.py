@@ -114,6 +114,8 @@ class Basin(geomodels.Model):
                             verbose_name=_("name of the basin"),
                             help_text=_("must be unique for grower"))
     location = geomodels.PointField(blank=True, null=True, srid=SRID)
+
+    # water level meter params
     filter_id = models.CharField(
         max_length=100, blank=True, null=True,
         help_text=_("e.g. waterstand_basins"))
@@ -121,6 +123,19 @@ class Basin(geomodels.Model):
         max_length=100, blank=True, null=True)
     parameter_id = models.CharField(max_length=100, blank=True,
                                     null=True)
+
+    # water level meter params for grower's own meter
+    own_meter_filter_id = models.CharField(
+        verbose_name=_("filter id (grower meter)"),
+        max_length=100, blank=True, null=True,
+        help_text=_("e.g. meetpunt"))
+    own_meter_location_id = models.CharField(
+        verbose_name=_("location id (grower meter)"),
+        max_length=100, blank=True, null=True)
+    own_meter_parameter_id = models.CharField(
+        verbose_name=_("parameter id (grower meter)"),
+        max_length=100, blank=True, null=True)
+
     # rain info
     # rain_filter_id = 'neerslag_combo' # Neerslag gecombimeerd
     rain_filter_id = models.CharField(max_length=100, blank=True, null=True,
