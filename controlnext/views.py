@@ -24,7 +24,7 @@ from controlnext.conf import settings
 from controlnext.evaporation_table import EvaporationTable
 from controlnext.fews_data import FewsJdbcDataSource
 from controlnext.utils import round_date
-from controlnext.models import GrowerInfo, Constants, Basin,\
+from controlnext.models import Constants, Basin,\
     is_valid_crop_type
 from controlnext.view_helpers import update_basin_coordinates, \
     update_current_fill
@@ -78,25 +78,20 @@ class DashboardView(AppView):
         return super(DashboardView, self).dispatch(request, *args, **kwargs)
 
 
-class GrowerView(UiView):
-    template_name = 'controlnext/grower_detail.html'
+class BasinView(UiView):
+    template_name = 'controlnext/basin_detail.html'
     page_title = _('ControlNEXT')
 
-    def get_context_data(self, *args, **kwargs):
-        self.grower = self.grower_info
-        return super(GrowerView, self).get_context_data(*args, **kwargs)
-
-    def get(self, request, grower_id, *args, **kwargs):
+    def get(self, request, basin_id, *args, **kwargs):
         try:
-            grower_info = models.GrowerInfo.objects.get(id=grower_id)
+            self.basin = models.Basin.objects.get(id=basin_id)
         except ObjectDoesNotExist:
             raise Http404
         else:
-            self.grower_info = models.Constants(grower_info)
-            if (self.grower_info.crop and
-                    is_valid_crop_type(self.grower_info.crop)):
-                self.crop_type = self.grower_info.crop
-        return super(GrowerView, self).get(request, *args, **kwargs)
+            if (self.basin.owner.crop and
+                is_valid_crop_type(self.basin.owner.crop)):
+                self.crop_type = self.basin.owner.crop
+        return super(BasinView, self).get(request, *args, **kwargs)
 
 
 class DataService(APIView):
@@ -111,17 +106,18 @@ class DataService(APIView):
             with open(path, 'w') as file:
                 file.write(
                     'desired_fill;demand_exaggerate;rain_exaggerate;extra\n')
-            # write parameter values
+                # write parameter values
         parameters = [desired_fill, demand_exaggerate, rain_exaggerate, extra]
         parameters = map(str, parameters)
         with open(path, 'a') as file:
             file.write(';'.join(parameters) + '\n')
 
-    def get(self, request, grower_id, *args, **kwargs):
+    def get(self, request, basin_id, *args, **kwargs):
         try:
-            grower_info = GrowerInfo.objects.get(id=grower_id)
-            self.grower_info = grower_info
-            self.constants = Constants(self.grower_info)
+            self.basin = Basin.objects.get(id=basin_id)
+            # still needed for request params rain_flood_surface and
+            # basin_storage/max_storage
+            self.constants = Constants(self.basin)
         except ObjectDoesNotExist:
             raise Http404
 
@@ -169,12 +165,12 @@ class DataService(APIView):
             response_dict = self.rain(t0, rain_exaggerate)
         elif graph_type == 'prediction':
             self.store_parameters(desired_fill, demand_exaggerate,
-                                  rain_exaggerate)
+                rain_exaggerate)
             response_dict = self.prediction(t0, desired_fill,
-                                            demand_exaggerate, rain_exaggerate)
+                demand_exaggerate, rain_exaggerate)
         else:
             response_dict = self.advanced(t0, desired_fill, demand_exaggerate,
-                                          rain_exaggerate, graph_type)
+                rain_exaggerate, graph_type)
         return RestResponse(response_dict)
 
     def get_demand_table(self):
@@ -183,9 +179,9 @@ class DataService(APIView):
         if crop and is_valid_crop_type(crop):
             # also need a <crop>.jpg in the static/ directory
             table = EvaporationTable(crop, self.constants.rain_flood_surface)
-        elif self.grower_info.crop:
-            table = EvaporationTable(self.grower_info.crop,
-                                     self.constants.rain_flood_surface)
+        elif self.basin.owner.crop:
+            table = EvaporationTable(self.basin.owner.crop,
+                self.constants.rain_flood_surface)
         else:
             # fallback to generic demand table (not linked to crop)
             table = DemandTable()
@@ -194,7 +190,7 @@ class DataService(APIView):
     def prediction(self, t0, desired_fill_pct, demand_exaggerate,
                    rain_exaggerate):
         tbl = self.get_demand_table()
-        ds = FewsJdbcDataSource(self.grower_info, constants=self.constants)
+        ds = FewsJdbcDataSource(self.basin, self.constants)
         model = CalculationModel(tbl, ds)
 
         future = t0 + settings.CONTROLNEXT_FILL_PREDICT_FUTURE
@@ -229,13 +225,13 @@ class DataService(APIView):
             'demand_24h': tbl.get_total_demand(
                 t0, t0 + datetime.timedelta(hours=24)),
             'current_fill': prediction['current_fill'],
-        }
+            }
         return result
 
     def advanced(self, t0, desired_fill_pct, demand_exaggerate,
                  rain_exaggerate, graph_type):
         tbl = self.get_demand_table()
-        ds = FewsJdbcDataSource(self.grower_info, constants=self.constants)
+        ds = FewsJdbcDataSource(self.basin, self.constants)
         model = CalculationModel(tbl, ds)
 
         future = t0 + settings.CONTROLNEXT_FILL_PREDICT_FUTURE
@@ -263,7 +259,7 @@ class DataService(APIView):
                 'data': series_to_js(data),
                 'x0': datetime_to_js(t0),
                 'unit': unit,
-            }
+                }
         }
         return result
 
@@ -271,7 +267,7 @@ class DataService(APIView):
         _from = t0 - settings.CONTROLNEXT_FILL_HISTORY
         to = t0 + settings.CONTROLNEXT_FILL_PREDICT_FUTURE
 
-        ds = FewsJdbcDataSource(self.grower_info, constants=self.constants)
+        ds = FewsJdbcDataSource(self.basin, self.constants)
         min = ds.get_rain('min', t0, to)
         mean = ds.get_rain('mean', _from, to)
         max = ds.get_rain('max', t0, to)
@@ -294,4 +290,4 @@ class DataService(APIView):
         return {
             't0': t0,
             'rain_graph_info': rain_graph_info,
-        }
+            }

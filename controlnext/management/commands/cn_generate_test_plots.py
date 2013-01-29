@@ -36,7 +36,8 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         grower = GrowerInfo.objects.get(pk=1)
-        self.ds = FewsJdbcDataSource(grower)
+        basin =  grower.basin_set.all()[0]
+        self.ds = FewsJdbcDataSource(basin)
         tbl = DemandTable()
         model = CalculationModel(tbl, self.ds)
 

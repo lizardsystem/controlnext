@@ -44,4 +44,22 @@ class BasinFactory(factory.Factory):
     owner = factory.SubFactory(GrowerInfoFactory)
     name = 'Basin 1'
 
+    filter_id = 'waterstand_basins'
+    parameter_id = 'WNS2820'
+    location_id = '467446797569'
+
+    rain_filter_id = 'neerslag_combo'
+    rain_location_id = 'OPP1'
+
+    max_storage = 15527
+    min_storage_pct = 20
+    max_storage_pct = 100
+    rain_flood_surface = 94000
+
+    max_outflow_per_timeunit = 4.5
+    basin_top = 265
+    level_indicator_height = 265
+
+    jdbc_source = factory.SubFactory(JdbcSourceFactory)
+
     current_fill = 13350

@@ -82,9 +82,6 @@ class GrowerInfo(models.Model):
     jdbc_source = models.ForeignKey('lizard_fewsjdbc.JdbcSource', blank=True,
                                     null=True)
 
-    def get_absolute_url(self):
-        return reverse('controlnext-grower', args=[str(self.id)])
-
     class Meta:
         ordering = ('name',)
         verbose_name = _("grower info")
@@ -177,6 +174,9 @@ class Basin(geomodels.Model):
         return transform_point(self.location.x, self.location.y,
                                from_proj='wgs84', to_proj='google')
 
+    def get_absolute_url(self):
+        return reverse('controlnext-basin', args=[str(self.id)])
+
     class Meta:
         ordering = ('name',)
         verbose_name = _("basin")
@@ -207,13 +207,19 @@ class Basin(geomodels.Model):
 
 class Constants(object):
     """
-    Utility class for accessing grower specific constants.
+    Utility class for accessing basin specific constants. Also used to store
+    user-defined request parameters for controlnext_demo app. FOr now,
+    user-defined parameters are rain_flood_surface and max_storage.
 
     """
-    def __init__(self, grower_info=None):
-        self.info = grower_info
+    def __init__(self, instance=None):
+        self.instance = instance
 
     def __getattr__(self, item):
-        if self.info:
-            return getattr(self.info, item)
+        if self.instance:
+            if isinstance(self.instance, Basin):
+                # custom mapping when instance is a basin
+                if item.startswith('fill_'):
+                    item = item[5:]
+            return getattr(self.instance, item)
         raise Exception("should never reach this point")

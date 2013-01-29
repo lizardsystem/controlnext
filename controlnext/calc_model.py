@@ -57,15 +57,18 @@ class CalculationModel(object):
     def __init__(self, demand_table, fews_data):
         self.demand_table = demand_table
         self.fews_data = fews_data
+        self.basin = fews_data.basin
+        # constants is needed for user-overridable rain_flood_surface and
+        # max_storage in controlnext_demo
         self.constants = fews_data.constants
 
     def calc_max_uitstroom(self, _from, periods):
         # tel ook eerste en laatste periode mee
         totale_uitstroom_m3 = (periods *
-                               self.constants.max_outflow_per_timeunit)
+                               self.basin.max_outflow_per_timeunit)
         values = np.arange(
             0.0, float(totale_uitstroom_m3),
-            float(self.constants.max_outflow_per_timeunit))
+            float(self.basin.max_outflow_per_timeunit))
         dates = pd.date_range(_from, periods=periods, freq='15min',
                               tz=pytz.utc)
         ts = pd.Series(values, dates, name='uitstroom')
@@ -85,7 +88,7 @@ class CalculationModel(object):
                 # volgende tijdstap wordt gewenste vulgraad overschreden, dus
                 # zet de uitstroom aan
                 variabele_verandering[i] = (
-                    -self.constants.max_outflow_per_timeunit)
+                    -self.basin.max_outflow_per_timeunit)
                 # bereken de nieuwe situatie
                 totale_verandering = vaste_verandering + variabele_verandering
                 result = totale_verandering.cumsum() + current_fill_m3

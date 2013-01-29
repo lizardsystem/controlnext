@@ -29,7 +29,7 @@ def update_basin_coordinates(basin):
     if location_id:
         logger.debug("about to retrieve coordinates for location "
                      "with id = %s" % location_id)
-        ds = FewsJdbcDataSource(basin.owner)
+        ds = FewsJdbcDataSource(basin)
         try:
             coordinates = ds.get_coordinates(location_id)
         except Exception, info:
@@ -48,7 +48,7 @@ def update_basin_coordinates(basin):
 
 def update_current_fill(basin):
     """Update basin's current_fill field. Only update if changed."""
-    ds = FewsJdbcDataSource(basin.owner)
+    ds = FewsJdbcDataSource(basin)
     now = datetime.datetime.now(tz=pytz.utc)
     to = round_date(now)
     history_timedelta = datetime.timedelta(days=1)

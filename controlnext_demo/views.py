@@ -4,7 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from django.utils.translation import ugettext as _
 
-from controlnext.models import GrowerInfo, is_valid_crop_type
+from controlnext.models import GrowerInfo, is_valid_crop_type, Basin
 
 from lizard_ui.views import UiView
 
@@ -18,12 +18,9 @@ class DemoMainView(UiView):
     def get_context_data(self, *args, **kwargs):
         context = super(DemoMainView, self).get_context_data(*args, **kwargs)
         try:
-            demo_grower = GrowerInfo.objects.get(name__exact='Demo')
+            self.basin = Basin.objects.get(name__iexact='demo')
         except ObjectDoesNotExist:
             raise Http404
-        else:
-            # needed for view.grower access in template
-            self.grower = demo_grower
         # add crop type if given
         crop = self.request.GET.get('crop')  # None if none given
         if crop and is_valid_crop_type(crop):

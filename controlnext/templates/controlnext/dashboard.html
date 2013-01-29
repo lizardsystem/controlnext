@@ -13,11 +13,11 @@
 
 {% block sidebar %}
 <h2>
-    <span title="{% blocktrans %}These are the connected grower basins.{% endblocktrans %}">{% trans "Growers" %}</span>
+    <span title="{% blocktrans %}These are the connected grower basins.{% endblocktrans %}">{% trans "Grower basins" %}</span>
 </h2>
 <ul class="sidebar-list">
 {% for basin in basins %}
-    <li><a href="{% url controlnext-grower basin.owner.id %}">{{ basin }}</a></li>
+    <li><a href="{% url controlnext-basin basin.id %}">{{ basin }}</a></li>
 {% endfor %}
 </ul>
 {% endblock sidebar %}

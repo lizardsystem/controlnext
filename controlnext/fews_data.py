@@ -35,11 +35,24 @@ def do_check_frequency(row_data):
 
 
 class FewsJdbcDataSource(object):
-    def __init__(self, grower_info=None, constants=None):
-        self.grower_info = grower_info
-        # need to wrap for a dynamic (variables via GET) demo grower/basin
-        self.constants = (constants if constants else
-                          Constants(self.grower_info))
+    def __init__(self, basin, constants=None):
+        self.basin =  basin
+        if constants:
+            self.constants = constants
+        else:
+            self.constants = Constants(basin)
+
+        if self.basin.jdbc_source:
+            self.jdbc_source = self.basin.jdbc_source
+        elif self.basin.owner.jdbc_source:
+            self.jdbc_source = self.basin.owner.jdbc_source
+        else:
+            try:
+                self.jdbc_source = JdbcSource.objects.get(
+                    slug=settings.CONTROLNEXT_JDBC_SOURCE_SLUG)
+            except JdbcSource.DoesNotExist:
+                raise Exception("Jdbc source %s does not exist." %
+                                settings.CONTROLNEXT_JDBC_SOURCE_SLUG)
 
 #    @cache_result(settings.CONTROLNEXT_FEWSJDBC_CACHE_SECONDS,
 #                  ignore_cache=False, instancemethod=True)
@@ -47,9 +60,12 @@ class FewsJdbcDataSource(object):
         validate_date(_from)
         validate_date(to)
 
+        rain_filter_id = self.basin.rain_filter_id
+        rain_location_id = self.basin.rain_location_id
+
         rain = self._get_timeseries_as_pd_series(
-            self.constants.rain_filter_id,
-            self.constants.rain_location_id,
+            rain_filter_id,
+            rain_location_id,
             RAIN_PARAMETER_IDS[which],
             _from, to, 'rain_' + which
         )
@@ -70,11 +86,20 @@ class FewsJdbcDataSource(object):
         validate_date(_from)
         validate_date(to)
 
+        # basin parameters
+        fill_filter_id = self.basin.filter_id
+        fill_location_id = self.basin.location_id
+        fill_parameter_id = self.basin.parameter_id
+        level_indicator_height = self.basin.level_indicator_height
+        basin_top = self.basin.basin_top
+        # max_storage can come from request, therefore from self.constants
+        max_storage = self.constants.max_storage
+
         # waarden zijn in cm onder overstortbuis
         ts = self._get_timeseries_as_pd_series(
-            self.constants.fill_filter_id,
-            self.constants.fill_location_id,
-            self.constants.fill_parameter_id,
+            fill_filter_id,
+            fill_location_id,
+            fill_parameter_id,
             _from, to, 'fill'
         )
 
@@ -84,11 +109,11 @@ class FewsJdbcDataSource(object):
         #ts = ts.fillna(0)
 
         # zet om in cm vanaf bodem bak
-        ts += self.constants.level_indicator_height
+        ts += level_indicator_height
         # zet om naar fractie totale bak
-        ts /= self.constants.basin_top
+        ts /= basin_top
         # zet om naar m3
-        ts *= self.constants.max_storage
+        ts *= max_storage
 
         return ts
 
@@ -159,16 +184,7 @@ class FewsJdbcDataSource(object):
               _from.strftime(settings.CONTROLNEXT_JDBC_DATE_FORMAT),
               to.strftime(settings.CONTROLNEXT_JDBC_DATE_FORMAT)))
 
-        if self.grower_info:
-            jdbc_source = self.grower_info.jdbc_source
-        else:
-            try:
-                jdbc_source = JdbcSource.objects.get(
-                    slug=settings.CONTROLNEXT_JDBC_SOURCE_SLUG)
-            except JdbcSource.DoesNotExist:
-                raise Exception("Jdbc source %s does not exist." %
-                                settings.CONTROLNEXT_JDBC_SOURCE_SLUG)
-        result = jdbc_source.query(q)
+        result = self.jdbc_source.query(q)
 
         for row in result:
             # Expecting dateTime.iso8601 in a mixed format (basic date +
@@ -192,7 +208,7 @@ class FewsJdbcDataSource(object):
 
         """
         q = "select x, y from locations where id='%s'" % location_id
-        result = self.grower_info.jdbc_source.query(q)
+        result = self.jdbc_source.query(q)
         if not result:
             logger.error("no results for get_coordinates fewsjdbc call "
                          "(location_id: %s)" % location_id)

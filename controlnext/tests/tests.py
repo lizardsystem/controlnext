@@ -20,7 +20,7 @@ from controlnext.demand_table import DemandTable
 from controlnext.fews_data import FewsJdbcDataSource
 from controlnext.utils import round_date, mktim
 from controlnext.wur_data import WURService
-from controlnext.tests.factories import GrowerInfoFactory
+from controlnext.tests.factories import GrowerInfoFactory, BasinFactory
 
 
 logger = logging.getLogger(__name__)
@@ -121,11 +121,12 @@ class CalculationModelTest(TestCase):
             timezone_string='UTC'
         )
         self.grower_info = GrowerInfoFactory.create(jdbc_source=jdbc_source)
-        ds = FewsJdbcDataSource(grower_info=self.grower_info)
-        self.ds = ds
 
-        model = CalculationModel(tbl, ds)
-        self.model = model
+        basin = BasinFactory.create(owner=self.grower_info,
+                                    jdbc_source=jdbc_source)
+        ds = FewsJdbcDataSource(basin)
+        self.ds = ds
+        self.model = CalculationModel(tbl, ds)
 
     @mock.patch('controlnext.fews_data.FewsJdbcDataSource.get_fill',
                 get_fill_mock_data)

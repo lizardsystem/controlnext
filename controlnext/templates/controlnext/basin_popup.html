@@ -1,17 +1,18 @@
 {% load workspaces %}
+{% load i18n %}
 
 {% block popup_title %}
 	{% if basins %}
 		<table class="table">
 		    <thead>
             <tr>
-	            <th>tuinder</th>
+	            <th>{% trans "Grower basins" %}</th>
             </tr>
 		    </thead>
 		    <tbody>
 	        {% for basin in basins %}
 		    <tr>
-                <td><a href="{{ basin.owner.get_absolute_url }}">{{ basin }}</a></td>
+                <td><a href="{{ basin.get_absolute_url }}">{{ basin }}</a></td>
 		    </tr>
 	        {% endfor %}
 		    </tbody>

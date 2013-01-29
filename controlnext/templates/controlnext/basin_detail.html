@@ -39,9 +39,9 @@
     {% spaceless %}
         <div id="data-constants"
              data-url-base="{{ STATIC_URL }}controlnext/"
-             data-data-url="{% url controlnext-data-service view.grower.id %}"
-             data-oppervlakte="{{ view.grower.rain_flood_surface }}"
-             data-max-voorraad="{{ view.grower.max_storage }}"
+             data-data-url="{% url controlnext-data-service view.basin.id %}"
+             data-oppervlakte="{{ view.basin.owner.rain_flood_surface }}"
+             data-max-voorraad="{{ view.basin.max_storage }}"
              style="display:none;"></div>
         <div id="controls">
             <div>
@@ -49,18 +49,18 @@
                     <tbody>
                     <tr>
                         <td>Lokatie</td>
-                        <td>{{ view.grower.name }}</td>
+                        <td>{{ view.basin }}</td>
                     </tr>
                     {% block rain_flood_surface %}
                     <tr>
                         <td>Oppervlakte</td>
-                        <td>{{ view.grower.rain_flood_surface }} m<sup>2</sup></td>
+                        <td>{{ view.basin.owner.rain_flood_surface }} m<sup>2</sup></td>
                     </tr>
                     {% endblock %}
                     {% block basin_max_storage %}
                     <tr>
                         <td>Inhoud bassin</td>
-                        <td>{{ view.grower.max_storage }} m<sup>3</sup></td>
+                        <td>{{ view.basin.max_storage }} m<sup>3</sup></td>
                     </tr>
                     {% endblock %}
                     </tbody>
@@ -133,8 +133,8 @@
         <div id="upper">
             <div id="left">
                 <div class="inner">
-	                {% if view.grower.image %}
-		                <img id="situation-image" src="{{ view.grower.image.url }}" width="200" height="200" />
+	                {% if view.basin.owner.image %}
+		                <img id="situation-image" src="{{ view.basin.owner.image.url }}" width="200" height="200" />
 	                {% elif view.crop_type %}
 		                <img id="situation-image" src="{{ STATIC_URL }}controlnext/{{ view.crop_type }}.jpg" width="200" height="200" />
 	                {% else %}
