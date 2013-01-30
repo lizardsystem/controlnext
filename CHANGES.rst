@@ -2,7 +2,7 @@ Changelog of controlnext
 ===================================================
 
 
-0.8 (unreleased)
+0.8 (2013-01-30)
 ----------------
 
 - Add grower's own meter fields to Basin and make a FEWS method for querying the related data.
