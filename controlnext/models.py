@@ -4,7 +4,6 @@ import json
 import logging
 
 from django.db import models
-from django.conf import settings
 from django.contrib.gis.db import models as geomodels
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
@@ -98,7 +97,7 @@ def is_valid_crop_type(crop_type):
         directory!
 
     """
-    crop_types= zip(*GrowerInfo.CROP_CHOICES)[0]
+    crop_types = zip(*GrowerInfo.CROP_CHOICES)[0]
     if crop_type.lower() in crop_types:
         return True
     return False
@@ -184,6 +183,14 @@ class Basin(geomodels.Model):
     on_main_map = models.BooleanField(default=False)
 
     objects = geomodels.GeoManager()
+
+    @property
+    def has_own_meter(self):
+        """Check whether this basin has own meter details."""
+        if (self.own_meter_filter_id and self.own_meter_location_id and
+                self.own_meter_parameter_id):
+            return True
+        return False
 
     def google_coordinates(self):
         return transform_point(self.location.x, self.location.y,

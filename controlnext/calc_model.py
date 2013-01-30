@@ -182,6 +182,13 @@ class CalculationModel(object):
         current_fill = self.fews_data.get_current_fill(to)
         current_fill_m3 = current_fill['current_fill_m3']
 
+        # define current_fill_own_meter if basin has its own meter
+        if self.basin.has_own_meter:
+            current_fill_own_meter = self.fews_data.get_current_fill(
+                to, own_meter=True)
+            current_fill_own_meter_m3 = (
+                current_fill_own_meter['current_fill_m3'])
+
         # bereken watervraag over deze periode
         demand_m3 = self.demand_table.get_demand(_from, to)
 
@@ -214,6 +221,15 @@ class CalculationModel(object):
                 'demand': demand_m3,
             }
         }
+        if self.basin.has_own_meter:
+            result.update({
+                'history_own_meter': fill_m3_to_pct(
+                    current_fill_own_meter['fill_history_m3'],
+                    self.constants.max_storage),
+                'current_fill_own_meter': fill_m3_to_pct(
+                    current_fill_own_meter_m3,
+                    self.constants.max_storage),
+            })
 
         # bereken de drie scenarios
         calc_scenarios = {

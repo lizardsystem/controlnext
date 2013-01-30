@@ -575,6 +575,76 @@ $(document).ready(function () {
     };
 
     /**
+     * Plot meter comparison data.
+     */
+    var plot_meter_comparison_graph = function (graph_info, $container) {
+        // build a new element
+        var $graph = $('<div id="advanced-graph" class="zoompanlinked-flot-graph"/>');
+        $container.append($graph);
+
+        var lines = [
+//            { id: 'min',     data: graph_info.data.min,     yaxis: 1, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'mean' },
+//            { id: 'mean',    data: graph_info.data.mean,    yaxis: 1, lines: { show: true, lineWidth: 7 }, color: "#0026FF", label: 'voorspeld' },
+//            { id: 'max',     data: graph_info.data.max,     yaxis: 1, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'mean' },
+            { id: 'history', data: graph_info.data.history, yaxis: 1, lines: { show: true, lineWidth: 1 }, color: "yellow", label: 'delfland meter' },
+            { id: 'history_own_meter', data: graph_info.data.history_own_meter, yaxis: 1, lines: { show: true, lineWidth: 1 }, color: "#FF5519", label: 'eigen meter'}
+        ];
+        var markings = [
+            { color: '#f6f6f6', yaxis: { from: graph_info.y_marking_min, to: 0 } },
+            { color: '#f6f6f6', yaxis: { from: 120, to: graph_info.y_marking_max } },
+            { color: '#ccc',    yaxis: { from: graph_info.y_marking_min, to: graph_info.y_marking_min } },
+            { color: '#ccc',    yaxis: { from: graph_info.y_marking_max, to: graph_info.y_marking_max } },
+//            { color: '#2a2',    yaxis: { from: graph_info.desired_fill, to: graph_info.desired_fill } },
+//            { color: '#000',    xaxis: { from: graph_info.x0, to: graph_info.x0 }, lineWidth: 1 }
+        ];
+        var omslagpunt = graph_info.x_marking_omslagpunt;
+        // if (omslagpunt) {
+        // var m = { color: '#2a2', xaxis: { from: omslagpunt, to: omslagpunt }, lineWidth: 2 };
+        // markings.push(m);
+        // }
+        var xmin = graph_info.x0 - 2 * MS_DAY; // two days in history
+        var xmax = graph_info.x0;
+        var options = {
+            series: {
+                curvedLines: {
+                    active: false
+                }
+            },
+            xaxes: [
+                {
+                    min: xmin,
+                    max: xmax
+                }
+            ],
+            yaxes: [
+                {
+                    min: 0,
+                    max: 120,
+                    // static ticks due to speed (IE)
+                    //tickFormatter: function (v, axis) { return v + " %"; },
+                    ticks: [
+                        [0,   '0'],
+                        [25,  '25'],
+                        [50,  '50'],
+                        [75,  '75'],
+                        [100, '100'],
+                    ],
+                    panRange: false,
+                    zoomRange: false,
+                    position: 'left'
+                }
+            ],
+            grid: { markings: markings }
+        };
+        options = add_default_flot_options(options);
+        var plot = $.plot($graph, lines, options);
+        add_tooltip(plot, graph_info.data);
+        fixIE8DrawBug(plot);
+        bindPanZoomEvents($graph);
+        return plot;
+    };
+
+    /**
      * Set up the optional bottom graph showing some advanced calculation data.
      */
     var plot_advanced_graph = function (graph_info, $container) {
@@ -778,7 +848,11 @@ $(document).ready(function () {
                 // clean and show the container
                 $container.empty();
                 $container.show();
-                plot_advanced_graph(response.graph_info, $container);
+                if (response.graph_info.type == 'meter_comparison') {
+                    plot_meter_comparison_graph(response.graph_info, $container);
+                } else {
+                    plot_advanced_graph(response.graph_info, $container);
+                }
             }
         });
     };

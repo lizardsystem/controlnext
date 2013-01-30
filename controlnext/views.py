@@ -89,7 +89,7 @@ class BasinView(UiView):
             raise Http404
         else:
             if (self.basin.owner.crop and
-                is_valid_crop_type(self.basin.owner.crop)):
+                    is_valid_crop_type(self.basin.owner.crop)):
                 self.crop_type = self.basin.owner.crop
         return super(BasinView, self).get(request, *args, **kwargs)
 
@@ -163,14 +163,16 @@ class DataService(APIView):
 
         if graph_type == 'rain':
             response_dict = self.rain(t0, rain_exaggerate)
-        elif graph_type == 'prediction':
+        elif graph_type == 'prediction' or graph_type == 'meter_comparison':
             self.store_parameters(desired_fill, demand_exaggerate,
-                rain_exaggerate)
-            response_dict = self.prediction(t0, desired_fill,
-                demand_exaggerate, rain_exaggerate)
+                                  rain_exaggerate)
+            response_dict = self.prediction(
+                t0, desired_fill, demand_exaggerate, rain_exaggerate,
+                graph_type)
         else:
-            response_dict = self.advanced(t0, desired_fill, demand_exaggerate,
-                rain_exaggerate, graph_type)
+            response_dict = self.advanced(
+                t0, desired_fill, demand_exaggerate, rain_exaggerate,
+                graph_type)
         return RestResponse(response_dict)
 
     def get_demand_table(self):
@@ -181,14 +183,14 @@ class DataService(APIView):
             table = EvaporationTable(crop, self.constants.rain_flood_surface)
         elif self.basin.owner.crop:
             table = EvaporationTable(self.basin.owner.crop,
-                self.constants.rain_flood_surface)
+                                     self.constants.rain_flood_surface)
         else:
             # fallback to generic demand table (not linked to crop)
             table = DemandTable()
         return table
 
     def prediction(self, t0, desired_fill_pct, demand_exaggerate,
-                   rain_exaggerate):
+                   rain_exaggerate, graph_type):
         tbl = self.get_demand_table()
         ds = FewsJdbcDataSource(self.basin, self.constants)
         model = CalculationModel(tbl, ds)
@@ -205,7 +207,12 @@ class DataService(APIView):
         data = dict([(name, series_to_js(scenario['prediction']))
                      for name, scenario in prediction['scenarios'].items()])
         data['history'] = series_to_js(prediction['history'])
+        if self.basin.has_own_meter:
+            data['history_own_meter'] = series_to_js(
+                prediction['history_own_meter'])
+
         graph_info = {
+            'type': graph_type,
             'data': data,
             'x0': datetime_to_js(t0),
             'y_marking_min': self.constants.min_storage_pct,
@@ -225,7 +232,10 @@ class DataService(APIView):
             'demand_24h': tbl.get_total_demand(
                 t0, t0 + datetime.timedelta(hours=24)),
             'current_fill': prediction['current_fill'],
-            }
+        }
+        if self.basin.has_own_meter:
+            result['current_fill_own_meter'] = (
+                prediction['current_fill_own_meter'])
         return result
 
     def advanced(self, t0, desired_fill_pct, demand_exaggerate,
@@ -259,7 +269,7 @@ class DataService(APIView):
                 'data': series_to_js(data),
                 'x0': datetime_to_js(t0),
                 'unit': unit,
-                }
+            }
         }
         return result
 
@@ -278,7 +288,6 @@ class DataService(APIView):
             mean *= rain_exaggerate
             max *= rain_exaggerate
 
-        #import pdb; pdb.set_trace()
         rain_graph_info = {
             'data': {
                 'min': series_to_js(min),
@@ -290,4 +299,4 @@ class DataService(APIView):
         return {
             't0': t0,
             'rain_graph_info': rain_graph_info,
-            }
+        }

@@ -203,6 +203,12 @@
                                       data-graph-type="toestroom"
                                       data-graph-title="Toestroom (m3, cumulatief)"
                                 />Toestroom (cumulatief)</label>
+	                    {% if view.basin.has_own_meter %}
+	                    <label><input type="radio" name="advanced-graph-radio" value="5"
+	                                  data-graph-type="meter_comparison"
+	                                  data-graph-title="Meter vergelijking"
+			                    />Meter vergelijking</label>
+	                    {% endif %}
                     </form>
                 </div>
             </div>

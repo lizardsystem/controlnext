@@ -36,7 +36,7 @@ def do_check_frequency(row_data):
 
 class FewsJdbcDataSource(object):
     def __init__(self, basin, constants=None):
-        self.basin =  basin
+        self.basin = basin
         if constants:
             self.constants = constants
         else:
@@ -164,7 +164,8 @@ class FewsJdbcDataSource(object):
 
 #    @cache_result(settings.CONTROLNEXT_FEWSJDBC_CACHE_SECONDS,
 #                  ignore_cache=False, instancemethod=True)
-    def get_current_fill(self, _from, history_timedelta=None, **kwargs):
+    def get_current_fill(self, _from, history_timedelta=None, own_meter=False,
+                         **kwargs):
         '''
         returns latest available fill AND its series
         '''
@@ -172,8 +173,12 @@ class FewsJdbcDataSource(object):
         if not history_timedelta:
             history_timedelta = settings.CONTROLNEXT_FILL_HISTORY
 
-        fill_history_m3 = self.get_fill(_from - history_timedelta, _from,
-                                        **kwargs)
+        if own_meter and self.basin.has_own_meter:
+            fill_history_m3 = self.get_fill_from_own_meter(
+                _from - history_timedelta, _from, **kwargs)
+        else:
+            fill_history_m3 = self.get_fill(
+                _from - history_timedelta, _from, **kwargs)
 
         # take last measured value as 'current' fill
         current_fill_m3 = fill_history_m3[-1]
