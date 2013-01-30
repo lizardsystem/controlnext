@@ -5,6 +5,7 @@ Changelog of controlnext
 0.8 (unreleased)
 ----------------
 
+- Add grower's own meter fields to Basin and make a FEWS method for querying the related data.
 - Add comparison plot for basins with their own water level meters.
 
 
