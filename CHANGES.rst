@@ -5,7 +5,7 @@ Changelog of controlnext
 0.8 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Add comparison plot for basins with their own water level meters.
 
 
 0.7 (2013-01-29)
