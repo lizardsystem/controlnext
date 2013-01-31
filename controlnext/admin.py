@@ -39,8 +39,19 @@ class BasinAdmin(GeoModelAdmin):
             'fields': (
                 'owner', 'name', 'filter_id', 'location_id', 'parameter_id',
                 'own_meter_filter_id', 'own_meter_location_id',
-                'own_meter_parameter_id', 'discharge_valve_filter_id',
-                'discharge_valve_location_id', 'discharge_valve_parameter_id',
+                'own_meter_parameter_id',
+                # discharge valve parameters
+                'discharge_valve_filter_id',
+                'discharge_valve_location_id',
+                'discharge_valve_parameter_id',
+                # greenhouse valve parameters
+                'greenhouse_valve_1_filter_id',
+                'greenhouse_valve_1_location_id',
+                'greenhouse_valve_1_parameter_id',
+                'greenhouse_valve_2_filter_id',
+                'greenhouse_valve_2_location_id',
+                'greenhouse_valve_2_parameter_id',
+                # other basin parameters
                 'rain_filter_id', 'rain_location_id', 'max_storage',
                 'min_storage_pct', 'max_storage_pct', 'rain_flood_surface',
                 'max_outflow_per_timeunit', 'basin_top',

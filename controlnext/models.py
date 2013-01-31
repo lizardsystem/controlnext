@@ -144,7 +144,33 @@ class Basin(geomodels.Model):
         verbose_name=_("basin discharge valve - location id"),
         max_length=100, blank=True, null=True)
     discharge_valve_parameter_id = models.CharField(
-        verbose_name=_("basin_discharge_valve - parameter id"),
+        verbose_name=_("basin discharge valve - parameter id"),
+        max_length=100, blank=True, null=True)
+
+    # greenhouse valve parameters allow water discharge to the greenhouse
+    # to be queried from FEWS
+    # greenhouse_valve_1 parameters
+    greenhouse_valve_1_filter_id = models.CharField(
+        verbose_name=_("greenhouse valve 1 - filter id"),
+        max_length=100, blank=True, null=True,
+        help_text=_("e.g. meetpunt"))
+    greenhouse_valve_1_location_id = models.CharField(
+        verbose_name=_("greenhouse valve 1 - location id"),
+        max_length=100, blank=True, null=True)
+    greenhouse_valve_1_parameter_id = models.CharField(
+        verbose_name=_("greenhouse valve 1 - parameter id"),
+        max_length=100, blank=True, null=True)
+
+    # greenhouse_valve_2 parameters
+    greenhouse_valve_2_filter_id = models.CharField(
+        verbose_name=_("greenhouse valve 2 - filter id"),
+        max_length=100, blank=True, null=True,
+        help_text=_("e.g. meetpunt"))
+    greenhouse_valve_2_location_id = models.CharField(
+        verbose_name=_("greenhouse valve 2 - location id"),
+        max_length=100, blank=True, null=True)
+    greenhouse_valve_2_parameter_id = models.CharField(
+        verbose_name=_("greenhouse valve 2 - parameter id"),
         max_length=100, blank=True, null=True)
 
     # rain info
