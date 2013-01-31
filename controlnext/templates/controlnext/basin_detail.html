@@ -1,13 +1,17 @@
 {% extends "controlnext/realbase.html" %}
+{% load compress %}
 
 {% block css %}
     {{ block.super }}
+	{% compress css %}
     <link rel="stylesheet"
           type="text/css"
           href="{{ STATIC_URL }}controlnext/main.css" />
+	{% endcompress %}
 {% endblock css %}
 
 {% block map-javascript %}
+{% compress js %}
     <script type="text/javascript"
             src="{{ STATIC_URL }}controlnext/jquery.flot.js"></script>
     <script type="text/javascript"
@@ -28,6 +32,7 @@
             src="{{ STATIC_URL }}controlnext/jquery.curvedlines-0.2.2.js"></script>
     <script type="text/javascript"
             src="{{ STATIC_URL }}controlnext/main.js"></script>
+{% endcompress %}
 {% endblock map-javascript %}
 
 {% block head-extras %}
