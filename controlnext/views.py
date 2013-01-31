@@ -250,6 +250,7 @@ class DataService(APIView):
             t0, future, desired_fill_pct, demand_exaggerate, rain_exaggerate)
 
         data = []
+        data_2 = []  # optional secondary dataset
         unit = ''
         historic_data = []
         if graph_type == 'demand':
@@ -266,19 +267,35 @@ class DataService(APIView):
             unit = 'm3'
             if self.basin.has_discharge_valve:
                 historic_data = ds.get_discharge_valve_data(t0)
+        elif graph_type == 'greenhouse_discharge':
+            unit = 'm3'
+            data_method = ds.get_greenhouse_valve_data
+            if self.basin.has_greenhouse_valve_1:
+                data = data_method(t0, valve_nr=1)
+            if self.basin.has_greenhouse_valve_2:
+                dataset = data_method(t0, valve_nr=2)
+                if len(data):
+                    data_2 = dataset
+                else:
+                    data = dataset
 
         result = {
             'graph_info': {
                 'data': series_to_js(data),
                 'x0': datetime_to_js(t0),
                 'unit': unit,
+                'type': graph_type
             }
         }
         # need to use len for testing truth value, because it is a pandas
         # Series instance (numpy array)
         if len(historic_data):
-            result['graph_info'].update({'history':
-                                             series_to_js(historic_data)})
+            result['graph_info'].update(
+                {'history': series_to_js(historic_data)})
+        # if secondary dataset exists, add it to the result
+        if len(data_2):  # need to use len for truth checking (numpy array)
+            result['graph_info'].update(
+                {'data_2': series_to_js(data_2)})
 
         return result
 

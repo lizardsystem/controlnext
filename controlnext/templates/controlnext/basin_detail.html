@@ -209,6 +209,12 @@
 	                                  data-graph-title="Vullingsgraadmeter vergelijking"
 			                    />Vullingsgraadmeter vergelijking</label>
 	                    {% endif %}
+	                    {% if view.basin.has_greenhouse_valve %}
+		                    <label><input type="radio" name="advanced-graph-radio" value="6"
+                                      data-graph-type="greenhouse_discharge"
+                                      data-graph-title="Kasdebiet (m3 /15m)"
+                                />Kasdebiet</label>
+	                    {% endif %}
                     </form>
                 </div>
             </div>

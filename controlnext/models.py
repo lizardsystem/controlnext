@@ -234,9 +234,32 @@ class Basin(geomodels.Model):
     def has_discharge_valve(self):
         """Check whether this basin has discharge valve details."""
         if (self.discharge_valve_filter_id and self.discharge_valve_location_id
-            and self.discharge_valve_parameter_id):
+                and self.discharge_valve_parameter_id):
             return True
         return False
+
+    @property
+    def has_greenhouse_valve_1(self):
+        """Check whether this basin has greenhouse valve 1 details."""
+        if (self.greenhouse_valve_1_filter_id and
+                self.greenhouse_valve_1_location_id and
+                self.greenhouse_valve_1_parameter_id):
+            return True
+        return False
+
+    @property
+    def has_greenhouse_valve_2(self):
+        """Check whether this basin has greenhouse valve 2 details."""
+        if (self.greenhouse_valve_2_filter_id and
+                self.greenhouse_valve_2_location_id and
+                self.greenhouse_valve_2_parameter_id):
+            return True
+        return False
+
+    @property
+    def has_greenhouse_valve(self):
+        """Check whether this basin has greenhouse valves."""
+        return self.has_greenhouse_valve_1 or self.has_greenhouse_valve_2
 
     def google_coordinates(self):
         return transform_point(self.location.x, self.location.y,

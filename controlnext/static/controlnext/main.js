@@ -586,8 +586,8 @@ $(document).ready(function () {
 //            { id: 'min',     data: graph_info.data.min,     yaxis: 1, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'mean' },
 //            { id: 'mean',    data: graph_info.data.mean,    yaxis: 1, lines: { show: true, lineWidth: 7 }, color: "#0026FF", label: 'voorspeld' },
 //            { id: 'max',     data: graph_info.data.max,     yaxis: 1, lines: { show: true, lineWidth: 1, fill: 0.4 }, color: "#7FC9FF", fillBetween: 'mean' },
-            { id: 'history', data: graph_info.data.history, yaxis: 1, lines: { show: true, lineWidth: 1 }, color: "yellow", label: 'delfland meter' },
-            { id: 'history_own_meter', data: graph_info.data.history_own_meter, yaxis: 1, lines: { show: true, lineWidth: 1 }, color: "#FF5519", label: 'eigen meter'}
+            { id: 'history', data: graph_info.data.history, yaxis: 1, lines: { show: true, lineWidth: 1 }, color: "blue", label: 'delfland meter' },
+            { id: 'history_own_meter', data: graph_info.data.history_own_meter, yaxis: 1, lines: { show: true, lineWidth: 1 }, color: "green", label: 'eigen meter'}
         ];
         var markings = [
             { color: '#f6f6f6', yaxis: { from: graph_info.y_marking_min, to: 0 } },
@@ -667,6 +667,51 @@ $(document).ready(function () {
         ];
         var xmin = graph_info.x0 - 2 * MS_DAY;
         var xmax = graph_info.x0 + 5 * MS_DAY;
+        var options = {
+            xaxis: {
+                min: xmin,
+                max: xmax
+            },
+            yaxes: [
+                {
+                    tickFormatter: function (v) { return fastToFixed(v, 2); },
+                    panRange: false,
+                    zoomRange: false
+                }
+            ],
+            grid: { markings: markings }
+        };
+        options = add_default_flot_options(options);
+        var plot = $.plot($graph, lines, options);
+        add_tooltip(plot, graph_info.data);
+        fixIE8DrawBug(plot);
+        bindPanZoomEvents($graph);
+        return plot;
+    };
+
+    /**
+     * Plot greenhouse discharge valve data.
+     */
+    var plot_greenhouse_discharge_graph = function (graph_info, $container) {
+        // build a new element
+        var $graph = $('<div id="advanced-graph" class="zoompanlinked-flot-graph"/>');
+        $container.append($graph);
+
+        // order of following elements is also drawing order
+        var lines = [
+            { id: 'value', data: graph_info.data, lines: { show: true, lineWidth: 1 },
+                color: "blue", label: 'kas debiet 1' }
+        ];
+        // add secondary data line if available
+        if (graph_info.data_2) {
+            lines.push({ id: 'value', data: graph_info.data_2, lines: { show: true, lineWidth: 1 },
+                color: "green", label: 'kas debiet 2' });
+        }
+        var markings = [
+            { color: '#000',    xaxis: { from: graph_info.x0, to: graph_info.x0 }, lineWidth: 1 }
+        ];
+        var xmin = graph_info.x0 - 2 * MS_DAY;
+        var xmax = graph_info.x0;
         var options = {
             xaxis: {
                 min: xmin,
@@ -855,6 +900,8 @@ $(document).ready(function () {
                 $container.show();
                 if (response.graph_info.type == 'meter_comparison') {
                     plot_meter_comparison_graph(response.graph_info, $container);
+                } else if (response.graph_info.type == 'greenhouse_discharge') {
+                    plot_greenhouse_discharge_graph(response.graph_info, $container);
                 } else {
                     plot_advanced_graph(response.graph_info, $container);
                 }
