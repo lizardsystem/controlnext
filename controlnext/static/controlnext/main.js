@@ -655,8 +655,13 @@ $(document).ready(function () {
         // order of following elements is also drawing order
         var lines = [
             { id: 'value', data: graph_info.data, lines: { show: true, lineWidth: 1 },
-              color: "#222222", label: 'waarde' }
+                color: "gray", label: 'voorspeld' }
         ];
+        // add history line if available
+        if (graph_info.history) {
+            lines.push({ id: 'value', data: graph_info.history, lines: { show: true, lineWidth: 1 },
+                color: "yellow", label: 'gemeten' });
+        }
         var markings = [
             { color: '#000',    xaxis: { from: graph_info.x0, to: graph_info.x0 }, lineWidth: 1 }
         ];

@@ -251,6 +251,7 @@ class DataService(APIView):
 
         data = []
         unit = ''
+        historic_data = []
         if graph_type == 'demand':
             data = prediction['intermediate']['demand']
             unit = 'm3'
@@ -263,6 +264,8 @@ class DataService(APIView):
         elif graph_type == 'uitstroom':
             data = prediction['scenarios']['mean']['intermediate']['uitstroom']
             unit = 'm3'
+            if self.basin.has_discharge_valve:
+                historic_data = ds.get_discharge_valve_data(t0)
 
         result = {
             'graph_info': {
@@ -271,6 +274,12 @@ class DataService(APIView):
                 'unit': unit,
             }
         }
+        # need to use len for testing truth value, because it is a pandas
+        # Series instance (numpy array)
+        if len(historic_data):
+            result['graph_info'].update({'history':
+                                             series_to_js(historic_data)})
+
         return result
 
     def rain(self, t0, rain_exaggerate_pct):

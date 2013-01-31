@@ -125,14 +125,26 @@ class Basin(geomodels.Model):
 
     # water level meter params for grower's own meter
     own_meter_filter_id = models.CharField(
-        verbose_name=_("filter id (grower meter)"),
+        verbose_name=_("grower fill meter - filter id"),
         max_length=100, blank=True, null=True,
         help_text=_("e.g. meetpunt"))
     own_meter_location_id = models.CharField(
-        verbose_name=_("location id (grower meter)"),
+        verbose_name=_("grower fill meter - location id"),
         max_length=100, blank=True, null=True)
     own_meter_parameter_id = models.CharField(
-        verbose_name=_("parameter id (grower meter)"),
+        verbose_name=_("grower fill meter - parameter id"),
+        max_length=100, blank=True, null=True)
+
+    # discharge valve params
+    discharge_valve_filter_id = models.CharField(
+        verbose_name=_("basin discharge valve - filter id"),
+        max_length=100, blank=True, null=True,
+        help_text=_("e.g. meetpunt"))
+    discharge_valve_location_id = models.CharField(
+        verbose_name=_("basin discharge valve - location id"),
+        max_length=100, blank=True, null=True)
+    discharge_valve_parameter_id = models.CharField(
+        verbose_name=_("basin_discharge_valve - parameter id"),
         max_length=100, blank=True, null=True)
 
     # rain info
@@ -189,6 +201,14 @@ class Basin(geomodels.Model):
         """Check whether this basin has own meter details."""
         if (self.own_meter_filter_id and self.own_meter_location_id and
                 self.own_meter_parameter_id):
+            return True
+        return False
+
+    @property
+    def has_discharge_valve(self):
+        """Check whether this basin has discharge valve details."""
+        if (self.discharge_valve_filter_id and self.discharge_valve_location_id
+            and self.discharge_valve_parameter_id):
             return True
         return False
 

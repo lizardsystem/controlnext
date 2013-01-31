@@ -162,6 +162,49 @@ class FewsJdbcDataSource(object):
 
         return ts
 
+    def get_discharge_valve_data(self, _from, history_timedelta=None,
+                                 *args, **kwargs):
+        """
+        Get discharge valve data.
+
+        :param _from: start date and time
+        :param args: can be for specific caching with cache_result decorator
+        :param kwargs: idem as args
+        :return: timeseries instance with time (15 minute frequency) and
+            discharge (cubic meters) data
+
+        Example query (Van Der Lans):
+        "select time, value from extimeseries where filterid='meetpunt' and
+         locationid='VP9508:PROG 6' and parameterid='klep.debiet' and time
+         between '2013-01-01 09:00:00' and '2013-02-28 09:00:00'"
+
+        """
+        if not history_timedelta:
+            history_timedelta = settings.CONTROLNEXT_FILL_HISTORY
+
+        validate_date(_from)
+
+        # basin parameters
+        filter_id = self.basin.discharge_valve_filter_id
+        location_id = self.basin.discharge_valve_location_id
+        parameter_id = self.basin.discharge_valve_parameter_id
+
+        # waarden zijn in cm onder overstortbuis
+        ts = self._get_timeseries_as_pd_series(
+            filter_id,
+            location_id,
+            parameter_id,
+            _from - history_timedelta, _from, 'uitstroom'
+        )
+
+        # data is in 5 minute intervals, so we need to resample to 15 minutes
+        ts = ts.resample('15Min')
+        # values are m3 / hour
+        ts /= 4  # correct for 15 min (from m3/hour to m3/15 min)
+        ts = -ts  # display values as negatives
+
+        return ts
+
 #    @cache_result(settings.CONTROLNEXT_FEWSJDBC_CACHE_SECONDS,
 #                  ignore_cache=False, instancemethod=True)
     def get_current_fill(self, _from, history_timedelta=None, own_meter=False,
