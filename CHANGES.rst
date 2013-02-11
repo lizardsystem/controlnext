@@ -5,7 +5,8 @@ Changelog of controlnext
 0.9 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Add service class for consuming Wageneningen University's waterdemand 
+  JSON webservice.
 
 
 0.8 (2013-01-30)

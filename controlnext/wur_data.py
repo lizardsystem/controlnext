@@ -62,6 +62,7 @@ Response message look like this:
 import datetime
 import logging
 
+import requests
 import suds
 
 from controlnext.utils import round_date
@@ -71,9 +72,9 @@ logging.getLogger('suds').setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class WURService(object):
+class WURXMLService(object):
     """Service class to consume Wageningen University glastuinmodellen
-    webservice.
+    XML webservice.
 
     """
     WSDL_URL = ('http://www.glastuinbouwmodellen.wur.nl/Dashboard/'
@@ -107,7 +108,7 @@ class WURService(object):
 
         """
         parameters = self._request_parameters()
-        logger.debug("About to call WUR webservice.")
+        logger.debug("About to call WUR XML webservice.")
         result = self.client.service.Simulate(parameters)
         # returns only floats, no timestamps
         try:
@@ -127,3 +128,56 @@ class WURService(object):
                 output.append((time, demand_value))
                 time += self.TIMESTAMP_INTERVAL
             return output
+
+
+class WURJSONService(object):
+    """Service class to consume Wageningen University glastuinmodellen
+    JSON webservice.
+
+    """
+    BASE_URL = ('http://www.glastuinbouwmodellen.wur.nl/Dashboard/'
+                'JsonService.svc/simulate')
+    TIMESTAMP_INTERVAL = datetime.timedelta(seconds=60 * 5)  # 5 minutes
+
+    def __init__(self, _from, to, *args, **kwargs):
+        # round to the hour
+        self._from = round_date(_from, 60)
+        self.to = round_date(to, 60)
+
+    def get_data_from_url(self, url):
+        try:
+            r = requests.get(url)  # returns only floats, no timestamps
+            result = r.json()
+        except Exception, info:
+            logger.error('Error calling %s (%s)' % (self.BASE_URL, info))
+            raise
+        else:
+            try:
+                water_demand_data = result['WaterDemand']
+            except KeyError:
+                logger.error('Did not receive expected WaterDemand key in '
+                             'response.')
+                raise
+            else:
+                return water_demand_data
+
+    def get_data(self):
+        """Get data based on start and end time. Data is returned based on
+        an hourly interval, but does not include timestamps, only floats.
+        Data units are in m3 per acre per hour.
+
+        """
+        logger.debug("About to call WUR JSON webservice.")
+        start_date = "%s-%s-%s" % (self._from.day, self._from.month,
+                                   self._from.year)
+        end_date = "%s-%s-%s" % (self.to.day, self.to.month, self.to.year)
+        url = "%s?startdate=%s&enddate=%s" % (self.BASE_URL, start_date,
+                                              end_date)
+        water_demand_data = self.get_data_from_url(url)
+        # add the timestamps
+        output = []
+        time = self._from
+        for demand_value in water_demand_data:
+            output.append((time, demand_value))
+            time += self.TIMESTAMP_INTERVAL
+        return output

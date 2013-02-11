@@ -22,6 +22,7 @@ install_requires = [
     'numpy >= 1.6',
     'factory_boy',
     'suds',
+    'requests',
 ],
 
 tests_require = []
