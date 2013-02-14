@@ -182,6 +182,21 @@ class Basin(geomodels.Model):
         max_length=100, blank=True, null=True,
         help_text=_("e.g. OPP1 (i.e. Oranjebinnenpolder Oost)"))
 
+    # parameters for 5 day predicted rain and real rain graph
+    # can use rain_location_id as location_id
+    predicted_5d_rain_filter_id = models.CharField(
+        max_length=100, blank=True, null=True,
+        verbose_name=_("predicted 5 day rain - filter id"))
+    predicted_5d_rain_parameter_id = models.CharField(
+        max_length=100, blank=True, null=True,
+        verbose_name=_("predicted 5 day rain - parameter id"))
+    real_5d_rain_filter_id = models.CharField(
+        max_length=100, blank=True, null=True,
+        verbose_name=_("real 5 day rain - filter id"))
+    real_5d_rain_parameter_id = models.CharField(
+        max_length=100, blank=True, null=True,
+        verbose_name=_("real 5 day rain - parameter id"))
+
     # basin parameters
     max_storage = models.IntegerField(
         blank=True, null=True,
@@ -260,6 +275,13 @@ class Basin(geomodels.Model):
     def has_greenhouse_valve(self):
         """Check whether this basin has greenhouse valves."""
         return self.has_greenhouse_valve_1 or self.has_greenhouse_valve_2
+
+    @property
+    def has_5day_rain_params(self):
+        return (self.predicted_5d_rain_filter_id and
+                self.predicted_5d_rain_parameter_id and
+                self.real_5d_rain_filter_id and
+                self.real_5d_rain_parameter_id)
 
     def google_coordinates(self):
         return transform_point(self.location.x, self.location.y,

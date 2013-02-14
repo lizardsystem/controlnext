@@ -252,6 +252,63 @@ class FewsJdbcDataSource(object):
 
         return ts
 
+    def get_5day_rain_data(self, _from, history_timedelta=None,
+                           predicted=False, *args, **kwargs):
+        """
+        Retrieves 5 day rain data from FEWS. To get real 5 day data, leave
+        predicted to False. To get predicted 5 day data, set predicted to
+        True.
+
+        Example JDBC queries (Van der Lans):
+        ====================================
+        - predicted rain query:
+          ---------------------
+          select time, value from extimeseries where
+          filterid='meteo_aggregatie' and parameterid='P.cum' and
+          locationid='OPP1' and time between '2013-01-19 09:15:00' and
+          '2013-02-22 09:15:00'
+
+        - real rain query:
+          ----------------
+          select time, value from extimeseries where filterid='neerslag_ruw'
+          and parameterid='P.cum' and locationid='OPP1' and time between
+          '2013-01-19 09:15:00' and '2013-02-22 09:15:00'
+
+        """
+        if not history_timedelta:
+            history_timedelta = settings.CONTROLNEXT_FILL_HISTORY
+
+        validate_date(_from)
+
+        location_id = self.basin.rain_location_id
+        if predicted:
+            # get the predicted rain
+            filter_id = self.basin.predicted_5d_rain_filter_id
+            parameter_id = self.basin.predicted_5d_rain_parameter_id
+            label = 'predicted'
+        else:
+            # get the real rain
+            filter_id = self.basin.real_5d_rain_filter_id
+            parameter_id = self.basin.real_5d_rain_parameter_id
+            label = 'real'
+
+        try:
+            ts = self._get_timeseries_as_pd_series(
+                filter_id,
+                location_id,
+                parameter_id,
+                _from - history_timedelta, _from, '%s_5day_rain' % label
+            )
+        except:
+            if predicted:
+                # return empty series, data probably not available yet
+                return pd.Series()
+            else:
+                # real rain request should return data
+                raise
+        else:
+            return ts
+
 #    @cache_result(settings.CONTROLNEXT_FEWSJDBC_CACHE_SECONDS,
 #                  ignore_cache=False, instancemethod=True)
     def get_current_fill(self, _from, history_timedelta=None, own_meter=False,
@@ -309,9 +366,17 @@ class FewsJdbcDataSource(object):
         return ts
 
     def _get_timeseries(self, filter_id, location_id, parameter_id, _from, to):
-        '''
+        """
         Custom implementation of JdbcSource's get_timeseries().
-        '''
+
+        Example query:
+        --------------
+          select time, value from extimeseries where
+          filterid='waterstand_basins' and locationid='467446797569' and
+          parameterid='WNS2820' and time between '2013-01-19 09:15:00' and
+          '2013-02-19 09:15:00'
+
+        """
         if not _from.tzinfo or not to.tzinfo:
             raise ValueError(
                 'Please refrain from using naive datetime objects for _from '

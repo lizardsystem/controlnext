@@ -215,6 +215,12 @@
                                       data-graph-title="Kasdebiet (m3 /15m)"
                                 />Kasdebiet</label>
 	                    {% endif %}
+	                    {% if view.basin.has_5day_rain_params %}
+		                    <label><input type="radio" name="advanced-graph-radio" value="6"
+		                              data-graph-type="5day_rain"
+		                              data-graph-title="Regen voorspeld vs. gevallen (mm / 5 dagen)"
+				                />Regen voorspeld vs. gevallen</label>
+	                    {% endif %}
                     </form>
                 </div>
             </div>

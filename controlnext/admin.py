@@ -51,10 +51,14 @@ class BasinAdmin(GeoModelAdmin):
                 'greenhouse_valve_2_filter_id',
                 'greenhouse_valve_2_location_id',
                 'greenhouse_valve_2_parameter_id',
+                # rain parameters
+                'rain_filter_id', 'rain_location_id',
+                'predicted_5d_rain_filter_id',
+                'predicted_5d_rain_parameter_id',
+                'real_5d_rain_filter_id', 'real_5d_rain_parameter_id',
                 # other basin parameters
-                'rain_filter_id', 'rain_location_id', 'max_storage',
-                'min_storage_pct', 'max_storage_pct', 'rain_flood_surface',
-                'max_outflow_per_timeunit', 'basin_top',
+                'max_storage', 'min_storage_pct', 'max_storage_pct',
+                'rain_flood_surface', 'max_outflow_per_timeunit', 'basin_top',
                 'level_indicator_height', 'jdbc_source', 'on_main_map'
             )
         }),

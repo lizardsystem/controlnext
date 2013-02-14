@@ -47,7 +47,7 @@ def series_to_js(pdseries):
 
 class DashboardView(AppView):
     template_name = 'controlnext/dashboard.html'
-    page_title = _('ControlNEXT sturing Delfland dashboard')
+    page_title = _('ControlNEXT Delfland dashboard')
 
     def get_context_data(self, *args, **kwargs):
         context = super(DashboardView, self).get_context_data(*args, **kwargs)
@@ -278,6 +278,10 @@ class DataService(APIView):
                     data_2 = dataset
                 else:
                     data = dataset
+        elif graph_type == '5day_rain':
+            data = ds.get_5day_rain_data(t0, predicted=True)
+            unit = 'mm'
+            historic_data = ds.get_5day_rain_data(t0)
 
         result = {
             'graph_info': {
