@@ -2,8 +2,7 @@
 host = https://translations.lizard.net
 type = PO
 
-[delfland.controlnext]
+[lizardsystem.controlnext]
 file_filter = controlnext/locale/<lang>/LC_MESSAGES/django.po
 source_file = controlnext/locale/en/LC_MESSAGES/django.po
 source_lang = en
-

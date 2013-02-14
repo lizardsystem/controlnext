@@ -1,199 +1,201 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
+# Translators:
+#   <admin@example.com>, 2013.
+#   <sander.smits@nelen-schuurmans.nl>, 2013.
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: lizardsystem\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-02-14 13:43+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2013-02-14 12:54+0000\n"
+"Last-Translator: admin <admin@example.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: nl\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
 #: admin.py:27 admin.py:61
 msgid "location"
-msgstr ""
+msgstr "lokatie"
 
 #: models.py:25
 msgid "tomato"
-msgstr ""
+msgstr "tomaat"
 
 #: models.py:26
 msgid "chrysanthemum"
-msgstr ""
+msgstr "chrysant"
 
 #: models.py:30
 msgid "name of the grower"
-msgstr ""
+msgstr "naam van de tuinder"
 
 #: models.py:33
 msgid "type of crop"
-msgstr ""
+msgstr "soort gewas"
 
 #: models.py:36
 msgid "crop surface area (m2)"
-msgstr ""
+msgstr "gewas oppervlakte (m2)"
 
 #: models.py:42 models.py:120
 msgid "e.g. waterstand_basins"
-msgstr ""
+msgstr "b.v. waterstand_basins"
 
 #: models.py:51 models.py:179
 msgid "e.g. neerslag_combo"
-msgstr ""
+msgstr "b.v. neerslag_combo"
 
 #: models.py:55 models.py:183
 msgid "e.g. OPP1 (i.e. Oranjebinnenpolder Oost)"
-msgstr ""
+msgstr "b.v. OPP1 (i.e. Oranjebinnenpolder Oost)"
 
 #: models.py:59 models.py:203
 msgid "maximum storage capacity (m3)"
-msgstr ""
+msgstr "maximale opslagcapaciteit (m3)"
 
 #: models.py:62 models.py:206
 msgid "minimum storage capacity (%)"
-msgstr ""
+msgstr "minimale opslagcapaciteit (%)"
 
 #: models.py:64 models.py:210
 msgid "maximum storage capacity (%)"
-msgstr ""
+msgstr "maximale opslagcapaciteit (%)"
 
 #: models.py:66 models.py:213
 msgid "rain flood surface (m2)"
-msgstr ""
+msgstr "regen uitstroom oppervlakte (m2)"
 
 #: models.py:69 models.py:217
 msgid "maximum outflow per time unit (m3)"
-msgstr ""
+msgstr "maximale uitstroom per tijdseenheid (m3)"
 
 #: models.py:71 models.py:220
 msgid "top of basin (cm)"
-msgstr ""
+msgstr "bovenkant bassin (cm)"
 
 #: models.py:74 models.py:224
 msgid "height of level indicator (cm)"
-msgstr ""
+msgstr "hoogte van niveau meter (cm)"
 
 #: models.py:78
 msgid "image"
-msgstr ""
+msgstr "foto"
 
 #: models.py:86 models.py:87
 msgid "grower info"
-msgstr ""
+msgstr "tuinder info"
 
 #: models.py:113
 msgid "name of the basin"
-msgstr ""
+msgstr "bassin naam"
 
 #: models.py:114
 msgid "must be unique for grower"
-msgstr ""
+msgstr "dient uniek te zijn per tuinder"
 
 #: models.py:128
 msgid "grower fill meter - filter id"
-msgstr ""
+msgstr "vullingsgraadmeter tuinder - filter id"
 
 #: models.py:130 models.py:142 models.py:156 models.py:168
 msgid "e.g. meetpunt"
-msgstr ""
+msgstr "bijv. meetpunt"
 
 #: models.py:132
 msgid "grower fill meter - location id"
-msgstr ""
+msgstr "vullingsgraadmeter tuinder - locatie id"
 
 #: models.py:135
 msgid "grower fill meter - parameter id"
-msgstr ""
+msgstr "vullingsgraadmeter tuinder - parameter id"
 
 #: models.py:140
 msgid "basin discharge valve - filter id"
-msgstr ""
+msgstr "bassin uitstroom klep - filter id"
 
 #: models.py:144
 msgid "basin discharge valve - location id"
-msgstr ""
+msgstr "bassin uitstroom klep - locatie id"
 
 #: models.py:147
 msgid "basin discharge valve - parameter id"
-msgstr ""
+msgstr "bassin uitstroom klep - parameter id"
 
 #: models.py:154
 msgid "greenhouse valve 1 - filter id"
-msgstr ""
+msgstr "kas klep 1 - filter id"
 
 #: models.py:158
 msgid "greenhouse valve 1 - location id"
-msgstr ""
+msgstr "kas klep 1 - locatie id"
 
 #: models.py:161
 msgid "greenhouse valve 1 - parameter id"
-msgstr ""
+msgstr "kas klep 1 - parameter id"
 
 #: models.py:166
 msgid "greenhouse valve 2 - filter id"
-msgstr ""
+msgstr "kas klep 2 - filter id"
 
 #: models.py:170
 msgid "greenhouse valve 2 - location id"
-msgstr ""
+msgstr "kas klep 2 - locatie id"
 
 #: models.py:173
 msgid "greenhouse valve 2 - parameter id"
-msgstr ""
+msgstr "kas klep 2 - parameter id"
 
 #: models.py:189
 msgid "predicted 5 day rain - filter id"
-msgstr ""
+msgstr "voorspelde 5 daagse regen - filter id"
 
 #: models.py:192
 msgid "predicted 5 day rain - parameter id"
-msgstr ""
+msgstr "voorspelde 5 daagse regen - parameter id"
 
 #: models.py:195
 msgid "real 5 day rain - filter id"
-msgstr ""
+msgstr "werkelijke 5 daagse regen - filter id"
 
 #: models.py:198
 msgid "real 5 day rain - parameter id"
-msgstr ""
+msgstr "werkelijke 5 daagse regen - parameter id"
 
 #: models.py:229
 msgid "current fill (m3)"
-msgstr ""
+msgstr "huidige vulling (m3)"
 
 #: models.py:288
 msgid "basin"
-msgstr ""
+msgstr "bassin"
 
 #: models.py:289
 msgid "basins"
-msgstr ""
+msgstr "bassins"
 
 #: views.py:50
 msgid "ControlNEXT Delfland dashboard"
-msgstr ""
+msgstr "ControlNEXT Delfland dashboard"
 
 #: views.py:83
 msgid "ControlNEXT"
-msgstr ""
+msgstr "ControlNEXT"
 
 #: templates/controlnext/basin_popup.html:9
 #: templates/controlnext/dashboard.html:16
 msgid "Grower basins"
-msgstr ""
+msgstr "Tuinder bassins"
 
 #: templates/controlnext/dashboard.html:16
 msgid "These are the connected grower basins."
-msgstr ""
+msgstr "Dit zijn de aangesloten bassins."
 
 #: templates/controlnext/realbase.html:85
 msgid "Back to homepage"
-msgstr ""
+msgstr "Terug naar begin"

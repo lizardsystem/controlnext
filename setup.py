@@ -23,6 +23,7 @@ install_requires = [
     'factory_boy',
     'suds',
     'requests',
+    'translations',
 ],
 
 tests_require = []
