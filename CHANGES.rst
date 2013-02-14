@@ -2,7 +2,7 @@ Changelog of controlnext
 ===================================================
 
 
-0.9 (unreleased)
+0.9 (2013-02-14)
 ----------------
 
 - Add service class for consuming Wageneningen University's waterdemand 
