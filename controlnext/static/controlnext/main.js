@@ -652,16 +652,31 @@ $(document).ready(function () {
         var $graph = $('<div id="advanced-graph" class="zoompanlinked-flot-graph"/>');
         $container.append($graph);
 
+        var lines;
         // order of following elements is also drawing order
-        var lines = [
-            { id: 'value', data: graph_info.data, lines: { show: true, lineWidth: 1 },
-                color: "gray", label: 'voorspeld' }
-        ];
+        if (graph_info.type == '5day_rain') {
+            lines = [
+                { id: 'value', data: graph_info.data, lines: { show: true, lineWidth: 1 },
+                    color: "gray", label: 'voorspeld' }
+            ];
+        } else {
+            lines = [
+                { id: 'value', data: graph_info.data, lines: { show: true, lineWidth: 1 },
+                    color: "gray", label: 'voorspeld' }
+            ];
+        }
+
         // add history line if available
         if (graph_info.history) {
-            lines.push({ id: 'value', data: graph_info.history, lines: { show: true, lineWidth: 1 },
-                color: "yellow", label: 'gemeten' });
+            if (graph_info.type == '5day_rain') {
+                lines.push({ id: 'value', data: graph_info.history, lines: { show: true, lineWidth: 1 },
+                    color: "lightblue", label: 'gemeten' });
+            } else {
+                lines.push({ id: 'value', data: graph_info.history, lines: { show: true, lineWidth: 1 },
+                    color: "yellow", label: 'gemeten' });
+            }
         }
+
         var markings = [
             { color: '#000',    xaxis: { from: graph_info.x0, to: graph_info.x0 }, lineWidth: 1 }
         ];
