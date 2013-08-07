@@ -5,13 +5,13 @@ Changelog of controlnext
 0.10 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- Add reverse osmosis field to dashboard.
 
 
 0.9 (2013-02-14)
 ----------------
 
-- Add service class for consuming Wageneningen University's waterdemand 
+- Add service class for consuming Wageneningen University's waterdemand
   JSON webservice.
 
 
@@ -32,13 +32,13 @@ Changelog of controlnext
 ----------------
 
 - Add intro and travis status image.
-- Add image field to GrowerInfo model. 
+- Add image field to GrowerInfo model.
 
 
 0.5 (2013-01-28)
 ----------------
 
-- Change test infrastructure to be able to test offline and prepare for 
+- Change test infrastructure to be able to test offline and prepare for
   better tests (without fews connection).
 - Make current test(s) work with the mocked test data.
 - Add .travis.yml.
