@@ -2,7 +2,7 @@ Changelog of controlnext
 ===================================================
 
 
-0.10 (unreleased)
+0.10 (2013-08-07)
 -----------------
 
 - Add reverse osmosis field to dashboard.
