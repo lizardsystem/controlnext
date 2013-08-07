@@ -222,6 +222,10 @@ class Basin(geomodels.Model):
     level_indicator_height = models.IntegerField(
         blank=True, null=True,
         verbose_name=_("height of level indicator (cm)"))
+    # reverse_osmosis field
+    reverse_osmosis = models.IntegerField(
+        blank=True, null=True,
+        verbose_name=_("reverse osmosis capacity (m3/h)"))
     # current fill data
     # in m^3
     current_fill = models.DecimalField(

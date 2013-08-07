@@ -797,6 +797,12 @@ $(document).ready(function () {
                 basin_storage: basin_storage_element.val()
             });
         }
+        var reverse_osmosis_element = $('#reverse-osmosis');
+        if (reverse_osmosis_element.length > 0) {
+            $.extend(query, {
+                reverse_osmosis: reverse_osmosis_element.val()
+            });
+        }
 
         // append debug parameters
         if (debug) {
@@ -868,6 +874,10 @@ $(document).ready(function () {
                 var basin_storage_element = $('#basin-storage');
                 if (basin_storage_element.length > 0) {
                     basin_storage_element.val(response.graph_info.basin_storage);
+                }
+                var reverse_osmosis_element = $('#reverse-osmosis');
+                if (reverse_osmosis_element.length > 0) {
+                    reverse_osmosis_element.val(response.graph_info.reverse_osmosis);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {

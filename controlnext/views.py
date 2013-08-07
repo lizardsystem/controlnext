@@ -131,6 +131,7 @@ class DataService(APIView):
         if not rain_flood_surface:
             rain_flood_surface = request.GET.get('basin_surface', None)
         basin_storage = request.GET.get('basin_storage', None)
+        reverse_osmosis = request.GET.get('reverse_osmosis', None)
 
         if rain_flood_surface:
             try:
@@ -148,6 +149,15 @@ class DataService(APIView):
             except ValueError:
                 logger.error("invalid value for basin_storage: %s" %
                              basin_storage)
+
+        if reverse_osmosis:
+            try:
+                # basic validation, if not integer, default value is used
+                # other validations can be put here, like upper bounds
+                self.constants.reverse_osmosis = int(reverse_osmosis)
+            except ValueError:
+                logger.error("invalid value for reverse_osmosis: %s" %
+                             reverse_osmosis)
 
         desired_fill = request.GET.get('desired_fill')
         demand_exaggerate = request.GET.get('demand_exaggerate')
@@ -222,7 +232,8 @@ class DataService(APIView):
             'y_marking_desired_fill': desired_fill_pct,
             'desired_fill': desired_fill_pct,
             'rain_flood_surface': self.constants.rain_flood_surface,
-            'basin_storage': self.constants.max_storage
+            'basin_storage': self.constants.max_storage,
+            'reverse_osmosis': self.constants.reverse_osmosis,
         }
         result = {
             'graph_info': graph_info,

@@ -63,6 +63,12 @@
                         <td>{{ view.basin.max_storage }} m<sup>3</sup></td>
                     </tr>
                     {% endblock %}
+                    {% block reverse_osmosis %}
+                    <tr>
+                        <td>Reverse osmose</td>
+                        <td><input type="text" id="reverse-osmosis" name="reverse-osmosis" size="7" value="{{ view.basin.reverse_osmosis }}" /> <span>m<sup>3</sup>/15m</span></td>
+                    </tr>
+                    {% endblock %}
                     </tbody>
                 </table>
             </div>

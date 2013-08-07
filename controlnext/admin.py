@@ -59,7 +59,8 @@ class BasinAdmin(GeoModelAdmin):
                 # other basin parameters
                 'max_storage', 'min_storage_pct', 'max_storage_pct',
                 'rain_flood_surface', 'max_outflow_per_timeunit', 'basin_top',
-                'level_indicator_height', 'jdbc_source', 'on_main_map'
+                'level_indicator_height', 'reverse_osmosis', 'jdbc_source',
+                'on_main_map'
             )
         }),
         (_("location"), {

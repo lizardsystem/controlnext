@@ -77,6 +77,10 @@ class CalculationModel(object):
     def predict_scenario(self, _from, current_fill_m3, desired_fill_m3,
                          demand_m3, rain_mm, max_uitstroom_m3):
         toestroom_m3 = rain_mm * (self.constants.rain_flood_surface / 1000)
+        # Correct for optional reverse osmosis inflow.
+        if (self.constants.reverse_osmosis and
+                self.constants.reverse_osmosis > 0):
+            toestroom_m3 += self.constants.reverse_osmosis
         vaste_verandering = toestroom_m3 - demand_m3  # + current_fill_m3
         # vaste_verandering_summed = vaste_verandering.cumsum()
 
