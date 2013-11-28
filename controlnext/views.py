@@ -77,6 +77,22 @@ class DashboardView(AppView):
 
         return super(DashboardView, self).dispatch(request, *args, **kwargs)
 
+# this is an old view
+# class BasinView(UiView):
+#     template_name = 'controlnext/basin_detail.html'
+#     page_title = _('ControlNEXT')
+
+#     def get(self, request, basin_id, *args, **kwargs):
+#         try:
+#             self.basin = models.Basin.objects.get(id=basin_id)
+#         except ObjectDoesNotExist:
+#             raise Http404
+#         else:
+#             if (self.basin.owner.crop and
+#                     is_valid_crop_type(self.basin.owner.crop)):
+#                 self.crop_type = self.basin.owner.crop
+#         return super(BasinView, self).get(request, *args, **kwargs)
+
 
 class BasinView(UiView):
     template_name = 'controlnext/basin_detail.html'

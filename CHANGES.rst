@@ -5,7 +5,8 @@ Changelog of controlnext
 0.11 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- Add chartjs skin.
+- Coonect the skin to the real data.
 
 
 0.10 (2013-08-07)

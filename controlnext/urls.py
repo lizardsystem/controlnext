@@ -13,6 +13,8 @@ admin.autodiscover()
 urlpatterns = patterns(
     '',
     url(r'^$', views.DashboardView.as_view(), name='controlnext-dashboard'),
+    #url(r'^(?P<basin_id>\d+)/$', views.BasinView.as_view(),
+    #    name='controlnext-basin'),
     url(r'^(?P<basin_id>\d+)/$', views.BasinView.as_view(),
         name='controlnext-basin'),
     url(r'^data_service/(?P<basin_id>\d+)/$',

@@ -1,241 +1,214 @@
-{% extends "controlnext/realbase.html" %}
-
-{% block css %}
-    {{ block.super }}
-    <link rel="stylesheet"
-          type="text/css"
-          href="{{ STATIC_URL }}controlnext/main.css" />
-{% endblock css %}
-
-{% block map-javascript %}
-    <script type="text/javascript"
-            src="{{ STATIC_URL }}controlnext/jquery.flot.js"></script>
-    <script type="text/javascript"
-            src="{{ STATIC_URL }}jquery-flot/jquery.flot.time.js"></script>
-    <script type="text/javascript"
-            src="{{ STATIC_URL }}controlnext/jquery.cookie.js"></script>
-    <script type="text/javascript"
-            src="{{ STATIC_URL }}controlnext/jquery.flot.resize.js"></script>
-    <script type="text/javascript"
-            src="{{ STATIC_URL }}controlnext/jquery.flot.fillbetween.js"></script>
-    <script type="text/javascript"
-            src="{{ STATIC_URL }}controlnext/jquery.flot.crosshair.js"></script>
-    <script type="text/javascript"
-            src="{{ STATIC_URL }}controlnext/jquery.flot.navigate.js"></script>
-    <script type="text/javascript"
-            src="{{ STATIC_URL }}controlnext/jquery.flot.dashes.js"></script>
-    <script type="text/javascript"
-            src="{{ STATIC_URL }}controlnext/jquery.curvedlines-0.2.2.js"></script>
-    <script type="text/javascript"
-            src="{{ STATIC_URL }}controlnext/main.js"></script>
-{% endblock map-javascript %}
-
-{% block head-extras %}
-    {# Not working: should be on top #}
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-{% endblock head-extras %}
-
-{% block sidebar %}
-    {% spaceless %}
-        <div id="data-constants"
-             data-url-base="{{ STATIC_URL }}controlnext/"
-             data-data-url="{% url controlnext-data-service view.basin.id %}"
-             data-oppervlakte="{{ view.basin.owner.rain_flood_surface }}"
-             data-max-voorraad="{{ view.basin.max_storage }}"
-             style="display:none;"></div>
-        <div id="controls">
-            <div>
-                <table class="table table-striped">
-                    <tbody>
-                    <tr>
-                        <td>Lokatie</td>
-                        <td>{{ view.basin }}</td>
-                    </tr>
-                    {% block rain_flood_surface %}
-                    <tr>
-                        <td>Oppervlakte</td>
-                        <td>{{ view.basin.owner.rain_flood_surface }} m<sup>2</sup></td>
-                    </tr>
-                    {% endblock %}
-                    {% block basin_max_storage %}
-                    <tr>
-                        <td>Inhoud bassin</td>
-                        <td>{{ view.basin.max_storage }} m<sup>3</sup></td>
-                    </tr>
-                    {% endblock %}
-                    {% block reverse_osmosis %}
-                    <tr>
-                        <td>Reverse osmose</td>
-                        <td><input type="text" id="reverse-osmosis" name="reverse-osmosis" size="7" value="{{ view.basin.reverse_osmosis }}" /> <span>m<sup>3</sup>/15m</span></td>
-                    </tr>
-                    {% endblock %}
-                    </tbody>
-                </table>
-            </div>
-
-            <p style="margin-top:20px; text-align:center;">Kies gewenste vullingsgraad:</p>
-            <div id="fill-container" class="has_popover_east"
-                 data-title="Gewenste vulgraad"
-                 data-content="Selecteer hier de gewenste vulgraad.">
-                <div id="current-fill-container" class="has_popover_east"
-                     data-selector="#current-fill-label"
-                     data-title="Huidige vulgraad"
-                     data-content="Huidige vulgraad uit meetresultaten ControlNEXT.">
-                    <div id="current-fill-label"></div>
-                </div>
-                <div id="desired-fill-slider"></div>
-                <div id="desired-fill-container" class="slider-label-container">
-                    <div id="desired-fill-label">- <span class="val"></span></div>
-                </div>
-            </div>
-            <div id="demand-exaggerate-container"
-                 class="has_popover_east"
-                 data-title="Watervraagcorrectie"
-                 data-content="Correctie op de normale watervraag voor deze periode.">
-                <p style="text-align:center;">Stel watervraagcorrectie in:</p>
-                <div id="demand-exaggerate-slider"></div>
-                <div id="demand-exaggerate-label-container">
-                    <div id="demand-exaggerate-label"><span class="val"></span> %</div>
-                </div>
-            </div>
-            <div id="rain-exaggerate-container"
-                 class="has_popover_east"
-                 data-title="Neerslagcorrectie"
-                 data-content="Correctie op de normale hoeveelheid neerslag voor deze periode.">
-                <p style="text-align:center;">Stel neerslagcorrectie in:</p>
-                <div id="rain-exaggerate-slider"></div>
-                <div id="rain-exaggerate-label-container">
-                    <div id="rain-exaggerate-label"><span class="val"></span> %</div>
-                </div>
-            </div>
-
-            <div id="start-btn-container">
-                <a id="start-btn" class="btn btn-success" href="#">
-                    <span id="start-btn-label">Bereken</span>
-                </a>
-            </div>
-
-	        <div id="start-info-container"
-	             class="has_popover_east"
-	             data-title="Bereken opnieuw."
-	             data-content="Klik op 'Berekening' om de berekening te starten.">
-		        <p style="text-align:center;">Klik voor meer informatie.</p>
-	        </div>
-
-            <div id="debug-panel" style="display:none;">
-	            <ul>
-		            <li>t0 verschil (uren): <input type="text" id="debug-hours-diff" name="debug-hours-diff" size="4" /></li>
-		            <li>basin oppervlakte: <input type="text" id="debug-basin-surface" name="debug-basin-surface" size="10" /></li>
-		            <li>inhoud bassin: <input type="text" id="debug-basin-storage" name="debug-basin-storage" size="10" /></li>
-	            </ul>
-            </div>
-
-        </div>
-    {% endspaceless %}
-{% endblock %}
-
-{% block content %}
-    {% spaceless %}
-        <div id="upper">
-            <div id="left">
-                <div class="inner">
-	                {% if view.basin.owner.image %}
-		                <img id="situation-image" src="{{ view.basin.owner.image.url }}" width="200" height="200" />
-	                {% elif view.crop_type %}
-		                <img id="situation-image" src="{{ STATIC_URL }}controlnext/{{ view.crop_type }}.jpg" width="200" height="200" />
-	                {% else %}
-                        <img id="situation-image" src="{{ STATIC_URL }}controlnext/situation.jpg" width="200" height="200" />
-                    {% endif %}
-	                <div>Standaard watervraag 24 uur:</div>
-                    <div class="textual-value" id="demand-value-24h"></div>
-                    <div>Standaard watervraag week:</div>
-                    <div class="textual-value" id="demand-value-week"></div>
-                    <div>Gewenste niveau wordt bereikt op:</div>
-                    <div class="textual-value" id="omslagpunt-value"></div>
-                    <div>
-                        <span>Verwachte overstort 24 uur:</span>
-                        <span class="textual-value" id="overflow-24h-value"></span>
-                    </div>
-                    <div>
-                        <span>Verwachte overstort 5 dagen:</span>
-                        <span class="textual-value" id="overflow-5d-value"></span>
-                    </div>
-                    <div id="overflow-visualization-container" style="display:none;">
-                        <div id="overflow-visualization"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>ControlNext Dashboard</title>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- pace must loads as early as possible -->
+<link href="{{ STATIC_URL }}controlnext/styles/pace.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}controlnext/lib/pace-0.4.15/pace.min.js"></script>
+<link href="{{ STATIC_URL }}controlnext/lib/bootstrap-3.0.0/dist/css/bootstrap.min.css"
+      rel="stylesheet">
+<link href="{{ STATIC_URL }}controlnext/lib/font-awesome-4.0.3/css/font-awesome.min.css"
+      rel="stylesheet">
+<link href="{{ STATIC_URL }}controlnext/styles/dashboard.css" rel="stylesheet">
+</head>
+<body>
+<div class="dashboard-container">
+    <div class="row">
+        <div class="col-sm-3 left-col">
+            <div class="row left-col-row-1">
+                <div class="col-sm-12">
+                    <div class="box-top-info">
+                        <h4>Info dashboard</h4>
+                        <p>Hier kan een korte uitleg komen over het gebruik van het dashboard.</p>
                     </div>
                 </div>
             </div>
-            <div id="right">
-                <h3 class="graph-header">Vullingsgraad (%)</h3>
-                <div id="fill-graph-container"></div>
-            </div>
-        </div>
+            <div class="row left-col-row-2">
+                <div class="col-sm-12">
+                    <div class="box-basin-data">
+                        <div class="logo"><img src="{{ STATIC_URL }}controlnext/images/logo.png"
+					       width="120" height="129"></div>
+                        <h4>Gegevens</h4>
 
-        <div id="lower">
-            <div id="lleft">
-                <div id="weerwidget">
-                    <!-- begin weer.nl widget code -->
-                    <a href="http://www.weer.nl/" style="padding:0;background:none" target="_blank" title="Your weather service"><img src="http://www.weer.nl/meteo/hptool/logo_weer_nl.png" alt="" width="120" height="32" border="0" style="display:block;" /></a><div style="background-color:#ffffff;color:#000000;font-family:Verdana,Arial,Tahoma,Times New Roman;font-weight:normal;font-size:10px;width:120px;text-align:center"><a href="http://www.weer.nl/wereldweer/actueel-en-verwacht-weer/stad/31X3558/maasdijk.html" target="_blank" style="color:#000000;font-family:Verdana,Arial,Tahoma,Times New Roman;font-weight:normal;font-size:10px;padding:0;background:none" title="Detailed weather forecast for Weer Maasdijk">Weer Maasdijk</a></div><iframe width="120" height="151" scrolling="no" frameborder="0" src="http://www.weer.nl/meteo/hptool/index.php?cid=31X3558&cityName=Maasdijk&l=nl&style=14&v=nl&ver=2&c1=000000&c2=ffffff&c3=000000&c4=ffffff&c5=000000&c6=ffffff&c7=ffffff&f1a=1&f1b=1&f2a=1&f2b=1&f3a=1&f3b=1&ct1=1&ct2=2&ct3=6&ct4=10&ct5=12&fcd=0"></iframe><div style="height:14px;width:120px;text-align:center;background-color:#ffffff"><a href="http://www.weer.nl/" target="_blank" style="background:none;padding:0;text-decoration:none;color:#000000;font-family:Verdana,Arial,Tahoma,Times New Roman;font-weight:normal;font-size:10px" title="Latest weather observations and 14 day forecasts for over 2 MM locations worldwide">&copy; MeteoConsult</a></div>
-                    <!-- end weer.nl widget code -->
+                        <table class="table"><tbody>
+                        <tr><td>Lokatie</td><td>Van der Lans (west)</td></tr>
+                        <tr><td>Teeltareaal</td><td>94000 m<sup>2</sup></td></tr>
+                        <tr><td>Oppervlak bassin</td><td>1000 m<sup>2</sup></td></tr>
+                        <tr><td>Diepte bassin</td><td>3 m</td></tr>
+                        <tr><td>Inhoud bassin</td><td>15527 m<sup>3</sup></td></tr>
+                        <tr><td>Aflaat capaciteit</td><td><input name="reverse-osmosis" class="small-input" size="7" value="0" type="text"><span> m<sup>3</sup>/15m</span></td></tr>
+                        <tr><td>Reverse osmose</td><td><input name="reverse-osmosis" class="small-input" size="7" value="0" type="text"><span> m<sup>3</sup>/15m</span></td></tr>
+                        <tr><td>Datum</td><td><span class="label label-default" data-bind="text: currentDate().format('LLL')">&ndash;</span></td></tr>
+                        <tr><td>Aflaat open</td><td><span class="label label-default" data-bind="text: outflowOpened().format('LLL')">&ndash;</span></td></tr>
+                        <tr><td>Aflaat dicht</td><td><span class="label label-default" data-bind="text: outflowClosed().format('LLL')">&ndash;</span></td></tr>
+                        </tbody></table>
+                    </div>
                 </div>
             </div>
-            <div id="lright">
-                <h3 class="graph-header">Neerslag (mm / h)</h3>
-                <div id="rain-graph-container"></div>
+            <div class="row left-col-row-3">
+                <div class="col-sm-12">
+                    <div class="box-weather-forecast">
+                        <h4>Weersverwachting Maasdijk</h4>
+                        <div style="height: 220px;overflow: hidden;">
+                        <div style="height: 220px;">
+                        <iframe id="widget-frame" src="http://www.weeronline.nl/Go/ExternalWidgetsNew/ThreeDaysCity?gid=4058013&sizeType=1&temperatureScale=Celsius&defaultSettings=False" width="100%" height="216" frameborder="0" scrolling="no" style="border: none;" allowtransparency="true"></iframe>
+                        </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+        <div class="col-sm-9 right-col">
+<!--
+            <div class="row right-col-row-4">
+                <div class="col-sm-10">
+                    <div class="box-timespan">
+                        <div id="timespan-selector"></div>
+                    </div>
+                </div>
+                <div class="col-sm-2"></div>
+            </div>
+-->
+            <div class="row right-col-row-1">
+                <div class="col-sm-9">
+                    <div class="box-demand-chart">
+                        <div id="demand-chart"></div>
+                        <span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; left: 73px; top: 8px;"><i class="fa fa-info"></i></span>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="box-empty"></div>
+                </div>
+            </div>
+            <div class="row right-col-row-2">
+                <div class="col-sm-9">
+                    <div class="box-precipitation-chart">
+                        <div id="precipitation-chart"></div>
+                        <span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; left: 73px; top: 0;"><i class="fa fa-info"></i></span>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="box-quadrant">
+                        <div id="quadrant-control">
+                            <div id="quadrant-label">Buien kwadrant<span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; right: 0;"><i class="fa fa-info"></i></span></div>
+                            <div id="quadrant-1"></div>
+                            <div id="quadrant-2"></div>
+                            <div id="quadrant-3"></div>
+                            <div id="quadrant-4"></div>
+                            <div id="quadrant-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row right-col-row-3">
+                <div class="col-sm-9">
+                    <div class="box-fill-chart">
+                        <div id="fill-chart"></div>
+                        <span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; left: 73px; top: 8px;"><i class="fa fa-info"></i></span>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="box-fill-gauge">
+                        <span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; right: 0; top: 0;"><i class="fa fa-info"></i></span>
+                        <div id="fill-gauge"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row right-col-row-4">
+                <div class="col-sm-4">
+                    <div class="box-chart-selector">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-default btn-sm" data-bind="click: browseTimespan" data-direction="bwd">&laquo;</button>
+                            <button type="button" class="btn btn-default btn-sm" data-bind="click: selectTimespan" data-timespan="48">48 u</button>
+                            <button type="button" class="btn btn-default btn-sm" data-bind="click: selectTimespan" data-timespan="96">4 dg</button>
+                            <button type="button" class="btn btn-default btn-sm" data-bind="click: selectTimespan" data-timespan="672">4 wk</button>
+                            <button type="button" class="btn btn-default btn-sm" data-bind="click: browseTimespan" data-direction="fwd">&raquo;</button>
+                            <!--<button type="button" class="btn btn-default btn-sm">%</button>
+                            <button type="button" class="btn btn-default btn-sm">L/m<sup>2</sup></button>-->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="box-empty"></div>
+                </div>
+                <div class="col-sm-2">
+                    <div class="box-empty"></div>
+                </div>
+            </div>
+            <div class="row right-col-row-5">
+                <div class="col-sm-9">
+                    <div class="box-timespan-controls">
+                        <div id="outflow-timespan-selector"></div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="box-timespan-controls-labels">
+                        <div id="outflow-label">Aflaat<span class="info-popup" data-content="uitleg" style="width: 25px; height: 25px; line-height: 25px; right: 0;"><i class="fa fa-info"></i></span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row right-col-row-6">
+                <div class="col-sm-12">
+                    <div class="box-main-controls">
+                        <button class="btn btn-calculate">Bereken</button>
+                        <button class="btn btn-restore">Herstel</button>
+                        <div><span class="info-popup" data-content="uitleg" style="width: 25px; height: 25px; line-height: 25px;"><i class="fa fa-info"></i></span></div>
+                        <!--<form role="form">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox"> Aflaat
+                                </label>
+                            </div>
+                        </form>-->
 
-        <div id="lowest">
-            <div id="lowestleft">
-                <div id="advanced-graph-form-container">
-                    <form id="advanced-graph-form" action="GET">
-                        <label><input type="radio" name="advanced-graph-radio" value="0"
-                                      data-graph-type="none" checked="checked"
-                                      data-graph-title=""
-                                />Geen</label>
-                        <label><input type="radio" name="advanced-graph-radio" value="1"
-                                      data-graph-type="demand"
-                                      data-graph-title="Watervraag (m3 / 15m)"
-                                />Watervraag</label>
-                        <label><input type="radio" name="advanced-graph-radio" value="2"
-                                      data-graph-type="uitstroom"
-                                      data-graph-title="Uitstroom (m3 / 15m)"
-                                />Uitstroom</label>
-                        <label><input type="radio" name="advanced-graph-radio" value="3"
-                                      data-graph-type="max_uitstroom"
-                                      data-graph-title="Maximale uitstroom (m3, cumulatief)"
-                                />Maximale uitstroom (cumulatief)</label>
-                        <label><input type="radio" name="advanced-graph-radio" value="4"
-                                      data-graph-type="toestroom"
-                                      data-graph-title="Toestroom (m3, cumulatief)"
-                                />Toestroom (cumulatief)</label>
-	                    {% if view.basin.has_own_meter %}
-	                    <label><input type="radio" name="advanced-graph-radio" value="5"
-	                                  data-graph-type="meter_comparison"
-	                                  data-graph-title="Vullingsgraadmeter vergelijking"
-			                    />Vullingsgraadmeter vergelijking</label>
-	                    {% endif %}
-	                    {% if view.basin.has_greenhouse_valve %}
-		                    <label><input type="radio" name="advanced-graph-radio" value="6"
-                                      data-graph-type="greenhouse_discharge"
-                                      data-graph-title="Kasdebiet (m3 /15m)"
-                                />Kasdebiet</label>
-	                    {% endif %}
-	                    {% if view.basin.has_5day_rain_params %}
-		                    <label><input type="radio" name="advanced-graph-radio" value="6"
-		                              data-graph-type="5day_rain"
-		                              data-graph-title="Regen voorspeld vs. gevallen (mm / 5 dagen)"
-				                />Regen voorspeld vs. gevallen</label>
-	                    {% endif %}
-                    </form>
-                </div>
-            </div>
-            <div id="lowestright">
-                <div id="advanced-graph-panel">
-                    <h3 class="graph-header"></h3>
-                    <div id="advanced-graph-container"></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    </div>
                 </div>
             </div>
         </div>
-    {% endspaceless %}
-{% endblock %}
+    </div>
+</div>
+<div id="data-constants"
+     data-url-base="{{ STATIC_URL }}controlnext/"
+     data-data-url="{% url controlnext-data-service view.basin.id %}"
+     data-oppervlakte="{{ view.basin.owner.rain_flood_surface }}"
+     data-max-voorraad="{{ view.basin.max_storage }}"
+     style="display:none;">
+</div>
+<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!--[if lt IE 9]>
+  <script src="static/lib/bootstrap-3.0.0/assets/js/html5shiv.js"></script>
+  <script src="static/lib/bootstrap-3.0.0/assets/js/respond.min.js"></script>
+<![endif]-->
+<script src="{{ STATIC_URL }}controlnext/lib/jquery-1.9.1/jquery-1.9.1.min.js"></script>
+<script src="{{ STATIC_URL }}controlnext/lib/knockout-3.0.0/knockout-3.0.0.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.3.1/moment-with-langs.min.js"></script>
+<script src="{{ STATIC_URL }}controlnext/lib/bootstrap-3.0.0/dist/js/bootstrap.min.js"></script>
+<script src="{{ STATIC_URL }}controlnext/lib/globalize-0.1.1/globalize.js"></script>
+<script src="{{ STATIC_URL }}controlnext/lib/globalize-0.1.1/cultures/globalize.culture.en-US.js"></script>
+<script src="{{ STATIC_URL }}controlnext/lib/globalize-0.1.1/cultures/globalize.culture.nl-NL.js"></script>
+<script type="text/javascript">
+    // Force culture to Dutch.
+    Globalize.culture('nl-NL');
+    moment.lang('nl');
+</script>
+<script src="{{ STATIC_URL }}controlnext/lib/ChartJS-13.1.8/dx.chartjs.debug.js"></script>
+<script src="{{ STATIC_URL }}controlnext/scripts/dashboard.js"></script>
+</body>
+</html>

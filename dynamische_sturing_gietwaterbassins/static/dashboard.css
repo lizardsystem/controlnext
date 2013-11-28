@@ -1,0 +1,291 @@
+body {
+    font-family: 'SegoeUI','Segoe UI','HelveticaNeue','Helvetica Neue','Trebuchet MS',Verdana;
+}
+
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+    font-family: 'SegoeUI','Segoe UI','HelveticaNeue','Helvetica Neue','Trebuchet MS',Verdana;
+}
+
+.dashboard-container {
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+    margin-top: 15px;
+}
+
+.info-popup {
+    position: absolute;
+    background-color: #aaa;
+    text-align: center;
+    vertical-align: middle;
+}
+.info-popup > i {
+    color: #fff;
+}
+
+/*
+rect {
+    background-image: linear-gradient(45deg, rgb(0, 0, 0) 25%, transparent 25%, transparent 50%, rgb(0, 0, 0) 50%, rgb(0, 0, 0) 75%, transparent 75%, transparent);
+    background-size: 50px 50px;
+}
+*/
+/* ***************************************************************** */
+
+[class^="box-"], [class*=" box-"] {
+}
+
+/* ***************************************************************** */
+
+.right-col {
+}
+
+.left-col {
+    border-right: 1px solid #dedede;
+}
+
+/* ***************************************************************** */
+
+.left-col-row-1 {
+}
+
+.left-col-row-2 {
+    border-top: 1px solid #dedede;
+}
+
+.left-col-row-3 {
+    border-top: 1px solid #dedede;
+}
+
+.right-col-row-1 {
+}
+
+.right-col-row-2 {
+    margin-top: 10px;
+}
+
+.right-col-row-3 {
+    margin-top: 10px;
+}
+
+.right-col-row-4 {
+    margin-top: 10px;
+}
+
+.right-col-row-5 {
+    margin-top: 10px;
+}
+
+.right-col-row-6 {
+    border-top: 1px solid #dedede;
+    margin-top: 10px;
+}
+
+/* ***************************************************************** */
+
+#quadrant-control {
+    background-color: #fff;
+}
+
+#quadrant-label {
+    position: absolute;
+    left: 0;
+    top: -22px;
+    width: 100%;
+    height: 20px;
+    background-color: #adf;
+    color: #fff;
+}
+
+#quadrant-1 {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 49%;
+    height: 49%;
+    background-color: #adf;
+}
+
+#quadrant-2 {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 49%;
+    height: 49%;
+    background-color: #adf;
+}
+
+#quadrant-3 {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 49%;
+    height: 49%;
+    background-color: #adf;
+}
+
+#quadrant-4 {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 49%;
+    height: 49%;
+    background-color: #8be;
+}
+
+#quadrant-dot {
+    position: absolute;
+    right: 30px;
+    bottom: 40px;
+    width: 8px;
+    height: 8px;
+    background-color: #fff;
+    border-radius: 4px;
+}
+
+.logo {
+    background-color: grey;
+    width: 100px;
+    height: 129px;
+}
+
+.box-top-info {
+    height: 100px;
+}
+
+.box-basin-data {
+    margin-top: 10px;
+    height: 749px;
+}
+
+.box-weather-forecast {
+    height: 300px;
+}
+
+.box-demand-chart {
+    height: 170px;
+}
+
+.box-precipitation-chart {
+    height: 170px;
+}
+
+.box-quadrant {
+    position: relative;
+    width: 160px;
+    height: 163px;
+}
+
+.box-fill-chart {
+    background-color: #fff;
+    height: 400px;
+}
+
+.box-fill-gauge {
+    position: relative;
+    width: 160px;
+    height: 350px;
+}
+
+.box-chart-selector {
+    margin-left: 58px;
+    height: 35px;
+}
+.box-chart-selector button {
+    border-radius: 0;
+    font-weight: bold;
+    color: #fff;
+    background-color: #8be;
+    border: 1px solid white;
+}
+.box-chart-selector button:hover,
+.box-chart-selector button.hover,
+.box-chart-selector button:active,
+.box-chart-selector button.active,
+.box-chart-selector button:focus,
+.box-chart-selector button.focus
+{
+    background-color: #57d;
+    color: #fff;
+    border: 1px solid white;
+}
+
+.box-main-controls button.btn-calculate {
+    font-weight: bold;
+    color: #fff;
+    background-color: #8be;
+    border: 1px solid white;
+}
+.box-main-controls button.btn-calculate:hover,
+.box-main-controls button.btn-calculate.hover,
+.box-main-controls button.btn-calculate:active,
+.box-main-controls button.btn-calculate.active,
+.box-main-controls button.btn-calculate:focus,
+.box-main-controls button.btn-calculate.focus
+{
+    background-color: #57d;
+    color: #fff;
+    border: 1px solid white;
+}
+
+.box-main-controls button.btn-restore {
+    font-weight: bold;
+    color: #fff;
+    background-color: #f44;
+    border: 1px solid white;
+}
+.box-main-controls button.btn-restore:hover,
+.box-main-controls button.btn-restore.hover,
+.box-main-controls button.btn-restore:active,
+.box-main-controls button.btn-restore.active,
+.box-main-controls button.btn-restore:focus,
+.box-main-controls button.btn-restore.focus
+{
+    background-color: #f00;
+    color: #fff;
+    border: 1px solid white;
+}
+
+.box-timespan {
+    height: 90px;
+}
+
+.box-timespan-controls {
+    height: 45px;
+}
+
+#outflow-label {
+    position: relative;
+    height: 25px;
+    background-color: #bbb;
+    color: #fff;
+    vertical-align: middle;
+    line-height: 25px;
+    width: 160px;
+}
+
+.box-main-controls {
+    height: 120px;
+    margin-top: 10px;
+    margin-left: 59px;
+}
+
+/* ***************************************************************** */
+
+#ww_1 {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* ***************************************************************** */
+
+.small-input {
+    font-size: small;
+    width: 50px;
+    height: 20px;
+    margin: 0;
+    padding: 0;
+    line-height: 16px;
+    text-align: center;
+    vertical-align: middle;
+}
