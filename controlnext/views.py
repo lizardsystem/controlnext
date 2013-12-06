@@ -192,9 +192,16 @@ class DataService(APIView):
         elif graph_type == 'prediction' or graph_type == 'meter_comparison':
             self.store_parameters(desired_fill, demand_exaggerate,
                                   rain_exaggerate)
+            outflow_open = request.GET.get('outflowOpen', None)
+            outflow_closed = request.GET.get('outflowClosed', None)
+            outflow_capacity = request.GET.get('outflowCapacity', 0)
+            if outflow_open is not None:
+                outflow_open = datetime.datetime.fromtimestamp(int(outflow_open)/1000, pytz.utc)
+            if outflow_closed is not None:
+                outflow_closed = datetime.datetime.fromtimestamp(int(outflow_closed)/1000, pytz.utc)
             response_dict = self.prediction(
                 t0, desired_fill, demand_exaggerate, rain_exaggerate,
-                graph_type)
+                graph_type, outflow_open, outflow_closed, outflow_capacity)
         else:
             response_dict = self.advanced(
                 t0, desired_fill, demand_exaggerate, rain_exaggerate,
@@ -216,15 +223,18 @@ class DataService(APIView):
         return table
 
     def prediction(self, t0, desired_fill_pct, demand_exaggerate,
-                   rain_exaggerate, graph_type):
+                   rain_exaggerate, graph_type, outflow_open,
+                   outflow_closed, outflow_capacity):
+        #import pdb; pdb.set_trace()
         tbl = self.get_demand_table()
         ds = FewsJdbcDataSource(self.basin, self.constants)
         model = CalculationModel(tbl, ds)
-
         future = t0 + settings.CONTROLNEXT_FILL_PREDICT_FUTURE
 
         prediction = model.predict_fill(t0, future, desired_fill_pct,
-                                        demand_exaggerate, rain_exaggerate)
+                                        demand_exaggerate, rain_exaggerate,
+                                        outflow_open, outflow_closed,
+                                        outflow_capacity)
 
         if desired_fill_pct == 0:  # first load version
             desired_fill_pct = prediction['current_fill']

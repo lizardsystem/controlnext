@@ -144,9 +144,9 @@ rect {
 }
 
 .logo {
-    background-color: grey;
-    width: 100px;
-    height: 129px;
+    /* background-color: grey; */
+    /* width: 100px; */
+    /* height: 129px; */
 }
 
 .box-top-info {
@@ -184,7 +184,7 @@ rect {
 .box-fill-gauge {
     position: relative;
     width: 160px;
-    height: 350px;
+    height: 400px;
 }
 
 .box-chart-selector {
@@ -197,6 +197,7 @@ rect {
     color: #fff;
     background-color: #8be;
     border: 1px solid white;
+    width: 35px;
 }
 .box-chart-selector button:hover,
 .box-chart-selector button.hover,
@@ -215,6 +216,9 @@ rect {
     color: #fff;
     background-color: #8be;
     border: 1px solid white;
+    height: 25px;
+    width: 160px;
+    border-radius: 4px;
 }
 .box-main-controls button.btn-calculate:hover,
 .box-main-controls button.btn-calculate.hover,
@@ -228,11 +232,20 @@ rect {
     border: 1px solid white;
 }
 
+.box-chart-selector button.btn-nonactive {
+    background-color: #b6e4fb;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
 .box-main-controls button.btn-restore {
     font-weight: bold;
     color: #fff;
     background-color: #f44;
     border: 1px solid white;
+    height: 25px;
+    width: 160px;
+    border-radius: 4px;
 }
 .box-main-controls button.btn-restore:hover,
 .box-main-controls button.btn-restore.hover,
@@ -265,9 +278,11 @@ rect {
 }
 
 .box-main-controls {
-    height: 120px;
-    margin-top: 10px;
-    margin-left: 59px;
+    height: 25px;
+    margin-top: 30px;
+    margin-left: none;
+    height: 25px !important;
+    width: 160px !important;
 }
 
 /* ***************************************************************** */
@@ -288,4 +303,16 @@ rect {
     line-height: 16px;
     text-align: center;
     vertical-align: middle;
+}
+
+.bottomborder1 {
+    border-bottom: 1px solid #fff;
+} 
+
+.bottomborder2 {
+    border-bottom: none;
+}
+
+.controlnexttable {
+    background-color: #ccc;
 }

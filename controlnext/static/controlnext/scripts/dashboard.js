@@ -17,6 +17,7 @@
     var viewmax = moment(now).add({hours: 48});
     var outflowmin = moment(now).add({minutes: 90});
     var outflowmax = moment(now).add({minutes: 120});
+    var outflowcapacity = 0;
    
     var loadDemandData = function () {
 	var $constants = $('#data-constants');
@@ -66,24 +67,24 @@
 		var minData = [];
 		var maxData = [];
 		var mean_rain = response.rain_graph_info.data.mean;
-		var min_rain = response.rain_graph_info.data.min;
-		var max_rain = response.rain_graph_info.data.max;
+		//var min_rain = response.rain_graph_info.data.min;
+		//var max_rain = response.rain_graph_info.data.max;
 		for (var i = 0; i < mean_rain.length; i++){
 		    var arg = new Date(mean_rain[i][0]);
-		    meanData.push({arg: arg, mean: mean_rain[i][1] + 60});
+		    meanData.push({arg: arg, mean: mean_rain[i][1]});
 		}
-		for (var i = 0; i < min_rain.length; i++){
-		    var arg = new Date(min_rain[i][0]);
-		    minData.push({arg: arg, min: min_rain[i][1] + 80});
-		}
-		for (var i = 0; i < max_rain.length; i++){
-		    var arg = new Date(max_rain[i][0]);
-		    maxData.push({arg: arg, max: max_rain[i][1] + 40});
-		}
+		// for (var i = 0; i < min_rain.length; i++){
+		//     var arg = new Date(min_rain[i][0]);
+		//     minData.push({arg: arg, min: min_rain[i][1]});
+		// }
+		// for (var i = 0; i < max_rain.length; i++){
+		//     var arg = new Date(max_rain[i][0]);
+		//     maxData.push({arg: arg, max: max_rain[i][1]});
+		// }
 		precipitationChart.beginUpdate();;
-		precipitationChart.option("series.3.data", maxData);
+		//precipitationChart.option("series.3.data", maxData);
 		precipitationChart.option("series.2.data", meanData);
-		precipitationChart.option("series.1.data", minData);
+		//precipitationChart.option("series.1.data", minData);
 		precipitationChart.endUpdate();
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -101,43 +102,53 @@
 	var dt = new Date().getTime();
 	var query_params = "graph_type=prediction&format=json&"
 	    + "desired_fill=0&demand_exaggerate=100&rain_exaggerate=100&"
-	    + "date=" + dt + "&reverse_osmosis=0";
+	    + "date=" + dt + "&reverse_osmosis=0&"
+	    + "outflowOpen=" + dashboardViewModel.outflowOpened().toDate().getTime() + "&"
+	    + "outflowClosed=" + dashboardViewModel.outflowClosed().toDate().getTime() + "&"
+	    + "outflowCapacity=" + dashboardViewModel.outflowCapacity();
 	$.ajax({
             url: data_url + '?' + query_params,
 	    success: function (response) {
-		var minMaxData = [];
+		//var minMaxData = [];
 		var predictedData = [];
 		var measuredData = [];
-		var min_predicted = response.graph_info.data.min;
-		var max_predicted = response.graph_info.data.max;
+		var predictedNoRainData = [];
+		//var min_predicted = response.graph_info.data.min;
+		//var max_predicted = response.graph_info.data.max;
 		var mean_predicted = response.graph_info.data.mean;
 		var measured = response.graph_info.data.history;
-		var maxAmountOfMinMax = Math.max(
-		    min_predicted.length,
-		    max_predicted.length
-		);
-		for (var i = 0; i < maxAmountOfMinMax; i++) {
-		    var y1 = null;
-		    var y3 = null;
-		    var dt = null;
-		    if (min_predicted.length > i) {
-			dt = min_predicted[i][0];
-			y1 = min_predicted[i][1];
-		    }
-		    if (max_predicted.length > i) {
-			dt = max_predicted[i][0];
-			y3 = max_predicted[i][1];
-		    }
-		    minMaxData.push({ arg: moment(dt).toDate(), y1: y1, y3: y3 });
+		var no_rain = response.graph_info.data.no_rain;
+		//var maxAmountOfMinMax = Math.max(
+		//min_predicted.length,
+		//    max_predicted.length
+		//);
+		// for (var i = 0; i < maxAmountOfMinMax; i++) {
+		//     var y1 = null;
+		//     var y3 = null;
+		//     var dt = null;
+		//     if (min_predicted.length > i) {
+		// 	dt = min_predicted[i][0];
+		// 	y1 = min_predicted[i][1];
+		//     }
+		//     if (max_predicted.length > i) {
+		// 	dt = max_predicted[i][0];
+		// 	y3 = max_predicted[i][1];
+		//     }
+		//     minMaxData.push({ arg: moment(dt).toDate(), y1: y1, y3: y3 });
+		// }
+		for (var i = 0; i < no_rain.length; i++) {
+		    var dt = no_rain[i][0];
+		    var y5 = Math.round(no_rain[i][1] * 100) / 100;
+		    predictedNoRainData.push({ arg: moment(dt).toDate(), y5: y5 });
 		}
 		for (var i = 0; i < mean_predicted.length; i++) {
 		    var dt = mean_predicted[i][0];
-		    var y2 = mean_predicted[i][1];
+		    var y2 = Math.round(mean_predicted[i][1] * 100) / 100;
 		    predictedData.push({ arg: moment(dt).toDate(), y2: y2 });
 		}
 		for (var i = 0; i < measured.length; i++) {
 		    var dt = measured[i][0];
-		    var y4 = measured[i][1];
+		    var y4 = Math.round(measured[i][1] * 100) / 100;
 		    measuredData.push({ arg: moment(dt).toDate(), y4: y4 });
 		}
 		fillChart.beginUpdate();
@@ -145,9 +156,10 @@
 		//fillChart.getSeriesByName("gemeten").reinitData(measuredData);
 		//fillChart.getSeriesByName("voorspeld").reinitData(predictedData);
 		
-		fillChart.option("series.0.data", minMaxData);
+		//fillChart.option("series.0.data", minMaxData);
 		fillChart.option("series.1.data", predictedData);
 		fillChart.option("series.2.data", measuredData);
+		fillChart.option("series.3.data", predictedNoRainData);
 		
 		fillChart.endUpdate();
 		//dashboardViewModel.viewTimespan({start: viewmin, end: viewmax});
@@ -220,7 +232,7 @@
             {
                 valueField: 'mean',
                 name: 'mean',
-                type: 'stackedBar',
+                type: 'bar',
                 //pane: 'defaultPane',
                 //data: precipitationData,
                 color: '#4777c1',
@@ -290,7 +302,7 @@
                 max: endDate, //dashboardViewModel.viewTimespan().end.toDate(),
                 //title: 'Tijd',
                 label: {
-                    visible: true,
+                    visible: false,
                     format: 'H:mm\nd'
                 },
                 strips: [
@@ -335,7 +347,11 @@
             outflowOpened: ko.observable(outflowmin),   // moment.js object
             outflowClosed: ko.observable(outflowmax),   // moment.js object
             actualFill: ko.observable(40),              // number
+	    outflowCapacity: ko.observable(outflowcapacity),
             //advisedFill: ko.observable(60),             // number
+	    calculate: function(model, event) {
+		loadPredictedData();
+	    },
             selectTimespan: function(model, event) {
                 // Change the chart timespan to 48h, 4d, et cetera.
                 var hours = $(event.target).data('timespan');
@@ -528,7 +544,7 @@
                 type: 'rangeArea',
                 rangeValue1Field: 'y1',
                 rangeValue2Field: 'y3',
-                data: [],//fillData,
+                data: [],
                 opacity: 0.1,
                 color: 'blue',
                 showInLegend: false
@@ -543,15 +559,26 @@
                     visible: false,
                     //size: 2
                 },
-                data: [],//fillData
+                data: [],
             },
             {
                 name: 'gemeten',
                 type: 'line',
                 valueField: 'y4',
-                data: [], //fillData,
+                data: [],
                 color: 'blue',
                 opacity: 0.2,
+                point: {
+                    visible: false
+                }
+            },
+	    {
+                name: 'geen regen',
+                type: 'line',
+                valueField: 'y5',
+                data: [],
+                color: 'red',
+                //opacity: 0.2,
                 point: {
                     visible: false
                 }
@@ -609,11 +636,12 @@
                         {startValue: 100,
 			 endValue: 120,
 			 color: 'rgba(232, 10, 10, 0.05)',
-			 label: { text: 'max berging', horizontalAlignment: 'right' }},
-                        {startValue: 20,
-			 endValue:0,
-			 color: 'rgba(232, 10, 10, 0.05)',
-			 label: { text: 'min berging', horizontalAlignment: 'right' }}
+			 //label: { text: 'max berging', horizontalAlignment: 'right' }
+			}
+                        // {startValue: 20,
+			//  endValue:0,
+			//  color: 'rgba(232, 10, 10, 0.05)',
+			//  label: { text: 'min berging', horizontalAlignment: 'right' }}
                     ],
                     label: {
                         font: {
@@ -688,8 +716,6 @@
                 console.log(message);
             }
         };
-	console.log("IMEDDDDDDD" + dashboardViewModel.viewTimespan().start.toDate());
-	console.log("IMEDDDDDDD" + dashboardViewModel.viewTimespan().end.toDate());
         $("#fill-chart").dxChart(fillChartOptions);
         var fillChart = $("#fill-chart").dxChart('instance');
 
@@ -777,103 +803,103 @@
         /* ************************************************************************ */
         /* **************************** Vertical fill gauge *********************** */
         /* ************************************************************************ */
-        $("#fill-gauge").dxLinearGauge({
-            //debugMode: true,
-            animationEnabled: false,
-            geometry: {
-                orientation: 'vertical'
-            },
-            //commonNeedleSettings: {
-            //    //indentFromCenter: 10,
-            //    offset: 8
-            //},
-            //needles: [
-            //    { value: dashboardViewModel.actualFill() },
-            //    { value: dashboardViewModel.advisedFill() }
-            //],
-            commonMarkerSettings: {
-                horizontalOrientation: 'right',
-                offset: 80
-            },
-            markers: [
-                {
-                    value: dashboardViewModel.actualFill(),
-                    text: {
-                        customizeText: function() {
-                            return 'actueel'
-                        }
-                    }
-                },
-                //{
-                //    value: dashboardViewModel.advisedFill(),
-                //    text: {
-                //        customizeText: function() {
-                //            return 'advies'
-                //        }
-                //    }
-                //}
-            ],
-            scale: {
-                startValue: 0,
-                endValue: 120,
-                //horizontalOrientation: 'left',
-                label: {
-                    //indentFromTick: -10
-                    visible: false
-                },
-                minorTick: {
-                    showCalculatedTicks: false,
-                    visible: false
-                },
-                majorTick: {
-                    showCalculatedTicks: true,
-                    tickInterval: 10,
-                    visible: false
-                },
-            },
-            rangeContainer: {
-                //horizontalOrientation: 'right',
-                backgroundColor: '#adf',
-                width: 80,
-                offset: 0,
-                ranges: [
-                    {
-                        startValue: 0,
-                        endValue: dashboardViewModel.actualFill(),
-                        color: '#8be'
-                    }
-                ]
-            },
-            size: {
-                width: 160,
-                height: 350
-            },
-            margin: {
-                top: 0, left: 0, bottom: 0, right: 0
-            },
-            title: {
-                position: 'bottom-center',
-                visible: false,
-                //text: 'Vullingsgraad',
-                font: {
-                    // match to chart control
-                    family: "'Segoe UI', 'Helvetica Neue', 'Trebuchet MS', Verdana",
-                    color: '#808080',
-                    opacity: 0.75,
-                    size: 16,
-                    weight: 400
-                }
-            },
-            incidentOccured: function(message) {
-                console.log(message);
-            }
-        });
-        var fillGauge = $("#fill-gauge").dxLinearGauge('instance');
+        // $("#fill-gauge").dxLinearGauge({
+        //     //debugMode: true,
+        //     animationEnabled: false,
+        //     geometry: {
+        //         orientation: 'vertical'
+        //     },
+        //     //commonNeedleSettings: {
+        //     //    //indentFromCenter: 10,
+        //     //    offset: 8
+        //     //},
+        //     //needles: [
+        //     //    { value: dashboardViewModel.actualFill() },
+        //     //    { value: dashboardViewModel.advisedFill() }
+        //     //],
+        //     commonMarkerSettings: {
+        //         horizontalOrientation: 'right',
+        //         offset: 80
+        //     },
+        //     markers: [
+        //         {
+        //             value: dashboardViewModel.actualFill(),
+        //             text: {
+        //                 customizeText: function() {
+        //                     return 'actueel'
+        //                 }
+        //             }
+        //         },
+        //         //{
+        //         //    value: dashboardViewModel.advisedFill(),
+        //         //    text: {
+        //         //        customizeText: function() {
+        //         //            return 'advies'
+        //         //        }
+        //         //    }
+        //         //}
+        //     ],
+        //     scale: {
+        //         startValue: 0,
+        //         endValue: 120,
+        //         //horizontalOrientation: 'left',
+        //         label: {
+        //             //indentFromTick: -10
+        //             visible: false
+        //         },
+        //         minorTick: {
+        //             showCalculatedTicks: false,
+        //             visible: false
+        //         },
+        //         majorTick: {
+        //             showCalculatedTicks: true,
+        //             tickInterval: 10,
+        //             visible: false
+        //         },
+        //     },
+        //     rangeContainer: {
+        //         //horizontalOrientation: 'right',
+        //         backgroundColor: '#adf',
+        //         width: 80,
+        //         offset: 0,
+        //         ranges: [
+        //             {
+        //                 startValue: 0,
+        //                 endValue: dashboardViewModel.actualFill(),
+        //                 color: '#8be'
+        //             }
+        //         ]
+        //     },
+        //     size: {
+        //         width: 160,
+        //         height: 350
+        //     },
+        //     margin: {
+        //         top: 0, left: 0, bottom: 0, right: 0
+        //     },
+        //     title: {
+        //         position: 'bottom-center',
+        //         visible: false,
+        //         //text: 'Vullingsgraad',
+        //         font: {
+        //             // match to chart control
+        //             family: "'Segoe UI', 'Helvetica Neue', 'Trebuchet MS', Verdana",
+        //             color: '#808080',
+        //             opacity: 0.75,
+        //             size: 16,
+        //             weight: 400
+        //         }
+        //     },
+        //     incidentOccured: function(message) {
+        //         console.log(message);
+        //     }
+        // });
+        // var fillGauge = $("#fill-gauge").dxLinearGauge('instance');
 
         // Update needles and markers when the model changes.
         dashboardViewModel.actualFill.subscribe(function(newValue) {
-            fillGauge.option('rangeContainer.ranges[0].endValue', newValue);
-            fillGauge.markerValue(0, newValue);
+            //fillGauge.option('rangeContainer.ranges[0].endValue', newValue);
+            //fillGauge.markerValue(0, newValue);
             //fillGauge
             //    .markerValue(0, newValue)
             //    .needleValue(0, newValue);
@@ -991,7 +1017,7 @@
         window.fillChart = fillChart;
 	window.demandChart = demandChart;
         window.outflowTimespanSelector = outflowTimespanSelector;
-        window.fillGauge = fillGauge;
+        //window.fillGauge = fillGauge;
 
 	loadDemandData();
 	loadRainData();

@@ -75,17 +75,24 @@ class CalculationModel(object):
         return ts
 
     def predict_scenario(self, _from, current_fill_m3, desired_fill_m3,
-                         demand_m3, rain_mm, max_uitstroom_m3):
+                         demand_m3, rain_mm, max_uitstroom_m3, 
+                         dt_aflaat_open=None, dt_aflaat_dicht=None,
+                         aflaat_capaciteit=0):
         toestroom_m3 = rain_mm * (self.constants.rain_flood_surface / 1000)
         # Correct for optional reverse osmosis inflow.
         if (self.constants.reverse_osmosis and
                 self.constants.reverse_osmosis > 0):
             toestroom_m3 += self.constants.reverse_osmosis
         vaste_verandering = toestroom_m3 - demand_m3  # + current_fill_m3
-        # vaste_verandering_summed = vaste_verandering.cumsum()
 
-        variabele_verandering = np.zeros(len(vaste_verandering))
+        if ((dt_aflaat_open is not None) and (dt_aflaat_dicht is not None)):
+            aflaat_uitstroom = rain_mm.copy()
+            aflaat_uitstroom[pd.Timestamp(dt_aflaat_open):pd.Timestamp(dt_aflaat_dicht)] = aflaat_capaciteit
+            vaste_verandering = vaste_verandering - aflaat_uitstroom.values
+
+        variabele_verandering = np.zeros(len(vaste_verandering))        
         totale_verandering = vaste_verandering + variabele_verandering
+        
         result = totale_verandering.cumsum() + current_fill_m3
         for i in xrange(len(vaste_verandering) - 1):
             if result[i + 1] > desired_fill_m3:
@@ -104,7 +111,7 @@ class CalculationModel(object):
         )
         omslagpunten = cross(result, desired_fill_m3)
         omslagpunt = omslagpunten[0] if len(omslagpunten) > 0 else None
-
+        #result[_from: _from + datetime.timedelta(hours=24)] += -50
         # sommeer waarden boven de max berging
         result_24h = result[:_from + datetime.timedelta(hours=24)]
         overstort_24h = result_24h[result_24h.values > self.constants.
@@ -139,7 +146,8 @@ class CalculationModel(object):
         }
 
     def predict_fill(self, _from, to, desired_fill_pct, demand_exaggerate_pct,
-                     rain_exaggerate_pct):
+                     rain_exaggerate_pct, outflow_open=None, outflow_closed=None,
+                     outflow_capacity=0):
         # do some input validation here, to ensure we are dealing with sane
         # numbers
         validate_date(_from)
@@ -246,6 +254,6 @@ class CalculationModel(object):
         for scenario, rain in calc_scenarios.items():
             result['scenarios'][scenario] = self.predict_scenario(
                 _from, current_fill_m3, desired_fill_m3, demand_m3, rain,
-                max_uitstroom_m3)
+                max_uitstroom_m3, outflow_open, outflow_closed, outflow_capacity)
 
         return result

@@ -1,0 +1,57 @@
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="generator" content="Luuk Barten">
+    <link rel="stylesheet" href="css/quadrant.css">
+    <link rel="stylesheet" href="css/actuelewaterstand.css">
+    <link rel="stylesheet" href="css/reverseosmose.css">    
+    <title>Widgets</title>
+  </head>
+  <body>
+  	<h1>Reverse osmose</h1>
+  	<div id="reverse"></div>
+    <h1>Actuele waterstand</h1>
+    <div class="box-fill-gauge">
+		<span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; right: 0; top: 0;">
+			<i class="fa fa-info"></i>
+		</span>
+        <div id="fill-gauge">	        
+	        <div class="actual">
+	        </div>
+	        <div class="graphpattern">
+		        <span class="label">aantal mm beschikbaar</span>
+	        </div>
+	        <div class="actuallabel">
+		        <span class="label-container">
+		        	<span class="label-name">Actueel</span>
+		        </span>	
+	        	<span class="arrowleft"></span>
+	        	<span class="arrowright"></span>		        	
+	        </div>
+        </div>
+        <input id="actualcontrol" type="text" value="0" />        
+	</div>    
+    <h1>Buien kwadrant widget</h1>
+    <div class="box-quadrant">
+        <div id="quadrant-control">
+            <div id="quadrant-label">
+                Buien kwadrant
+                <span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; right: 0;" data-original-title="" title="">
+                    <i class="fa fa-info"></i>
+                </span>
+            </div>
+            <div id="quadrant-1"></div>
+            <div id="quadrant-2"></div>
+            <div id="quadrant-3"></div>
+            <div id="quadrant-4"></div>
+            <div id="quadrant-dot"></div>
+        </div>
+    </div>  
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+    <script src="js/actualwater.js"></script>
+    <script src="js/quadrant.js"></script>
+    <script src="js/reverseosmose.js"></script>
+    <script src="js/script.js"></script>    
+  </body>
+</html>

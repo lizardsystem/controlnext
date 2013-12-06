@@ -13,6 +13,9 @@
 <link href="{{ STATIC_URL }}controlnext/lib/font-awesome-4.0.3/css/font-awesome.min.css"
       rel="stylesheet">
 <link href="{{ STATIC_URL }}controlnext/styles/dashboard.css" rel="stylesheet">
+<link href="{{ STATIC_URL }}controlnext/widgets/css/quadrant.css" rel="stylesheet"></link>
+<link href="{{ STATIC_URL }}controlnext/widgets/css/actuelewaterstand.css" rel="stylesheet"></link>
+<link href="{{ STATIC_URL }}controlnext/widgets/css/reverseosmose.css" rel="stylesheet"></link>
 </head>
 <body>
 <div class="dashboard-container">
@@ -21,7 +24,7 @@
             <div class="row left-col-row-1">
                 <div class="col-sm-12">
                     <div class="box-top-info">
-                        <h4>Info dashboard</h4>
+                        <h4>Dashboard</h4>
                         <p>Hier kan een korte uitleg komen over het gebruik van het dashboard.</p>
                     </div>
                 </div>
@@ -30,17 +33,17 @@
                 <div class="col-sm-12">
                     <div class="box-basin-data">
                         <div class="logo"><img src="{{ STATIC_URL }}controlnext/images/logo.png"
-					       width="120" height="129"></div>
-                        <h4>Gegevens</h4>
+					       width="80" height="86"></div>
 
                         <table class="table"><tbody>
-                        <tr><td>Lokatie</td><td>Van der Lans (west)</td></tr>
-                        <tr><td>Teeltareaal</td><td>94000 m<sup>2</sup></td></tr>
-                        <tr><td>Oppervlak bassin</td><td>1000 m<sup>2</sup></td></tr>
-                        <tr><td>Diepte bassin</td><td>3 m</td></tr>
-                        <tr><td>Inhoud bassin</td><td>15527 m<sup>3</sup></td></tr>
-                        <tr><td>Aflaat capaciteit</td><td><input name="reverse-osmosis" class="small-input" size="7" value="0" type="text"><span> m<sup>3</sup>/15m</span></td></tr>
-                        <tr><td>Reverse osmose</td><td><input name="reverse-osmosis" class="small-input" size="7" value="0" type="text"><span> m<sup>3</sup>/15m</span></td></tr>
+                        <tr><td><b>Lokatie</b><br>Van der Lans (west)</td></tr>
+                        <tr><td><b>Teeltareaal</b><br>94000 m<sup>2</sup></td></tr>
+			<tr><td><b>Teelt</b><br>Tomaten</td></tr>
+                        <tr><td><b>Oppervlak bassin</b><br>1000 m<sup>2</sup></td></tr>
+                        <tr><td><b>Diepte bassin</b><br>3 m</td></tr>
+                        <tr><td><b>Inhoud bassin</b><br>15527 m<sup>3</sup></td></tr>
+                        <tr><td><b>Aflaat capaciteit</b><br><input class="small-input" size="7" data-bind="value: outflowCapacity"><span> m<sup>3</sup>/15m</span></td></tr>
+                        <tr><td><b>Reverse osmose</b><br><input name="reverse-osmosis" class="small-input" size="7" value="0" type="text"><span> m<sup>3</sup>/15m</span></td></tr>
                         <tr><td>Datum</td><td><span class="label label-default" data-bind="text: currentDate().format('LLL')">&ndash;</span></td></tr>
                         <tr><td>Aflaat open</td><td><span class="label label-default" data-bind="text: outflowOpened().format('LLL')">&ndash;</span></td></tr>
                         <tr><td>Aflaat dicht</td><td><span class="label label-default" data-bind="text: outflowClosed().format('LLL')">&ndash;</span></td></tr>
@@ -87,7 +90,7 @@
                 <div class="col-sm-9">
                     <div class="box-precipitation-chart">
                         <div id="precipitation-chart"></div>
-                        <span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; left: 73px; top: 0;"><i class="fa fa-info"></i></span>
+                        <span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; left: 73px; top: 0px;"><i class="fa fa-info"></i></span>
                     </div>
                 </div>
                 <div class="col-sm-3">
@@ -111,21 +114,45 @@
                     </div>
                 </div>
                 <div class="col-sm-3">
-                    <div class="box-fill-gauge">
+		  <div class="box-fill-gauge">
+		    <span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; right: 0; top: 0px;">
+			<i class="fa fa-info"></i>
+		    </span>
+		    <div id="fill-gauge">	        
+	              <div class="actual">
+	              </div>
+	              <div class="graphpattern">
+		        <span class="label">aantal mm beschikbaar</span>
+	              </div>
+	              <div class="actuallabel">
+		        <span class="label-container">
+		          <span class="label-name">Actueel</span>
+			</span>	
+			<span class="arrowleft"></span>
+	        	<span class="arrowright"></span>		        	
+	              </div>
+		    </div>
+		    <!--input id="actualcontrol" type="text" value="0" /-->
+		    <div class="box-main-controls">
+		      <button class="btn-calculate" data-bind="click: calculate">Bereken</button>
+		      <button class="btn-restore">Herstel</button>
+		    </div>
+		  </div> 
+                    <!--div class="box-fill-gauge">
                         <span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; right: 0; top: 0;"><i class="fa fa-info"></i></span>
                         <div id="fill-gauge"></div>
-                    </div>
-                </div>
+                    </div-->
+		</div>
             </div>
             <div class="row right-col-row-4">
                 <div class="col-sm-4">
                     <div class="box-chart-selector">
                         <div class="btn-group">
-                            <button type="button" class="btn btn-default btn-sm" data-bind="click: browseTimespan" data-direction="bwd">&laquo;</button>
+                            <!--button type="button" class="btn btn-default btn-sm" data-bind="click: browseTimespan" data-direction="bwd">&laquo;</button-->
                             <button type="button" class="btn btn-default btn-sm" data-bind="click: selectTimespan" data-timespan="48">48 u</button>
-                            <button type="button" class="btn btn-default btn-sm" data-bind="click: selectTimespan" data-timespan="96">4 dg</button>
-                            <button type="button" class="btn btn-default btn-sm" data-bind="click: selectTimespan" data-timespan="672">4 wk</button>
-                            <button type="button" class="btn btn-default btn-sm" data-bind="click: browseTimespan" data-direction="fwd">&raquo;</button>
+                            <button type="button" class="btn btn-default btn-sm btn-nonactive" data-timespan="96">4 dg</button>
+                            <button type="button" class="btn btn-default btn-sm btn-nonactive" data-timespan="672">4 wk</button>
+                            <!--button type="button" class="btn btn-default btn-sm" data-bind="click: browseTimespan" data-direction="fwd">&raquo;</button-->
                             <!--<button type="button" class="btn btn-default btn-sm">%</button>
                             <button type="button" class="btn btn-default btn-sm">L/m<sup>2</sup></button>-->
                         </div>
@@ -135,6 +162,7 @@
                     <div class="box-empty"></div>
                 </div>
                 <div class="col-sm-2">
+		  
                     <div class="box-empty"></div>
                 </div>
             </div>
@@ -144,41 +172,19 @@
                         <div id="outflow-timespan-selector"></div>
                     </div>
                 </div>
-                <div class="col-sm-3">
-                    <div class="box-timespan-controls-labels">
-                        <div id="outflow-label">Aflaat<span class="info-popup" data-content="uitleg" style="width: 25px; height: 25px; line-height: 25px; right: 0;"><i class="fa fa-info"></i></span></div>
+                <div class="col-sm-2">
+                    <!--div class="box-timespan-controls-labels">
+                        <!--div id="outflow-label">Aflaat<span class="info-popup" data-content="uitleg" style="width: 25px; height: 25px; line-height: 25px; right: 0;"><i class="fa fa-info"></i></span></div-->
+			<div class="box-main-controls">
+                        
+                        
+                        <div><span class="info-popup" data-content="uitleg" style="width: 25px; height: 25px; line-height: 25px;"><i class="fa fa-info"></i></span></div>
+			</div>
                     </div>
                 </div>
             </div>
             <div class="row right-col-row-6">
                 <div class="col-sm-12">
-                    <div class="box-main-controls">
-                        <button class="btn btn-calculate">Bereken</button>
-                        <button class="btn btn-restore">Herstel</button>
-                        <div><span class="info-popup" data-content="uitleg" style="width: 25px; height: 25px; line-height: 25px;"><i class="fa fa-info"></i></span></div>
-                        <!--<form role="form">
-                            <div class="checkbox">
-                                <label>
-                                    <input type="checkbox"> Aflaat
-                                </label>
-                            </div>
-                        </form>-->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    </div>
                 </div>
             </div>
         </div>
@@ -210,5 +216,11 @@
 </script>
 <script src="{{ STATIC_URL }}controlnext/lib/ChartJS-13.1.8/dx.chartjs.debug.js"></script>
 <script src="{{ STATIC_URL }}controlnext/scripts/dashboard.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+<script src="{{ STATIC_URL }}controlnext/widgets/js/actualwater.js"></script>
+<script src="{{ STATIC_URL }}controlnext/widgets/js/quadrant.js"></script>
+<!--script src="{{ STATIC_URL }}controlnext/widgets/js/reverseosmose.js"></script-->
+<script src="{{ STATIC_URL }}controlnext/widgets/js/script.js"></script>
 </body>
 </html>

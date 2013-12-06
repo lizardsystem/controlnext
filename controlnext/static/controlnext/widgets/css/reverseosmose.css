@@ -1,0 +1,49 @@
+/* CSS Document */
+#reverse {
+	width: 600px;
+	display: block;
+	height: 20px;
+	font-family: Arial;
+	color: #fff;
+	line-height: 20px;
+	font-size: 13px;	
+}
+
+.elicit-reverse-range {
+	background-color: #e6edf1;
+    background-color: #81cff5;
+	width: 100%;
+	height: 100%;
+	position: relative;
+}
+
+.elicit-reverse-label {
+	/*float:left;      */
+    
+	width: 30%;
+	height: 100%;
+	background-color: #c9d9e3;
+	overflow: visible;
+	position: relative;
+    
+    
+    position: absolute;
+    left: 0%;
+}
+
+.elicit-reverse-label span {	
+	position: absolute;
+	top: 0%;
+	left: 0%;	
+	width: 150px;
+	padding-left: 6px;
+}
+
+.elicit-reverse-fill {
+	position: absolute;
+	height: 100%;
+	background-color: #1f5ead; 
+	margin-left: 40%;
+	width: 40%;
+	text-align: center;	
+}
