@@ -345,21 +345,27 @@ class DataService(APIView):
         to = t0 + settings.CONTROLNEXT_FILL_PREDICT_FUTURE
 
         ds = FewsJdbcDataSource(self.basin, self.constants)
-        min = ds.get_rain('min', t0, to)
+        #min = ds.get_rain('min', t0, to)
         mean = ds.get_rain('mean', _from, to)
-        max = ds.get_rain('max', t0, to)
+        #max = ds.get_rain('max', t0, to)
+        sum = ds.get_rain('sum', t0, to)
+        kwadrant = ds.get_rain('kwadrant', t0, to)
 
         if rain_exaggerate_pct != 100:
             rain_exaggerate = rain_exaggerate_pct / 100
-            min *= rain_exaggerate
+            #min *= rain_exaggerate
             mean *= rain_exaggerate
-            max *= rain_exaggerate
+            #max *= rain_exaggerate
+            sum *= rain_exaggerate
+            kwadrant *= rain_exaggerate
 
         rain_graph_info = {
             'data': {
-                'min': series_to_js(min),
+                #'min': series_to_js(min),
                 'mean': series_to_js(mean),
-                'max': series_to_js(max)
+                #'max': series_to_js(max),
+                'sum': series_to_js(sum),
+                'kwadrant': series_to_js(sum)
             },
             'x0': datetime_to_js(t0)
         }

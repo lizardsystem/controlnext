@@ -36,17 +36,17 @@
 					       width="80" height="86"></div>
 
                         <table class="table"><tbody>
-                        <tr><td><b>Lokatie</b><br>Van der Lans (west)</td></tr>
-                        <tr><td><b>Teeltareaal</b><br>94000 m<sup>2</sup></td></tr>
+                        <tr><td><b>Lokatie</b><br>{{ view.basin }}</td></tr>
 			<tr><td><b>Teelt</b><br>Tomaten</td></tr>
-                        <tr><td><b>Oppervlak bassin</b><br>1000 m<sup>2</sup></td></tr>
-                        <tr><td><b>Diepte bassin</b><br>3 m</td></tr>
-                        <tr><td><b>Inhoud bassin</b><br>15527 m<sup>3</sup></td></tr>
-                        <tr><td><b>Aflaat capaciteit</b><br><input class="small-input" size="7" data-bind="value: outflowCapacity"><span> m<sup>3</sup>/15m</span></td></tr>
-                        <tr><td><b>Reverse osmose</b><br><input name="reverse-osmosis" class="small-input" size="7" value="0" type="text"><span> m<sup>3</sup>/15m</span></td></tr>
-                        <tr><td>Datum</td><td><span class="label label-default" data-bind="text: currentDate().format('LLL')">&ndash;</span></td></tr>
-                        <tr><td>Aflaat open</td><td><span class="label label-default" data-bind="text: outflowOpened().format('LLL')">&ndash;</span></td></tr>
-                        <tr><td>Aflaat dicht</td><td><span class="label label-default" data-bind="text: outflowClosed().format('LLL')">&ndash;</span></td></tr>
+                        <tr><td><b>Teeltareaal</b><br>{{ view.basin.owner.rain_flood_surface }} m<sup>2</sup></td></tr>
+                        <tr><td><b>Capasiteit bassin</b><br>{{ view.basin.max_storage }} m<sup>3</sup></td></tr>
+			<tr><td><b><span>Verwachte overstort 24 uur</span></b><br><span class="textual-value" id="overflow-24h-value"></span></td></tr>
+			<tr><td><b><span>Verwachte overstort 5 dagen</span></b><br><span class="textual-value" id="overflow-5d-value"></span></td></tr>
+			<tr><td><b>Aflaat capaciteit</b><br><input class="small-input" size="7" data-bind="value: outflowCapacity"><span> m<sup>3</sup>/uur</span></td></tr>
+                        <tr><td><b>Capaciteit omgekeerde osmose</b><br><input class="small-input" size="7" data-bind="value: osmoseCapacity"><span> m<sup>3</sup>/uur</span></td></tr>
+                        <tr><td><b>Datum</b><br><span class="label label-default" data-bind="text: currentDate().format('LLL')">&ndash;</span></td></tr>
+                        <tr><td><b>Aflaat open</b><br><span class="label label-default" data-bind="text: outflowOpened().format('LLL')">&ndash;</span></td></tr>
+                        <tr><td><b>Aflaat dicht</b><br><span class="label label-default" data-bind="text: outflowClosed().format('LLL')">&ndash;</span></td></tr>
                         </tbody></table>
                     </div>
                 </div>
@@ -113,11 +113,11 @@
                         <span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; left: 73px; top: 8px;"><i class="fa fa-info"></i></span>
                     </div>
                 </div>
-                <div class="col-sm-3">
+                <div class="col-sm-2">
 		  <div class="box-fill-gauge">
-		    <span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; right: 0; top: 0px;">
+		    <!--span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; right: 0; top: 0px;">
 			<i class="fa fa-info"></i>
-		    </span>
+		    </span-->
 		    <div id="fill-gauge">	        
 	              <div class="actual">
 	              </div>
@@ -135,13 +135,17 @@
 		    <!--input id="actualcontrol" type="text" value="0" /-->
 		    <div class="box-main-controls">
 		      <button class="btn-calculate" data-bind="click: calculate">Bereken</button>
-		      <button class="btn-restore">Herstel</button>
+		      <button class="btn-restore" data-bind="click: reset">Herstel</button>
 		    </div>
 		  </div> 
                     <!--div class="box-fill-gauge">
                         <span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; right: 0; top: 0;"><i class="fa fa-info"></i></span>
                         <div id="fill-gauge"></div>
                     </div-->
+		</div>
+		<div class="col-sm-1">
+		  <span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; left: -40px; top: 0px;">
+			<i class="fa fa-info"></i>
 		</div>
             </div>
             <div class="row right-col-row-4">
@@ -202,7 +206,9 @@
   <script src="static/lib/bootstrap-3.0.0/assets/js/html5shiv.js"></script>
   <script src="static/lib/bootstrap-3.0.0/assets/js/respond.min.js"></script>
 <![endif]-->
-<script src="{{ STATIC_URL }}controlnext/lib/jquery-1.9.1/jquery-1.9.1.min.js"></script>
+<!--script src="{{ STATIC_URL }}controlnext/lib/jquery-1.9.1/jquery-1.9.1.min.js"></script-->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
 <script src="{{ STATIC_URL }}controlnext/lib/knockout-3.0.0/knockout-3.0.0.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.3.1/moment-with-langs.min.js"></script>
 <script src="{{ STATIC_URL }}controlnext/lib/bootstrap-3.0.0/dist/js/bootstrap.min.js"></script>
@@ -215,12 +221,10 @@
     moment.lang('nl');
 </script>
 <script src="{{ STATIC_URL }}controlnext/lib/ChartJS-13.1.8/dx.chartjs.debug.js"></script>
-<script src="{{ STATIC_URL }}controlnext/scripts/dashboard.js"></script>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
 <script src="{{ STATIC_URL }}controlnext/widgets/js/actualwater.js"></script>
 <script src="{{ STATIC_URL }}controlnext/widgets/js/quadrant.js"></script>
 <!--script src="{{ STATIC_URL }}controlnext/widgets/js/reverseosmose.js"></script-->
 <script src="{{ STATIC_URL }}controlnext/widgets/js/script.js"></script>
+<script src="{{ STATIC_URL }}controlnext/scripts/dashboard.js"></script>
 </body>
 </html>

@@ -18,7 +18,9 @@ logger = logging.getLogger(__name__)
 RAIN_PARAMETER_IDS = {
     'min': 'P.min',   # Minimum
     'mean': 'P.gem',  # Gemiddeld
-    'max': 'P.max'    # Maximum
+    'max': 'P.max',    # Maximum
+    'sum': 'P.voorsp', # Sum
+    'kwadrant': 'advies.kwadrant' 
 }
 FREQUENCY = datetime.timedelta(minutes=15)
 
@@ -57,6 +59,7 @@ class FewsJdbcDataSource(object):
 #    @cache_result(settings.CONTROLNEXT_FEWSJDBC_CACHE_SECONDS,
 #                  ignore_cache=False, instancemethod=True)
     def get_rain(self, which, _from, to, *args, **kwargs):
+        #import pdb; pdb.set_trace()
         validate_date(_from)
         validate_date(to)
 
@@ -382,14 +385,14 @@ class FewsJdbcDataSource(object):
                 'Please refrain from using naive datetime objects for _from '
                 'and to.')
 
-        q = ("select time, value from "
+        qw = ("select time, value from "
              "extimeseries where filterid='%s' and locationid='%s' "
              "and parameterid='%s' and time between '%s' and '%s'" %
              (filter_id, location_id, parameter_id,
               _from.strftime(settings.CONTROLNEXT_JDBC_DATE_FORMAT),
               to.strftime(settings.CONTROLNEXT_JDBC_DATE_FORMAT)))
-
-        result = self.jdbc_source.query(q)
+        #import pdb; pdb.set_trace()
+        result = self.jdbc_source.query(qw)
 
         for row in result:
             # Expecting dateTime.iso8601 in a mixed format (basic date +

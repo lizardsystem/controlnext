@@ -197,8 +197,8 @@ rect {
     color: #fff;
     background-color: #8be;
     border: 1px solid white;
-    width: 35px;
 }
+
 .box-chart-selector button:hover,
 .box-chart-selector button.hover,
 .box-chart-selector button:active,

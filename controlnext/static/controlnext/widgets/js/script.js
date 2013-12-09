@@ -41,7 +41,7 @@ $('#quadrant-control').quadrant('option', 'dot',[{doty:50, dotx:50}]);
 
 // Eerste initialisatie actuele water stand
 $('#fill-gauge').actualwater({
-    actualwater: 76
+    actualwater: 100
 });
 
 // Achteraf instellen actuele water stand
@@ -77,12 +77,12 @@ $('#reverse').reverseosmose({
 */
 
 //		Voorbeeld van 02 november 01:30 tot 01:31
-$('#reverse').reverseosmose({
-    border: new Date(2013, 12, 02, 01, 30 , 10),         	
-	rangestart: new Date(2013, 12, 02, 01, 30),
-	rangeend: new Date(2013, 12, 02, 01, 31),
-	rson: new Date(2013, 12, 02, 01, 30, 20),
-	rsoff: new Date(2013, 12, 02, 01, 31 ),
-    labeltxt: "Reverse osmose",
-    filltxt: "Ro aan"
-}); 
+// $('#reverse').reverseosmose({
+//     border: new Date(2013, 12, 02, 01, 30 , 10),         	
+// 	rangestart: new Date(2013, 12, 02, 01, 30),
+// 	rangeend: new Date(2013, 12, 02, 01, 31),
+// 	rson: new Date(2013, 12, 02, 01, 30, 20),
+// 	rsoff: new Date(2013, 12, 02, 01, 31 ),
+//     labeltxt: "Reverse osmose",
+//     filltxt: "Ro aan"
+// }); 

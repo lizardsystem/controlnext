@@ -18,15 +18,26 @@
     var outflowmin = moment(now).add({minutes: 90});
     var outflowmax = moment(now).add({minutes: 120});
     var outflowcapacity = 0;
-   
+    var osmosecapacity = 0;
+
+    var convertCapacity = function(capacityPerHour) {
+	capacityPer15min = parseInt(capacityPerHour);
+	if (capacityPer15min >= 0) {
+	    return (capacityPer15min / 4);
+	} else {
+	    return 0;
+	}
+    }
+
     var loadDemandData = function () {
 	var $constants = $('#data-constants');
 	var data_url = $constants.attr('data-data-url');
         //var query_params = get_query_params('rain');
 	var dt = new Date().getTime();
+	var osmosePer15min = convertCapacity(dashboardViewModel.osmoseCapacity());
 	var query_params = "graph_type=demand&format=json&"
 	    + "desired_fill=0&demand_exaggerate=100&rain_exaggerate=100&"
-	    + "date=" + dt + "&reverse_osmosis=0";
+	    + "date=" + dt + "&reverse_osmosis=" + osmosePer15min;
         $.ajax({
             url: data_url + '?' + query_params,
             success: function (response) {
@@ -56,9 +67,10 @@
 	var data_url = $constants.attr('data-data-url');
         //var query_params = get_query_params('rain');
 	var dt = new Date().getTime();
+	var osmosePer15min = convertCapacity(dashboardViewModel.osmoseCapacity());
 	var query_params = "graph_type=rain&format=json&"
 	    + "desired_fill=0&demand_exaggerate=100&rain_exaggerate=100&"
-	    + "date=" + dt + "&reverse_osmosis=0";
+	    + "date=" + dt + "&reverse_osmosis=" + osmosePer15min;
         $.ajax({
             url: data_url + '?' + query_params,
             success: function (response) {
@@ -66,13 +78,25 @@
 		var meanData = [];
 		var minData = [];
 		var maxData = [];
+		var sumData = []
 		var mean_rain = response.rain_graph_info.data.mean;
+		var sum_rain = response.rain_graph_info.data.sum;
+		var kwadrant = response.rain_graph_info.data.kwadrant;
 		//var min_rain = response.rain_graph_info.data.min;
 		//var max_rain = response.rain_graph_info.data.max;
 		for (var i = 0; i < mean_rain.length; i++){
 		    var arg = new Date(mean_rain[i][0]);
 		    meanData.push({arg: arg, mean: mean_rain[i][1]});
 		}
+		var priv_sum = -999;
+		for (var i = 0; i < sum_rain.length; i++){
+		    if ((priv_sum != sum_rain[i][1]) || (i == 0) || (i == sum_rain.length -1)) {
+			var arg = new Date(sum_rain[i][0]);
+			sumData.push({arg: arg, y: sum_rain[i][1]});
+		    }
+		    priv_sum = sum_rain[i][1];
+		}
+		
 		// for (var i = 0; i < min_rain.length; i++){
 		//     var arg = new Date(min_rain[i][0]);
 		//     minData.push({arg: arg, min: min_rain[i][1]});
@@ -84,8 +108,13 @@
 		precipitationChart.beginUpdate();;
 		//precipitationChart.option("series.3.data", maxData);
 		precipitationChart.option("series.2.data", meanData);
-		//precipitationChart.option("series.1.data", minData);
+		//precipitationChart.option("series.1.data", minData); 
+		precipitationChart.option("series.0.data", sumData);
 		precipitationChart.endUpdate();
+		
+		if ((kwadrant != null) && (kwadrant.length > 0)) {
+		    $('#quadrant-control').quadrant('option', 'activequadrant', kwadrant[0][1]);
+		}
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 var $error = $('<p>Fout bij het laden van de grafiekdata: '
@@ -100,12 +129,21 @@
 	var data_url = $constants.attr('data-data-url');
         //var query_params = get_query_params('rain');
 	var dt = new Date().getTime();
+	var osmosePer15min = convertCapacity(dashboardViewModel.osmoseCapacity());
+	var outflowPer15min = convertCapacity(dashboardViewModel.outflowCapacity());
+	osmosePer15min = parseInt(dashboardViewModel.osmoseCapacity());
+	if (osmosePer15min >= 0) {
+	    osmosePer15min = osmosePer15min / 4;
+	} else {
+	    osmosePer15min = 0;
+	}
+
 	var query_params = "graph_type=prediction&format=json&"
 	    + "desired_fill=0&demand_exaggerate=100&rain_exaggerate=100&"
-	    + "date=" + dt + "&reverse_osmosis=0&"
+	    + "date=" + dt + "&reverse_osmosis=" + osmosePer15min + "&"
 	    + "outflowOpen=" + dashboardViewModel.outflowOpened().toDate().getTime() + "&"
 	    + "outflowClosed=" + dashboardViewModel.outflowClosed().toDate().getTime() + "&"
-	    + "outflowCapacity=" + dashboardViewModel.outflowCapacity();
+	    + "outflowCapacity=" + outflowPer15min;
 	$.ajax({
             url: data_url + '?' + query_params,
 	    success: function (response) {
@@ -118,6 +156,7 @@
 		var mean_predicted = response.graph_info.data.mean;
 		var measured = response.graph_info.data.history;
 		var no_rain = response.graph_info.data.no_rain;
+		var actualwaterValue = 0;
 		//var maxAmountOfMinMax = Math.max(
 		//min_predicted.length,
 		//    max_predicted.length
@@ -149,6 +188,7 @@
 		for (var i = 0; i < measured.length; i++) {
 		    var dt = measured[i][0];
 		    var y4 = Math.round(measured[i][1] * 100) / 100;
+		    actualwaterValue = y4;
 		    measuredData.push({ arg: moment(dt).toDate(), y4: y4 });
 		}
 		fillChart.beginUpdate();
@@ -161,8 +201,15 @@
 		fillChart.option("series.2.data", measuredData);
 		fillChart.option("series.3.data", predictedNoRainData);
 		
+		// convert value to scale actialwater to 120%
 		fillChart.endUpdate();
+		$('#fill-gauge').actualwater({
+		    actualwater: (actualwaterValue * 100 / 120)
+		});
+		//$('#fill-gauge').actualwater({actualwater: 100});
 		//dashboardViewModel.viewTimespan({start: viewmin, end: viewmax});
+		$('#overflow-24h-value').html(Math.round(response.overflow_24h) + ' m<sup>3</sup>');
+                $('#overflow-5d-value').html(Math.round(response.overflow_5d) + ' m<sup>3</sup>');
 	    },
 	    error: function (jqXHR, textStatus, errorThrown) {
                 var $error = $('<p>Fout bij het laden van de grafiekdata: '
@@ -193,7 +240,7 @@
         var precipitationChartSeries = [
             {
                 valueField: 'y',
-                name: '',
+                name: 'y',
                 type: 'stepArea',
                 //pane: 'defaultPane',
                 //data: precipitationDataLargeBlocks,
@@ -234,7 +281,7 @@
                 name: 'mean',
                 type: 'bar',
                 //pane: 'defaultPane',
-                //data: precipitationData,
+                data: [],// precipitationData,
                 color: '#4777c1',
                 opacity: 1
             },
@@ -244,7 +291,7 @@
                 type: 'stackedBar',
                 //pane: 'defaultPane',
                 //data: precipitationData,
-		data: data,
+		data: [],//data,
                 color: '#a3b6e0',
                 opacity: 1
             }
@@ -263,7 +310,7 @@
                     //pane: 'defaultPane',
                     axisDivisionFactor: 30,
                     min: 0,
-                    max: 150,
+                    max: 15.0,
                     minValueMargin: 0,
                     maxValueMargin: 0,
                     valueMarginsEnabled: false,
@@ -348,9 +395,18 @@
             outflowClosed: ko.observable(outflowmax),   // moment.js object
             actualFill: ko.observable(40),              // number
 	    outflowCapacity: ko.observable(outflowcapacity),
+	    osmoseCapacity: ko.observable(osmosecapacity),
             //advisedFill: ko.observable(60),             // number
+	    reset: function(model, event) {
+		outflowcapacity = 0;
+		outflowcapacity = 0;
+		start = viewmin;
+		end = viewmax;
+		//model.viewTimespan({start: viewmin, end: viewmax});
+		loadGraphs();
+	    },
 	    calculate: function(model, event) {
-		loadPredictedData();
+		loadGraphs();
 	    },
             selectTimespan: function(model, event) {
                 // Change the chart timespan to 48h, 4d, et cetera.
@@ -379,7 +435,7 @@
             }
         };
         ko.applyBindings(dashboardViewModel);
-
+	
         // Update the Chart.js charts timespans when the model changes.
         dashboardViewModel.viewTimespan.subscribe(function(newValue) {
             console.log('viewTimespan changed', newValue);
@@ -538,7 +594,7 @@
         /* ************************************************************************ */
         var fillChartSeries = [
             {
-                //valueField: 'y2',
+                valueField: 'y2y3',
                 name: 'y one and three',
                 //pane: 'defaultPane',
                 type: 'rangeArea',
@@ -728,7 +784,7 @@
         /* ***************************** Outflow selector ************************* */
         /* ************************************************************************ */
         $("#outflow-timespan-selector").dxRangeSelector({
-            background: { color: 'red' },
+            background: { color: '#46b4ff' },
             /*chart: {
                 series: {
                     valueField: 'y2',
@@ -773,10 +829,10 @@
                 }
             },
             sliderHandle: {
-                color: '#8be'
+                color: '#f25039',
             },
             shutter: {
-                color: '#8be',
+                color: '#f25039',
                 opacity: 1.0
             },
             sliderMarker: {
@@ -1009,20 +1065,21 @@
             //fillChart.zoomArgument(selRa.startValue, selRa.endValue);
         }, 4000000);*/
 
-	
-	
+	var loadGraphs = function() {
+	    loadDemandData();
+	    loadRainData();
+	    loadPredictedData();
+	}
         // Debug.
         window.dashboardViewModel = dashboardViewModel;
-        //window.precipitationChart = precipitationChart;
+        window.precipitationChart = precipitationChart;
         window.fillChart = fillChart;
 	window.demandChart = demandChart;
         window.outflowTimespanSelector = outflowTimespanSelector;
         //window.fillGauge = fillGauge;
-
-	loadDemandData();
-	loadRainData();
-	loadPredictedData();
+	window.loadGraphs = loadGraphs;
+	window.convertCapacity = convertCapacity
     }
-
-    $(document).ready(init);
+        
+    $(document).ready(function(){init(); loadGraphs()});
 } (window.jQuery);

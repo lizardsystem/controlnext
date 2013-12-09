@@ -170,8 +170,7 @@ class CalculationModel(object):
             rain_min = rain_max = rain_mean
         else:
             rain_min = self.fews_data.get_rain('min', _from, to)
-            rain_max = self.fews_data.get_rain('max', _from, to)
-
+            #rain_max = self.fews_data.get_rain('max', _from, to)
         # gebruik de datum van de laatst beschikbaar regenvoorspelling als
         # from en to waarden
         _from = rain_mean.index[0]
@@ -182,7 +181,7 @@ class CalculationModel(object):
             rain_exaggerate = rain_exaggerate_pct / 100
             rain_min *= rain_exaggerate
             rain_mean *= rain_exaggerate
-            rain_max *= rain_exaggerate
+            #rain_max *= rain_exaggerate
 
         # create a no rain series
         rain_zero = rain_min.copy()
@@ -246,9 +245,9 @@ class CalculationModel(object):
         # bereken de drie scenarios
         calc_scenarios = {
             'no_rain': rain_zero,
-            'min': rain_min,
+            #'min': rain_min,
             'mean': rain_mean,
-            'max': rain_max,
+            #'max': rain_max,
         }
 
         for scenario, rain in calc_scenarios.items():
