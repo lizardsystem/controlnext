@@ -350,7 +350,7 @@ class DataService(APIView):
         #max = ds.get_rain('max', t0, to)
         sum = ds.get_rain('sum', t0, to)
         kwadrant = ds.get_rain('kwadrant', t0, to)
-
+        #import pdb; pdb.set_trace()
         if rain_exaggerate_pct != 100:
             rain_exaggerate = rain_exaggerate_pct / 100
             #min *= rain_exaggerate
@@ -358,14 +358,14 @@ class DataService(APIView):
             #max *= rain_exaggerate
             sum *= rain_exaggerate
             kwadrant *= rain_exaggerate
-
+        #import pdb; pdb.set_trace()
         rain_graph_info = {
             'data': {
                 #'min': series_to_js(min),
                 'mean': series_to_js(mean),
                 #'max': series_to_js(max),
                 'sum': series_to_js(sum),
-                'kwadrant': series_to_js(sum)
+                'kwadrant': series_to_js(kwadrant)
             },
             'x0': datetime_to_js(t0)
         }

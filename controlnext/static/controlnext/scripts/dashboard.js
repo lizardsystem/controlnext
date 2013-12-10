@@ -113,7 +113,7 @@
 		precipitationChart.endUpdate();
 		
 		if ((kwadrant != null) && (kwadrant.length > 0)) {
-		    $('#quadrant-control').quadrant('option', 'activequadrant', kwadrant[0][1]);
+		    $('#quadrant-control').quadrant('option', 'activequadrant', parseInt(kwadrant[0][1]));
 		}
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -200,6 +200,9 @@
 		fillChart.option("series.1.data", predictedData);
 		fillChart.option("series.2.data", measuredData);
 		fillChart.option("series.3.data", predictedNoRainData);
+		fillChart.option("series.4.data", [
+		    {arg: moment(new Date()).subtract('hours', 12).toDate(), actueel: actualwaterValue},
+		    {arg: moment(new Date()).add('days', 2).toDate(), actueel: actualwaterValue}]);
 		
 		// convert value to scale actialwater to 120%
 		fillChart.endUpdate();
@@ -216,6 +219,18 @@
 			       + errorThrown + '</p>');
             }
 	});
+    }
+
+    var setAvailableMM = function(actualwater) {
+	var availableWaterPr = actualwater;
+	var capacityPool = parseInt($("#debug-basin-storage").text());
+	var basinSurface = parseInt($("#debug-basin-surface").text());
+	var valueToRainPerMM = 0
+	if (availableWaterPr > 0) {
+	    var availableValue = (capacityPool * availableWaterPr / 100);
+	    valueToRainPerMM = (availableValue / basinSurface) * 1000;	    
+	}
+	$("#label-actual-water").text(parseInt(valueToRainPerMM) + " mm beschikbaar");	
     }
 
     // for (var i=0, n=amountOfPoints; i<n; i+=2) {
@@ -622,7 +637,7 @@
                 type: 'line',
                 valueField: 'y4',
                 data: [],
-                color: 'blue',
+                color: 'rgb(70, 180, 255)',//D
                 opacity: 0.2,
                 point: {
                     visible: false
@@ -633,11 +648,22 @@
                 type: 'line',
                 valueField: 'y5',
                 data: [],
-                color: 'red',
+                color: 'rgb(178, 144, 200)',//L
                 //opacity: 0.2,
                 point: {
                     visible: false
                 }
+            },
+	    {
+                valueField: 'actueel',
+                type: 'line',
+		dashStyle: 'dash',
+                color: '#46b4ff',
+                name: 'actueel',
+                point: {
+                    visible: false,
+                },
+                data: [],
             },
             labelSeriesItem
             /*
@@ -676,7 +702,7 @@
         var fillChartOptions = {
             animation: { enabled: false },
             commonSeriesSettings: {
-                argumentField: 'arg'
+                argumentField: 'arg',
             },
             valueAxis: [
                 {
@@ -1069,6 +1095,7 @@
 	    loadDemandData();
 	    loadRainData();
 	    loadPredictedData();
+	    setAvailableMM();
 	}
         // Debug.
         window.dashboardViewModel = dashboardViewModel;

@@ -38,8 +38,12 @@
                         <table class="table"><tbody>
                         <tr><td><b>Lokatie</b><br>{{ view.basin }}</td></tr>
 			<tr><td><b>Teelt</b><br>Tomaten</td></tr>
-                        <tr><td><b>Teeltareaal</b><br>{{ view.basin.owner.rain_flood_surface }} m<sup>2</sup></td></tr>
-                        <tr><td><b>Capasiteit bassin</b><br>{{ view.basin.max_storage }} m<sup>3</sup></td></tr>
+			{% block rain_flood_surface %}
+                          <tr><td><b>Teeltareaal</b><br><span id="debug-basin-surface">{{ view.basin.owner.rain_flood_surface }}</span> m<sup>2</sup></td></tr>
+			{% endblock %}
+			{% block basin_max_storage %}
+                          <tr><td><b>Capasiteit bassin</b><br><span id="debug-basin-storage">{{ view.basin.max_storage }}</span> m<sup>3</sup></td></tr>
+			{% endblock %}
 			<tr><td><b><span>Verwachte overstort 24 uur</span></b><br><span class="textual-value" id="overflow-24h-value"></span></td></tr>
 			<tr><td><b><span>Verwachte overstort 5 dagen</span></b><br><span class="textual-value" id="overflow-5d-value"></span></td></tr>
 			<tr><td><b>Aflaat capaciteit</b><br><input class="small-input" size="7" data-bind="value: outflowCapacity"><span> m<sup>3</sup>/uur</span></td></tr>
@@ -122,7 +126,7 @@
 	              <div class="actual">
 	              </div>
 	              <div class="graphpattern">
-		        <span class="label">aantal mm beschikbaar</span>
+		        <span class="label" id="label-actual-water">aantal mm beschikbaar</span>
 	              </div>
 	              <div class="actuallabel">
 		        <span class="label-container">

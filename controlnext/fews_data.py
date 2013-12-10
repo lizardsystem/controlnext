@@ -76,7 +76,8 @@ class FewsJdbcDataSource(object):
         # convert to quarterly figures
         rain = rain.resample('15min', fill_method='ffill')
         # 4 quarters in an hour
-        rain /= 4
+        if which != 'kwadrant':
+            rain /= 4
         # deal with NaN values
         #if np.nan in rain:
         #    raise Exception('Found NaN in results')
@@ -343,7 +344,7 @@ class FewsJdbcDataSource(object):
             check_frequency=False):
         row_data = self._get_timeseries(filter_id, location_id,
                                         parameter_id, _from, to)
-
+        #import pdb; pdb.set_trace()
         if len(row_data) == 0:
             raise Exception('No data available')
 
