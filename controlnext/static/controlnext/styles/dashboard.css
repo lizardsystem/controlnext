@@ -6,6 +6,10 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     font-family: 'SegoeUI','Segoe UI','HelveticaNeue','Helvetica Neue','Trebuchet MS',Verdana;
 }
 
+h4 {
+    color: #92b3c4;
+}
+
 .dashboard-container {
     padding-right: 15px;
     padding-left: 15px;
@@ -77,7 +81,7 @@ rect {
 }
 
 .right-col-row-6 {
-    border-top: 1px solid #dedede;
+    /*border-top: 1px solid #dedede;*/
     margin-top: 10px;
 }
 
@@ -144,6 +148,7 @@ rect {
 }
 
 .logo {
+    padding: 0px 0px 5px 0px;
     /* background-color: grey; */
     /* width: 100px; */
     /* height: 129px; */
@@ -152,14 +157,30 @@ rect {
 .box-top-info {
     height: 100px;
 }
+.box-top-info p {
+    line-height: 1em;
+}
+.box-top-info h4 {
+    font-weight: bold;
+}
+
+.box-top-info h5 {
+    color: #92b3c4;    
+}
 
 .box-basin-data {
-    margin-top: 10px;
-    height: 749px;
+    margin: 10px 0px 10px 0px;
+    height: 100%;
 }
 
 .box-weather-forecast {
     height: 300px;
+}
+.box-weather-forecast h5 {
+    color: #000;
+}
+.box-weather-forecast h5 span.bold {
+    font-weight: bold;
 }
 
 .box-demand-chart {
@@ -284,6 +305,43 @@ rect {
     height: 25px !important;
     width: 160px !important;
 }
+
+table.basin-data-detail-table {
+    width: 100%;
+    background: #ebeff2;
+}
+table.basin-data-detail-table tr {
+}
+table.basin-data-detail-table tr td {
+    color: #4c7082;
+    padding: 5px;
+}
+
+table.basin-data-detail-table-2 {
+    width: 100%;
+    background: #d8dfe4;;
+}
+table.basin-data-detail-table-2 tr {
+    border-top: 2px solid white;
+}
+table.basin-data-detail-table-2 tr td {
+    color: #4c7082;
+    padding: 5px;
+}
+
+table.basin-data-detail-table-3 {
+    width: 100%;
+    background: #b0c1ca;
+}
+table.basin-data-detail-table-3 tr {
+    border-top: 2px solid white;
+}
+table.basin-data-detail-table-3 tr td {
+    color: white;
+    padding: 5px;
+}
+
+
 
 /* ***************************************************************** */
 

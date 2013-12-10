@@ -79,7 +79,8 @@ $(document).ready(function () {
             labelHeight: null // font line height
         },
         legend: { position: 'ne' },
-        grid: { hoverable: true, autoHighlight: false, labelMargin: 10 },
+
+        grid: { hoverable: true, autoHighlight: false, labelMargin: 10, borderColor: '#000', borderWidth: 5 },
         crosshair: { mode: 'x' },
         pan: { interactive: true },
         zoom: { interactive: true }
