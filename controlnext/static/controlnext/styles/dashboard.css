@@ -6,6 +6,10 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     font-family: 'SegoeUI','Segoe UI','HelveticaNeue','Helvetica Neue','Trebuchet MS',Verdana;
 }
 
+.row{
+    margin-right: 0 !important;
+}
+
 h4 {
     color: #92b3c4;
 }
