@@ -26,6 +26,7 @@
                     <div class="box-top-info">
                         <h4>Dashboard</h4>
                         <p>Hier kan een korte uitleg komen over het gebruik van het dashboard.</p>
+                        <h5>5 november 2013</h5>
                     </div>
                 </div>
             </div>
@@ -34,31 +35,37 @@
                     <div class="box-basin-data">
                         <div class="logo"><img src="{{ STATIC_URL }}controlnext/images/logo.png"
 					       width="80" height="86"></div>
+			<table class="basin-data-detail-table">
+                            <tr><td><b>Lokatie</b><br>{{ view.basin }}</td></tr>
+                            <tr><td><b>Teelt</b><br>{{ view.crop_type }}</td></tr>
+			    {% block rain_flood_surface %}
+                              <tr><td><b>Teeltareaal</b><br><span id="debug-basin-surface">{{ view.basin.owner.rain_flood_surface }}</span> m<sup>2</sup></td></tr>
+			    {% endblock %}
+			    {% block basin_max_storage %}
+                              <tr><td><b>Capasiteit bassin</b><br><span id="debug-basin-storage">{{ view.basin.max_storage }}</span> m<sup>3</sup></td></tr>
+			    {% endblock %}
+                        </table>
 
-                        <table class="table"><tbody>
-                        <tr><td><b>Lokatie</b><br>{{ view.basin }}</td></tr>
-			<tr><td><b>Teelt</b><br>Tomaten</td></tr>
-			{% block rain_flood_surface %}
-                          <tr><td><b>Teeltareaal</b><br><span id="debug-basin-surface">{{ view.basin.owner.rain_flood_surface }}</span> m<sup>2</sup></td></tr>
-			{% endblock %}
-			{% block basin_max_storage %}
-                          <tr><td><b>Capasiteit bassin</b><br><span id="debug-basin-storage">{{ view.basin.max_storage }}</span> m<sup>3</sup></td></tr>
-			{% endblock %}
-			<tr><td><b><span>Verwachte overstort 24 uur</span></b><br><span class="textual-value" id="overflow-24h-value"></span></td></tr>
-			<tr><td><b><span>Verwachte overstort 5 dagen</span></b><br><span class="textual-value" id="overflow-5d-value"></span></td></tr>
-			<tr><td><b>Aflaat capaciteit</b><br><input class="small-input" size="7" data-bind="value: outflowCapacity"><span> m<sup>3</sup>/uur</span></td></tr>
-                        <tr><td><b>Capaciteit omgekeerde osmose</b><br><input class="small-input" size="7" data-bind="value: osmoseCapacity"><span> m<sup>3</sup>/uur</span></td></tr>
-                        <tr><td><b>Datum</b><br><span class="label label-default" data-bind="text: currentDate().format('LLL')">&ndash;</span></td></tr>
-                        <tr><td><b>Aflaat open</b><br><span class="label label-default" data-bind="text: outflowOpened().format('LLL')">&ndash;</span></td></tr>
-                        <tr><td><b>Aflaat dicht</b><br><span class="label label-default" data-bind="text: outflowClosed().format('LLL')">&ndash;</span></td></tr>
-                        </tbody></table>
+                        <table class="basin-data-detail-table-2">
+                            <tr><td><b>Capaciteit omgekeerde osmose</b><br><input class="small-input" size="7" data-bind="value: osmoseCapacity"><span> m<sup>3</sup>/uur</span></td></tr>
+                            <tr><td><b>Aflaat capaciteit</b><br><input class="small-input" size="7" data-bind="value: outflowCapacity"><span> m<sup>3</sup>/uur</span></td></tr>                            
+                            <tr><td><b>Datum</b><br><span class="label label-default" data-bind="text: currentDate().format('LLL')">&ndash;</span></td></tr>
+                            <tr><td><b>Aflaat open</b><br><span class="label label-default" data-bind="text: outflowOpened().format('LLL')">&ndash;</span></td></tr>
+                            <tr><td><b>Aflaat dicht</b><br><span class="label label-default" data-bind="text: outflowClosed().format('LLL')">&ndash;</span></td></tr>
+                        </table>
+
+                        <table class="basin-data-detail-table-3">
+                			<tr><td><b><span>Verwachte overstort 24 uur</span></b><br><span class="textual-value" id="overflow-24h-value"></span></td></tr>
+                			<tr><td><b><span>Verwachte overstort 5 dagen</span></b><br><span class="textual-value" id="overflow-5d-value"></span></td></tr>
+                        </table>
+
                     </div>
                 </div>
             </div>
             <div class="row left-col-row-3">
                 <div class="col-sm-12">
                     <div class="box-weather-forecast">
-                        <h4>Weersverwachting Maasdijk</h4>
+                        <h5><span class="bold">Weersvoorspelling</span> | Weer Maasdijk</h5>
                         <div style="height: 220px;overflow: hidden;">
                         <div style="height: 220px;">
                         <iframe id="widget-frame" src="http://www.weeronline.nl/Go/ExternalWidgetsNew/ThreeDaysCity?gid=4058013&sizeType=1&temperatureScale=Celsius&defaultSettings=False" width="100%" height="216" frameborder="0" scrolling="no" style="border: none;" allowtransparency="true"></iframe>
@@ -68,7 +75,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-9 right-col">
+        <div class="col-sm-8 right-col">
 <!--
             <div class="row right-col-row-4">
                 <div class="col-sm-10">
@@ -83,7 +90,7 @@
                 <div class="col-sm-9">
                     <div class="box-demand-chart">
                         <div id="demand-chart"></div>
-                        <span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; left: 73px; top: 8px;"><i class="fa fa-info"></i></span>
+                        <!-- <span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; left: 73px; top: 8px;"><i class="fa fa-info"></i></span> -->
                     </div>
                 </div>
                 <div class="col-sm-3">
@@ -94,13 +101,13 @@
                 <div class="col-sm-9">
                     <div class="box-precipitation-chart">
                         <div id="precipitation-chart"></div>
-                        <span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; left: 73px; top: 0px;"><i class="fa fa-info"></i></span>
+                        <!-- <span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; left: 73px; top: 0px;"><i class="fa fa-info"></i></span>-->
                     </div>
                 </div>
                 <div class="col-sm-3">
                     <div class="box-quadrant">
                         <div id="quadrant-control">
-                            <div id="quadrant-label">Buien kwadrant<span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; right: 0;"><i class="fa fa-info"></i></span></div>
+                            <div id="quadrant-label">Buien kwadrant<!--<span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; right: 0;"><i class="fa fa-info"></i></span>--></div>
                             <div id="quadrant-1"></div>
                             <div id="quadrant-2"></div>
                             <div id="quadrant-3"></div>
@@ -114,7 +121,7 @@
                 <div class="col-sm-9">
                     <div class="box-fill-chart">
                         <div id="fill-chart"></div>
-                        <span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; left: 73px; top: 8px;"><i class="fa fa-info"></i></span>
+                        <!-- <span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; left: 73px; top: 8px;"><i class="fa fa-info"></i></span>-->
                     </div>
                 </div>
                 <div class="col-sm-2">
@@ -148,8 +155,8 @@
                     </div-->
 		</div>
 		<div class="col-sm-1">
-		  <span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; left: -40px; top: 0px;">
-			<i class="fa fa-info"></i>
+		  <!--<span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; left: -40px; top: 0px;">
+			<i class="fa fa-info"></i>-->
 		</div>
             </div>
             <div class="row right-col-row-4">
@@ -179,6 +186,13 @@
                     <div class="box-timespan-controls">
                         <div id="outflow-timespan-selector"></div>
                     </div>
+
+            <div style="background:#1D60A7;position:relative;height:25px;margin-left:58px;">
+                <div style="padding-left:7px;width:130px;background:#C8D9E2;height:25px;left:0px;position:absolute;color:white;overflow:hidden;">
+                Reverse osmosis
+                </div>
+            </div>
+
                 </div>
                 <div class="col-sm-2">
                     <!--div class="box-timespan-controls-labels">
@@ -186,10 +200,31 @@
 			<div class="box-main-controls">
                         
                         
-                        <div><span class="info-popup" data-content="uitleg" style="width: 25px; height: 25px; line-height: 25px;"><i class="fa fa-info"></i></span></div>
+                        <!-- <div><span class="info-popup" data-content="uitleg" style="width: 25px; height: 25px; line-height: 25px;"><i class="fa fa-info"></i></span></div> -->
 			</div>
                     </div>
+
                 </div>
+            
+            <hr>
+            <div class="col-sm-3">
+            <p><strong>Watervraag</strong> (per jaar)</p>
+            <select><option>Kiezen</option></select>
+            </div>
+
+            <div class="col-sm-3">
+            <p><strong>RO aan</strong> (kies begindatum)</p>
+            <select><option>Dag</option></select>
+            <select><option>Maand</option></select>
+            </div>
+
+            <div class="col-sm-3">
+            <p><strong>RO ui</strong> (kies einddatum)</p>
+            <select><option>Dag</option></select>
+            <select><option>Maand</option></select>
+            </div>
+            <hr>
+
             </div>
             <div class="row right-col-row-6">
                 <div class="col-sm-12">

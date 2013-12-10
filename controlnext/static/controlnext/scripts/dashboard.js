@@ -320,7 +320,7 @@
                 {
                     title: {
                         text: 'Neerslag (mm/uur)',
-                        font: { size: 14, color: 'rgb(51, 51, 51)', opacity: 1 }
+                        font: { size: 14, color: 'rgb(151, 183, 199)', weight: 'bold', opacity: 1 }
                     },
                     //pane: 'defaultPane',
                     axisDivisionFactor: 30,
@@ -413,12 +413,7 @@
 	    osmoseCapacity: ko.observable(osmosecapacity),
             //advisedFill: ko.observable(60),             // number
 	    reset: function(model, event) {
-		outflowcapacity = 0;
-		outflowcapacity = 0;
-		start = viewmin;
-		end = viewmax;
-		//model.viewTimespan({start: viewmin, end: viewmax});
-		loadGraphs();
+            window.location = ".";
 	    },
 	    calculate: function(model, event) {
 		loadGraphs();
@@ -544,7 +539,7 @@
                 {
                     title: {
                         text: 'Watervraag (m&sup3;/15m)',
-                        font: { size: 14, color: 'rgb(51, 51, 51)', opacity: 1 }
+                        font: { size: 14, color: 'rgb(151, 183, 199)', weight: 'bold', opacity: 1 }
                     },
                     min: 0,
                     max: 1,
@@ -708,7 +703,7 @@
                 {
                     title: {
                         text: 'Vullingsgraad (%)',
-                        font: { size: 14, color: 'rgb(51, 51, 51)', opacity: 1 }
+                        font: { size: 14, color: 'rgb(151, 183, 199)', weight:'bold', opacity: 1 }
                     },
                     //pane: 'defaultPane',
                     min: 0,
