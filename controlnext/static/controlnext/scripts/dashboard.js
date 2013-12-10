@@ -131,6 +131,8 @@
 	var dt = new Date().getTime();
 	var osmosePer15min = convertCapacity(dashboardViewModel.osmoseCapacity());
 	var outflowPer15min = convertCapacity(dashboardViewModel.outflowCapacity());
+	var capacityPool = parseInt($("#basin-storage").val());
+	var rainFloodSurface = parseInt($("#rain_flood_surface").val());
 	osmosePer15min = parseInt(dashboardViewModel.osmoseCapacity());
 	if (osmosePer15min >= 0) {
 	    osmosePer15min = osmosePer15min / 4;
@@ -144,6 +146,12 @@
 	    + "outflowOpen=" + dashboardViewModel.outflowOpened().toDate().getTime() + "&"
 	    + "outflowClosed=" + dashboardViewModel.outflowClosed().toDate().getTime() + "&"
 	    + "outflowCapacity=" + outflowPer15min;
+	if (rainFloodSurface != 'NaN') {
+	    query_params += "&rain_flood_surface=" + rainFloodSurface;
+	}
+	if (capacityPool != 'NaN'){
+	    query_params += "&basin_storage=" + capacityPool;
+	}
 	$.ajax({
             url: data_url + '?' + query_params,
 	    success: function (response) {
@@ -223,12 +231,18 @@
 
     var setAvailableMM = function(actualwater) {
 	var availableWaterPr = actualwater;
-	var capacityPool = parseInt($("#debug-basin-storage").text());
-	var basinSurface = parseInt($("#debug-basin-surface").text());
+	var capacityPool = parseInt($("#basin-storage").text());
+	var rainFloodSurface = parseInt($("#rain_flood_surface").text());
+	if (rainFloodSurface != 'NaN') {
+	   rainFloodSurface = parseInt($("#rain_flood_surface").val()); 
+	}
+	if (capacityPool != 'NaN'){
+	    capacityPool = parseInt($("#basin-storage").val());;
+	}
 	var valueToRainPerMM = 0
 	if (availableWaterPr > 0) {
 	    var availableValue = (capacityPool * availableWaterPr / 100);
-	    valueToRainPerMM = (availableValue / basinSurface) * 1000;	    
+	    valueToRainPerMM = (availableValue / rainFloodSurface) * 1000;	    
 	}
 	$("#label-actual-water").text(parseInt(valueToRainPerMM) + " mm beschikbaar");	
     }

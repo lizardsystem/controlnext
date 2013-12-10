@@ -33,16 +33,23 @@
             <div class="row left-col-row-2">
                 <div class="col-sm-12">
                     <div class="box-basin-data">
-                        <div class="logo"><img src="{{ STATIC_URL }}controlnext/images/logo.png"
-					       width="80" height="86"></div>
+                        <div class="logo">
+			  {% if view.basin.owner.image %}
+		            <img id="situation-image" src="{{ view.basin.owner.image.url }}" width="80" height="86" />
+			  {% elif view.crop_type %}
+		             <img id="situation-image" src="{{ STATIC_URL }}controlnext/{{ view.crop_type }}.jpg" width="80" height="86" />
+	                  {% else %}
+                             <img id="situation-image" src="{{ STATIC_URL }}controlnext/situation.jpg" width="80" height="86" />
+                          {% endif %}
+			</div>
 			<table class="basin-data-detail-table">
                             <tr><td><b>Lokatie</b><br>{{ view.basin }}</td></tr>
                             <tr><td><b>Teelt</b><br>{{ view.crop_type }}</td></tr>
 			    {% block rain_flood_surface %}
-                              <tr><td><b>Teeltareaal</b><br><span id="debug-basin-surface">{{ view.basin.owner.rain_flood_surface }}</span> m<sup>2</sup></td></tr>
+                              <tr><td><b>Teeltareaal</b><br><span id="rain_flood_surface">{{ view.basin.owner.rain_flood_surface }}</span> m<sup>2</sup></td></tr>
 			    {% endblock %}
 			    {% block basin_max_storage %}
-                              <tr><td><b>Capasiteit bassin</b><br><span id="debug-basin-storage">{{ view.basin.max_storage }}</span> m<sup>3</sup></td></tr>
+                              <tr><td><b>Capasiteit bassin</b><br><span id="basin-storage">{{ view.basin.max_storage }}</span> m<sup>3</sup></td></tr>
 			    {% endblock %}
                         </table>
 
