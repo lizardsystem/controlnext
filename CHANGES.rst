@@ -2,7 +2,7 @@ Changelog of controlnext
 ===================================================
 
 
-0.11 (unreleased)
+0.11 (2013-12-10)
 -----------------
 
 - Add chartjs skin.
