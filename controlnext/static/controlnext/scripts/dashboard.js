@@ -239,7 +239,7 @@
 	if (((rainFloodSurface + "") == "NaN") || (rainFloodSurface == "")) {
 	   rainFloodSurface = parseInt($("#rain_flood_surface").val()); 
 	}
-	if (((capacityPool = "") == "NaN") || (capacityPool == "")) {
+	if (((capacityPool + "") == "NaN") || (capacityPool == "")) {
 	    capacityPool = parseInt($("#basin-storage").val());;
 	}
 	var valueToRainPerMM = 0
