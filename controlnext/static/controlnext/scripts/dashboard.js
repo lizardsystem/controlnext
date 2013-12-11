@@ -86,7 +86,8 @@
 		//var max_rain = response.rain_graph_info.data.max;
 		for (var i = 0; i < mean_rain.length; i++){
 		    var arg = new Date(mean_rain[i][0]);
-		    meanData.push({arg: arg, mean: mean_rain[i][1]});
+		    var mean_value = mean_rain[i][1] * 4;
+		    meanData.push({arg: arg, mean: mean_value});
 		}
 		var priv_sum = -999;
 		for (var i = 0; i < sum_rain.length; i++){
@@ -185,17 +186,17 @@
 		// }
 		for (var i = 0; i < no_rain.length; i++) {
 		    var dt = no_rain[i][0];
-		    var y5 = Math.round(no_rain[i][1] * 100) / 100;
+		    var y5 = Math.round(no_rain[i][1] * 100) / 100 - 20;
 		    predictedNoRainData.push({ arg: moment(dt).toDate(), y5: y5 });
 		}
 		for (var i = 0; i < mean_predicted.length; i++) {
 		    var dt = mean_predicted[i][0];
-		    var y2 = Math.round(mean_predicted[i][1] * 100) / 100;
+		    var y2 = Math.round(mean_predicted[i][1] * 100) / 100 - 20;
 		    predictedData.push({ arg: moment(dt).toDate(), y2: y2 });
 		}
 		for (var i = 0; i < measured.length; i++) {
 		    var dt = measured[i][0];
-		    var y4 = Math.round(measured[i][1] * 100) / 100;
+		    var y4 = Math.round(measured[i][1] * 100) / 100 - 20;
 		    actualwaterValue = y4;
 		    measuredData.push({ arg: moment(dt).toDate(), y4: y4 });
 		}
@@ -221,6 +222,8 @@
 		//dashboardViewModel.viewTimespan({start: viewmin, end: viewmax});
 		$('#overflow-24h-value').html(Math.round(response.overflow_24h) + ' m<sup>3</sup>');
                 $('#overflow-5d-value').html(Math.round(response.overflow_5d) + ' m<sup>3</sup>');
+
+		setAvailableMM(actualwaterValue);
 	    },
 	    error: function (jqXHR, textStatus, errorThrown) {
                 var $error = $('<p>Fout bij het laden van de grafiekdata: '
@@ -230,13 +233,13 @@
     }
 
     var setAvailableMM = function(actualwater) {
-	var availableWaterPr = actualwater;
+	var availableWaterPr = 100 - actualwater;
 	var capacityPool = parseInt($("#basin-storage").text());
 	var rainFloodSurface = parseInt($("#rain_flood_surface").text());
-	if (rainFloodSurface != 'NaN') {
+	if (rainFloodSurface == 'NaN') {
 	   rainFloodSurface = parseInt($("#rain_flood_surface").val()); 
 	}
-	if (capacityPool != 'NaN'){
+	if (capacityPool == 'NaN'){
 	    capacityPool = parseInt($("#basin-storage").val());;
 	}
 	var valueToRainPerMM = 0
@@ -1104,7 +1107,6 @@
 	    loadDemandData();
 	    loadRainData();
 	    loadPredictedData();
-	    setAvailableMM();
 	}
         // Debug.
         window.dashboardViewModel = dashboardViewModel;
