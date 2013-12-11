@@ -147,10 +147,10 @@
 	    + "outflowOpen=" + dashboardViewModel.outflowOpened().toDate().getTime() + "&"
 	    + "outflowClosed=" + dashboardViewModel.outflowClosed().toDate().getTime() + "&"
 	    + "outflowCapacity=" + outflowPer15min;
-	if (rainFloodSurface != 'NaN') {
+	if (((rainFloodSurface + "") != "NaN") || (rainFloodSurface == "")){
 	    query_params += "&rain_flood_surface=" + rainFloodSurface;
 	}
-	if (capacityPool != 'NaN'){
+	if (((capacityPool + "") != "NaN") || (capacityPool == "")){
 	    query_params += "&basin_storage=" + capacityPool;
 	}
 	$.ajax({
@@ -236,10 +236,10 @@
 	var availableWaterPr = 100 - actualwater;
 	var capacityPool = parseInt($("#basin-storage").text());
 	var rainFloodSurface = parseInt($("#rain_flood_surface").text());
-	if (rainFloodSurface == 'NaN') {
+	if (((rainFloodSurface + "") == "NaN") || (rainFloodSurface == "")) {
 	   rainFloodSurface = parseInt($("#rain_flood_surface").val()); 
 	}
-	if (capacityPool == 'NaN'){
+	if (((capacityPool = "") == "NaN") || (capacityPool == "")) {
 	    capacityPool = parseInt($("#basin-storage").val());;
 	}
 	var valueToRainPerMM = 0
