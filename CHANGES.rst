@@ -2,7 +2,7 @@ Changelog of controlnext
 ===================================================
 
 
-0.13 (unreleased)
+0.13 (2013-12-12)
 -----------------
 
 - Nothing changed yet.
