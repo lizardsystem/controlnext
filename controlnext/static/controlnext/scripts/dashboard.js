@@ -86,7 +86,7 @@
 		//var max_rain = response.rain_graph_info.data.max;
 		for (var i = 0; i < mean_rain.length; i++){
 		    var arg = new Date(mean_rain[i][0]);
-		    var mean_value = mean_rain[i][1] * 4;
+		    var mean_value = mean_rain[i][1];
 		    meanData.push({arg: arg, mean: mean_value});
 		}
 		var priv_sum = -999;
@@ -147,10 +147,10 @@
 	    + "outflowOpen=" + dashboardViewModel.outflowOpened().toDate().getTime() + "&"
 	    + "outflowClosed=" + dashboardViewModel.outflowClosed().toDate().getTime() + "&"
 	    + "outflowCapacity=" + outflowPer15min;
-	if (((rainFloodSurface + "") != "NaN") || (rainFloodSurface == "")){
+	if ((rainFloodSurface + "") != "NaN"){
 	    query_params += "&rain_flood_surface=" + rainFloodSurface;
 	}
-	if (((capacityPool + "") != "NaN") || (capacityPool == "")){
+	if ((capacityPool + "") != "NaN"){
 	    query_params += "&basin_storage=" + capacityPool;
 	}
 	$.ajax({
@@ -186,17 +186,17 @@
 		// }
 		for (var i = 0; i < no_rain.length; i++) {
 		    var dt = no_rain[i][0];
-		    var y5 = Math.round(no_rain[i][1] * 100) / 100 - 20;
+		    var y5 = Math.round(no_rain[i][1] * 100) / 100;
 		    predictedNoRainData.push({ arg: moment(dt).toDate(), y5: y5 });
 		}
 		for (var i = 0; i < mean_predicted.length; i++) {
 		    var dt = mean_predicted[i][0];
-		    var y2 = Math.round(mean_predicted[i][1] * 100) / 100 - 20;
+		    var y2 = Math.round(mean_predicted[i][1] * 100) / 100;
 		    predictedData.push({ arg: moment(dt).toDate(), y2: y2 });
 		}
 		for (var i = 0; i < measured.length; i++) {
 		    var dt = measured[i][0];
-		    var y4 = Math.round(measured[i][1] * 100) / 100 - 20;
+		    var y4 = Math.round(measured[i][1] * 100) / 100;
 		    actualwaterValue = y4;
 		    measuredData.push({ arg: moment(dt).toDate(), y4: y4 });
 		}
@@ -233,13 +233,17 @@
     }
 
     var setAvailableMM = function(actualwater) {
+	/**
+	   Calculate mm per m2 may fall on the roof of the glass house to 
+	   to reach the threshold of the basin.
+	 */
 	var availableWaterPr = 100 - actualwater;
 	var capacityPool = parseInt($("#basin-storage").text());
 	var rainFloodSurface = parseInt($("#rain_flood_surface").text());
-	if (((rainFloodSurface + "") == "NaN") || (rainFloodSurface == "")) {
+	if ((rainFloodSurface + "") == "NaN") {
 	   rainFloodSurface = parseInt($("#rain_flood_surface").val()); 
 	}
-	if (((capacityPool + "") == "NaN") || (capacityPool == "")) {
+	if ((capacityPool + "") == "NaN") {
 	    capacityPool = parseInt($("#basin-storage").val());;
 	}
 	var valueToRainPerMM = 0
