@@ -58,7 +58,17 @@
     background-color: #adf;
 }
 
-#quadrant-dot {
+/* #quadrant-dot { */
+/*     position: absolute; */
+/*     right: 30px; */
+/*     bottom: 40px; */
+/*     width: 8px; */
+/*     height: 8px; */
+/*     background-color: #fff; */
+/*     border-radius: 4px; */
+/* } */
+
+#quadrant-camel {
     position: absolute;
     right: 30px;
     bottom: 40px;
@@ -68,6 +78,35 @@
     border-radius: 4px;
 }
 
+#quadrant-dromedary {
+    position: absolute;
+    right: 30px;
+    bottom: 40px;
+    width: 8px;
+    height: 8px;
+    background-color: #fff;
+    border-radius: 4px;
+}
+
+#quadrant-squirrel {
+    position: absolute;
+    right: 30px;
+    bottom: 40px;
+    width: 8px;
+    height: 8px;
+    background-color: #fff;
+    border-radius: 4px;
+}
+
+#quadrant-guinea-pig {
+    position: absolute;
+    right: 30px;
+    bottom: 40px;
+    width: 8px;
+    height: 8px;
+    background-color: #fff;
+    border-radius: 4px;
+}
 
 /* Nieuw */
 #quadrant-control div.active {
