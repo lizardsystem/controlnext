@@ -86,7 +86,8 @@
 		//var max_rain = response.rain_graph_info.data.max;
 		for (var i = 0; i < mean_rain.length; i++){
 		    var arg = new Date(mean_rain[i][0]);
-		    var mean_value = mean_rain[i][1];
+		    // multiply with 4 to convert to mm/hour
+		    var mean_value = mean_rain[i][1] * 4;
 		    meanData.push({arg: arg, mean: mean_value});
 		}
 		var priv_sum = -999;
