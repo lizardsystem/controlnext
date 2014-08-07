@@ -94,7 +94,7 @@
 		for (var i = 0; i < sum_rain.length; i++){
 		    if ((priv_sum != sum_rain[i][1]) || (i == 0) || (i == sum_rain.length -1)) {
 			var arg = new Date(sum_rain[i][0]);
-			sumData.push({arg: arg, y: sum_rain[i][1]});
+			sumData.push({arg: arg, y: sum_rain[i][1] * 4});
 		    }
 		    priv_sum = sum_rain[i][1];
 		}
@@ -113,7 +113,7 @@
 		//precipitationChart.option("series.1.data", minData); 
 		precipitationChart.option("series.0.data", sumData);
 		precipitationChart.endUpdate();
-		
+
 		if ((kwadrant != null) && (kwadrant.length > 0)) {
 		    $('#quadrant-control').quadrant('option', 'activequadrant', parseInt(kwadrant[0][1]));
 		}
