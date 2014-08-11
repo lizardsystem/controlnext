@@ -170,7 +170,7 @@ class DataService(APIView):
             try:
                 # basic validation, if not integer, default value is used
                 # other validations can be put here, like upper bounds
-                self.constants.reverse_osmosis = int(reverse_osmosis)
+                self.constants.reverse_osmosis = float(reverse_osmosis)
             except ValueError:
                 logger.error("invalid value for reverse_osmosis: %s" %
                              reverse_osmosis)
