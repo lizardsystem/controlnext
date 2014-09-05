@@ -23,49 +23,52 @@
         <div class="col-sm-3 left-col">
             <div class="row left-col-row-1">
                 <div class="col-sm-12">
-                    <div class="box-top-info">
-                        <h4>Dashboard</h4>
-                        <p>Hier kan een korte uitleg komen over het gebruik van het dashboard.</p>
-                        <h5>5 november 2013</h5>
-                    </div>
-                </div>
+		  <div class="box-top-info"> 
+		  <table width="100%">
+		    <tr>
+		      <td>
+			<h4>Dashboard DIG</h4>
+		      </td>
+		      <td  rowspan="2">
+			  {% if view.basin.owner.image %}
+		            <img id="situation-image" src="{{ view.basin.owner.image.url }}" width="80" height="86" align="right" />
+			  {% elif view.crop_type %}
+		             <img id="situation-image" src="{{ STATIC_URL }}controlnext/{{ view.crop_type }}.jpg" width="80" height="86" align="right" />
+	                  {% else %}
+                             <img id="situation-image" src="{{ STATIC_URL }}controlnext/situation.jpg" width="80" height="86" align="right" />
+                          {% endif %}
+		      </td>
+		    </tr>
+		    <tr>
+		      <td valign="bottom">
+			<h5 data-bind="text: moment().format('D MMMM YYYY')" />
+		      </td>
+		    </tr>
+		 </table>
+               </div>
+             </div>
             </div>
             <div class="row left-col-row-2">
                 <div class="col-sm-12">
                     <div class="box-basin-data">
-                        <div class="logo">
-			  {% if view.basin.owner.image %}
-		            <img id="situation-image" src="{{ view.basin.owner.image.url }}" width="80" height="86" />
-			  {% elif view.crop_type %}
-		             <img id="situation-image" src="{{ STATIC_URL }}controlnext/{{ view.crop_type }}.jpg" width="80" height="86" />
-	                  {% else %}
-                             <img id="situation-image" src="{{ STATIC_URL }}controlnext/situation.jpg" width="80" height="86" />
-                          {% endif %}
-			</div>
-			<table class="basin-data-detail-table">
-                            <tr><td><b>Lokatie</b><br>{{ view.basin }}</td></tr>
-                            <tr><td><b>Teelt</b><br>{{ view.crop_type }}</td></tr>
-			    {% block rain_flood_surface %}
-                              <tr><td><b>Teeltareaal</b><br><span id="rain_flood_surface">{{ view.basin.owner.rain_flood_surface }}</span> m<sup>2</sup></td></tr>
-			    {% endblock %}
-			    {% block basin_max_storage %}
-                              <tr><td><b>Capasiteit bassin</b><br><span id="basin-storage">{{ view.basin.max_storage }}</span> m<sup>3</sup></td></tr>
-			    {% endblock %}
+			<table class="basin-data-detail-table">
+                          <tr><td><b>Lokatie</b><br>{{ view.basin }}</td></tr>
+                          <tr><td><b>Teelt</b><br>{{ view.crop_type }}</td></tr>
                         </table>
 
                         <table class="basin-data-detail-table-2">
-                            <tr><td><b>Capaciteit omgekeerde osmose</b><br><input class="small-input" size="7" data-bind="value: osmoseCapacity"><span> m<sup>3</sup>/uur</span></td></tr>
-                            <tr><td><b>Aflaat capaciteit</b><br><input class="small-input" size="7" data-bind="value: outflowCapacity"><span> m<sup>3</sup>/uur</span></td></tr>                            
-                            <tr><td><b>Datum</b><br><span class="label label-default" data-bind="text: currentDate().format('LLL')">&ndash;</span></td></tr>
-                            <tr><td><b>Aflaat open</b><br><span class="label label-default" data-bind="text: outflowOpened().format('LLL')">&ndash;</span></td></tr>
-                            <tr><td><b>Aflaat dicht</b><br><span class="label label-default" data-bind="text: outflowClosed().format('LLL')">&ndash;</span></td></tr>
+			  <tr><td><b>Teeltareaal</b><br><input class="small-input" size="7" data-bind="value: rainFloodSurface"><span> m<sup>2</sup></span></td></tr>
+			  <tr><td><b>Capasiteit bassin</b><br><input class="small-input" size="7" data-bind="value: basinMaxStorage"><span> m<sup>3</sup></span></td></tr>
+                          <tr><td><b>Capaciteit omgekeerde osmose</b><br><input class="small-input" size="7" data-bind="value: osmoseCapacity"><span> m<sup>3</sup>/uur</span></td></tr>
+                          <tr><td><b>Aflaat capaciteit</b><br><input class="small-input" size="7" data-bind="value: outflowCapacity"><span> m<sup>3</sup>/uur</span></td></tr>
+                          <tr><td><b>Datum</b><br><span class="label label-default" data-bind="text: currentDate().format('LLL')">&ndash;</span></td></tr>
+                          <tr><td><b>Aflaat open</b><br><span class="label label-default" data-bind="text: outflowOpened().format('LLL')">&ndash;</span></td></tr>
+                          <tr><td><b>Aflaat dicht</b><br><span class="label label-default" data-bind="text: outflowClosed().format('LLL')">&ndash;</span></td></tr>
                         </table>
-
                         <table class="basin-data-detail-table-3">
-                			<tr><td><b><span>Verwachte overstort 24 uur</span></b><br><span class="textual-value" id="overflow-24h-value"></span></td></tr>
-                			<tr><td><b><span>Verwachte overstort 5 dagen</span></b><br><span class="textual-value" id="overflow-5d-value"></span></td></tr>
+                	  <tr><td><b><span>Verwachte overstort 24 uur</span></b><br><span class="textual-value" id="overflow-24h-value"></span></td></tr>
+                	  <tr><td><b><span>Verwachte overstort 5 dagen</span></b><br><span class="textual-value" id="overflow-5d-value"></span></td></tr>
                         </table>
-
                     </div>
                 </div>
             </div>
@@ -172,8 +175,8 @@
                         <div class="btn-group">
                             <!--button type="button" class="btn btn-default btn-sm" data-bind="click: browseTimespan" data-direction="bwd">&laquo;</button-->
                             <button type="button" class="btn btn-default btn-sm" data-bind="click: selectTimespan" data-timespan="48">48 u</button>
-                            <button type="button" class="btn btn-default btn-sm btn-nonactive" data-timespan="96">4 dg</button>
-                            <button type="button" class="btn btn-default btn-sm btn-nonactive" data-timespan="672">4 wk</button>
+                            <button type="button" class="btn btn-default btn-sm" data-bind="click: selectTimespan" data-timespan="96">4 dg</button>
+                            <button type="button" class="btn btn-default btn-sm" data-bind="click: selectTimespan" data-timespan="672">4 wk</button>
                             <!--button type="button" class="btn btn-default btn-sm" data-bind="click: browseTimespan" data-direction="fwd">&raquo;</button-->
                             <!--<button type="button" class="btn btn-default btn-sm">%</button>
                             <button type="button" class="btn btn-default btn-sm">L/m<sup>2</sup></button>-->
@@ -265,6 +268,10 @@
     // Force culture to Dutch.
     Globalize.culture('nl-NL');
     moment.lang('nl');
+    var outflowcapacity = {{ view.basin.owner.max_outflow_per_timeunit|default:0 }};
+    var osmosecapacity = {{ view.basin.owner.reverse_osmosis|default:0 }};
+    var rainfloodsurface = {{ view.basin.owner.rain_flood_surface|default:0 }};
+    var basinmaxstorage = {{ view.basin.max_storage|default:0 }};
 </script>
 <script src="{{ STATIC_URL }}controlnext/lib/ChartJS-13.1.8/dx.chartjs.debug.js"></script>
 <script src="{{ STATIC_URL }}controlnext/widgets/js/actualwater.js"></script>

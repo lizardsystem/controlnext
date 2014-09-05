@@ -225,7 +225,7 @@ class DataService(APIView):
     def prediction(self, t0, desired_fill_pct, demand_exaggerate,
                    rain_exaggerate, graph_type, outflow_open,
                    outflow_closed, outflow_capacity):
-        #import pdb; pdb.set_trace()
+
         tbl = self.get_demand_table()
         ds = FewsJdbcDataSource(self.basin, self.constants)
         model = CalculationModel(tbl, ds)
@@ -350,7 +350,7 @@ class DataService(APIView):
         #max = ds.get_rain('max', t0, to)
         sum = ds.get_rain('sum', t0, to)
         kwadrant = ds.get_rain('kwadrant', t0, to)
-        #import pdb; pdb.set_trace()
+
         if rain_exaggerate_pct != 100:
             rain_exaggerate = rain_exaggerate_pct / 100
             #min *= rain_exaggerate
@@ -358,7 +358,7 @@ class DataService(APIView):
             #max *= rain_exaggerate
             sum *= rain_exaggerate
             kwadrant *= rain_exaggerate
-        #import pdb; pdb.set_trace()
+        
         rain_graph_info = {
             'data': {
                 #'min': series_to_js(min),

@@ -13,13 +13,15 @@
 
     var argmin = moment(hist);
     var argmax = moment(future);
-    var viewmin = moment(now).subtract({hours: 12});
-    var viewmax = moment(now).add({hours: 48});
-    var outflowmin = moment(now).add({minutes: 90});
-    var outflowmax = moment(now).add({minutes: 120});
-    var outflowcapacity = 0;
-    var osmosecapacity = 0;
+    var viewmin = moment(now).subtract({hours: 30});
+    var viewmax = moment(now).add({hours: 30});
+    var outflowmin = moment(now).subtract({minutes: 120});
+    var outflowmax = moment(now);
 
+    var demandmax = 4;
+    
+    var lineWidth = 4;
+    
     var convertCapacity = function(capacityPerHour) {
 	capacityPer15min = parseInt(capacityPerHour);
 	if (capacityPer15min >= 0) {
@@ -37,7 +39,9 @@
 	var osmosePer15min = convertCapacity(dashboardViewModel.osmoseCapacity());
 	var query_params = "graph_type=demand&format=json&"
 	    + "desired_fill=0&demand_exaggerate=100&rain_exaggerate=100&"
-	    + "date=" + dt + "&reverse_osmosis=" + osmosePer15min;
+	    + "reverse_osmosis=" + osmosePer15min + "&"
+	    + "rain_flood_surface=" + dashboardViewModel.rainFloodSurface() + "&"
+	    + "basin_storage=" + dashboardViewModel.basinMaxStorage();
         $.ajax({
             url: data_url + '?' + query_params,
             success: function (response) {
@@ -51,7 +55,9 @@
 		demandChart.beginUpdate();
 		//demandChart.getSeriesByName("small block").reinitData(data);
 		//demandChart._invalidate();
+		self.demandmax = 10;
 		demandChart.option("series.1.data", data);
+		dashboardViewModel.demandMax(self.demandmax);
 		demandChart.endUpdate();
 		//dashboardViewModel.viewTimespan({start: viewmin, end: viewmax});
             },
@@ -70,7 +76,9 @@
 	var osmosePer15min = convertCapacity(dashboardViewModel.osmoseCapacity());
 	var query_params = "graph_type=rain&format=json&"
 	    + "desired_fill=0&demand_exaggerate=100&rain_exaggerate=100&"
-	    + "date=" + dt + "&reverse_osmosis=" + osmosePer15min;
+	    + "reverse_osmosis=" + osmosePer15min + "&"
+	    + "rain_flood_surface=" + dashboardViewModel.rainFloodSurface() + "&"
+	    + "basin_storage=" + dashboardViewModel.basinMaxStorage();
         $.ajax({
             url: data_url + '?' + query_params,
             success: function (response) {
@@ -81,13 +89,12 @@
 		var sumData = []
 		var mean_rain = response.rain_graph_info.data.mean;
 		var sum_rain = response.rain_graph_info.data.sum;
-		var kwadrant = response.rain_graph_info.data.kwadrant;
-		//var min_rain = response.rain_graph_info.data.min;
-		//var max_rain = response.rain_graph_info.data.max;
+		var kwadrant = response.rain_graph_info.data.kwadrant;;
 		for (var i = 0; i < mean_rain.length; i++){
 		    var arg = new Date(mean_rain[i][0]);
 		    // multiply with 4 to convert to mm/hour
-		    var mean_value = mean_rain[i][1] * 4;
+		    // plus 0.2 to visualize 0 value
+		    var mean_value = mean_rain[i][1] * 4 + 0.2;
 		    meanData.push({arg: arg, mean: mean_value});
 		}
 		var priv_sum = -999;
@@ -98,24 +105,14 @@
 		    }
 		    priv_sum = sum_rain[i][1];
 		}
-		
-		// for (var i = 0; i < min_rain.length; i++){
-		//     var arg = new Date(min_rain[i][0]);
-		//     minData.push({arg: arg, min: min_rain[i][1]});
-		// }
-		// for (var i = 0; i < max_rain.length; i++){
-		//     var arg = new Date(max_rain[i][0]);
-		//     maxData.push({arg: arg, max: max_rain[i][1]});
-		// }
-		precipitationChart.beginUpdate();;
-		//precipitationChart.option("series.3.data", maxData);
-		precipitationChart.option("series.2.data", meanData);
-		//precipitationChart.option("series.1.data", minData); 
+		precipitationChart.beginUpdate();
+		precipitationChart.option("series.2.data", meanData); 
 		precipitationChart.option("series.0.data", sumData);
 		precipitationChart.endUpdate();
 
 		if ((kwadrant != null) && (kwadrant.length > 0)) {
-		    $('#quadrant-control').quadrant('option', 'activequadrant', parseInt(kwadrant[0][1]));
+		    $('#quadrant-control').quadrant('option', 'activequadrant',
+						    parseInt(kwadrant[0][1]));
 		}
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -133,8 +130,6 @@
 	var dt = new Date().getTime();
 	var osmosePer15min = convertCapacity(dashboardViewModel.osmoseCapacity());
 	var outflowPer15min = convertCapacity(dashboardViewModel.outflowCapacity());
-	var capacityPool = parseInt($("#basin-storage").val());
-	var rainFloodSurface = parseInt($("#rain_flood_surface").val());
 	osmosePer15min = parseInt(dashboardViewModel.osmoseCapacity());
 	if (osmosePer15min >= 0) {
 	    osmosePer15min = osmosePer15min / 4;
@@ -144,47 +139,23 @@
 
 	var query_params = "graph_type=prediction&format=json&"
 	    + "desired_fill=0&demand_exaggerate=100&rain_exaggerate=100&"
-	    + "date=" + dt + "&reverse_osmosis=" + osmosePer15min + "&"
+	    + "reverse_osmosis=" + osmosePer15min + "&"
 	    + "outflowOpen=" + dashboardViewModel.outflowOpened().toDate().getTime() + "&"
 	    + "outflowClosed=" + dashboardViewModel.outflowClosed().toDate().getTime() + "&"
-	    + "outflowCapacity=" + outflowPer15min;
-	if ((rainFloodSurface + "") != "NaN"){
-	    query_params += "&rain_flood_surface=" + rainFloodSurface;
-	}
-	if ((capacityPool + "") != "NaN"){
-	    query_params += "&basin_storage=" + capacityPool;
-	}
+	    + "outflowCapacity=" + outflowPer15min + "&"
+	    + "rain_flood_surface=" + dashboardViewModel.rainFloodSurface() + "&"
+	    + "basin_storage=" + dashboardViewModel.basinMaxStorage();
+
 	$.ajax({
             url: data_url + '?' + query_params,
 	    success: function (response) {
-		//var minMaxData = [];
 		var predictedData = [];
 		var measuredData = [];
 		var predictedNoRainData = [];
-		//var min_predicted = response.graph_info.data.min;
-		//var max_predicted = response.graph_info.data.max;
 		var mean_predicted = response.graph_info.data.mean;
 		var measured = response.graph_info.data.history;
 		var no_rain = response.graph_info.data.no_rain;
 		var actualwaterValue = 0;
-		//var maxAmountOfMinMax = Math.max(
-		//min_predicted.length,
-		//    max_predicted.length
-		//);
-		// for (var i = 0; i < maxAmountOfMinMax; i++) {
-		//     var y1 = null;
-		//     var y3 = null;
-		//     var dt = null;
-		//     if (min_predicted.length > i) {
-		// 	dt = min_predicted[i][0];
-		// 	y1 = min_predicted[i][1];
-		//     }
-		//     if (max_predicted.length > i) {
-		// 	dt = max_predicted[i][0];
-		// 	y3 = max_predicted[i][1];
-		//     }
-		//     minMaxData.push({ arg: moment(dt).toDate(), y1: y1, y3: y3 });
-		// }
 		for (var i = 0; i < no_rain.length; i++) {
 		    var dt = no_rain[i][0];
 		    var y5 = Math.round(no_rain[i][1] * 100) / 100;
@@ -202,11 +173,6 @@
 		    measuredData.push({ arg: moment(dt).toDate(), y4: y4 });
 		}
 		fillChart.beginUpdate();
-		//fillChart.getSeriesByName("y one and three").reinitData(minMaxData);	
-		//fillChart.getSeriesByName("gemeten").reinitData(measuredData);
-		//fillChart.getSeriesByName("voorspeld").reinitData(predictedData);
-		
-		//fillChart.option("series.0.data", minMaxData);
 		fillChart.option("series.1.data", predictedData);
 		fillChart.option("series.2.data", measuredData);
 		fillChart.option("series.3.data", predictedNoRainData);
@@ -239,33 +205,13 @@
 	   to reach the threshold of the basin.
 	 */
 	var availableWaterPr = 100 - actualwater;
-	var capacityPool = parseInt($("#basin-storage").text());
-	var rainFloodSurface = parseInt($("#rain_flood_surface").text());
-	if ((rainFloodSurface + "") == "NaN") {
-	   rainFloodSurface = parseInt($("#rain_flood_surface").val()); 
-	}
-	if ((capacityPool + "") == "NaN") {
-	    capacityPool = parseInt($("#basin-storage").val());;
-	}
 	var valueToRainPerMM = 0
 	if (availableWaterPr > 0) {
-	    var availableValue = (capacityPool * availableWaterPr / 100);
-	    valueToRainPerMM = (availableValue / rainFloodSurface) * 1000;	    
+	    var availableValue = (dashboardViewModel.basinMaxStorage() * availableWaterPr / 100);
+	    valueToRainPerMM = (availableValue / dashboardViewModel.rainFloodSurface()) * 1000;	    
 	}
 	$("#label-actual-water").text(parseInt(valueToRainPerMM) + " mm beschikbaar");	
     }
-
-    // for (var i=0, n=amountOfPoints; i<n; i+=2) {
-    //     var rnd = Math.random();
-    //     var arg = fillData[i].arg;
-    //     precipitationData.push({arg: arg, min: rnd*10, mean: rnd*30, max: rnd*35});
-    //     if (arg >= now && i%20 == 0) {
-    //         precipitationDataLargeBlocks.push({
-    //             arg: arg,
-    //             y: Math.random() * 60 + 60,
-    //         });
-    //     }
-    // }
 
     /* ************************************************************************ */
     /* ****************************** Main init ******************************* */
@@ -342,7 +288,8 @@
                 {
                     title: {
                         text: 'Neerslag (mm/uur)',
-                        font: { size: 14, color: 'rgb(151, 183, 199)', weight: 'bold', opacity: 1 }
+                        font: { size: 14, color: 'rgb(151, 183, 199)',
+				weight: 'bold', opacity: 1 }
                     },
                     //pane: 'defaultPane',
                     axisDivisionFactor: 30,
@@ -390,11 +337,11 @@
                     format: 'H:mm\nd'
                 },
                 strips: [
-                    // {startValue: dashboardViewModel.dataTimespan().start.toDate(), endValue: dashboardViewModel.currentDate().toDate(), color: 'rgba(204, 204, 204, 0.2)'},
-                    // {startValue: dashboardViewModel.currentDate().toDate(), endValue: dashboardViewModel.dataTimespan().end.toDate(), color: 'white'},
-		    {startValue: beginDate, endValue: currentDate,
+		    {startValue: moment(now).subtract({days: 200}),
+		     endValue: currentDate,
 		     color: 'rgba(204, 204, 204, 0.2)'},
-                    {startValue: currentDate, endValue: endDate,
+                    {startValue: currentDate,
+		     endValue: endDate,
 		     color: 'white'},
                 ]
             },
@@ -404,9 +351,6 @@
                     visible: true
                 }
             },
-            //panes: [
-            //    {name: 'defaultPane'}
-            //],
             incidentOccured: function(message) {
                 console.log(message);
             }
@@ -433,9 +377,13 @@
             actualFill: ko.observable(40),              // number
 	    outflowCapacity: ko.observable(outflowcapacity),
 	    osmoseCapacity: ko.observable(osmosecapacity),
+	    rainFloodSurface: ko.observable(rainfloodsurface),
+	    basinMaxStorage: ko.observable(basinmaxstorage),
+	    demandMax: ko.observable(demandmax),
+	    
             //advisedFill: ko.observable(60),             // number
 	    reset: function(model, event) {
-            window.location = ".";
+		window.location = ".";
 	    },
 	    calculate: function(model, event) {
 		loadGraphs();
@@ -564,7 +512,7 @@
                         font: { size: 14, color: 'rgb(151, 183, 199)', weight: 'bold', opacity: 1 }
                     },
                     min: 0,
-                    max: 1,
+                    max: dashboardViewModel.demandMax(),
                     //minValueMargin: 0,
                     //maxValueMargin: 0,
                     label: {
@@ -575,6 +523,10 @@
                     }
                 }
             ],
+	    scaleOverride: true,
+	    //scaleSteps: steps,
+	    //scaleStepWidth: Math.ceil(max / steps),
+	    //scaleStartValue: 0
             size: { height: 170 },
             series: demandChartSeries,
             legend: {
@@ -593,7 +545,7 @@
                     visible: false
                 },
                 strips: [
-                    {startValue: dashboardViewModel.dataTimespan().start.toDate(),
+                    {startValue: moment(now).subtract({days: 200}),
 		     endValue: dashboardViewModel.currentDate().toDate(),
 		     color: 'rgba(204, 204, 204, 0.2)',
 		     label: { text: 'gemeten', 
@@ -606,9 +558,9 @@
 			      horizontalAlignment: 'left',
 			      verticalAlignment: 'top' }},
                 ],
-		tickInterval: {
-                     hours: 3
-                 },
+		// tickInterval: {
+                //      hours: 3
+                //  },
                 setTicksAtUnitBeginning: true,
 		discreteAxisDivisionMode: 'crossLabels',
             },
@@ -640,6 +592,7 @@
             {
                 valueField: 'y2',
                 type: 'line',
+		width: lineWidth,
                 color: 'blue',
                 name: 'voorspeld',
                 //pane: 'defaultPane',
@@ -652,6 +605,7 @@
             {
                 name: 'gemeten',
                 type: 'line',
+		width: lineWidth,
                 valueField: 'y4',
                 data: [],
                 color: 'rgb(70, 180, 255)',//D
@@ -663,6 +617,7 @@
 	    {
                 name: 'geen regen',
                 type: 'line',
+		width: lineWidth,
                 valueField: 'y5',
                 data: [],
                 color: 'rgb(178, 144, 200)',//L
@@ -675,6 +630,7 @@
                 valueField: 'actueel',
                 type: 'line',
 		dashStyle: 'dash',
+		width: lineWidth,
                 color: '#46b4ff',
                 name: 'actueel',
                 point: {
@@ -789,7 +745,7 @@
                  },
                 setTicksAtUnitBeginning: true,
                 strips: [
-                    {startValue: dashboardViewModel.dataTimespan().start.toDate(),
+                    {startValue: moment(now).subtract({days: 200}),
 		     endValue: dashboardViewModel.currentDate().toDate(),
 		     color: 'rgba(204, 204, 204, 0.2)'},
                     {startValue: dashboardViewModel.currentDate().toDate(),
@@ -1072,7 +1028,7 @@
                 endValue: viewmax.toDate()
             },
             selectedRangeChanged: function(e) {
-                dashboardViewModel.timespan({start: moment(e.startValue), end: moment(e.endValue)});
+                dashboardViewModel.timespan({start: moment(e.startValue),end: moment(e.endValue)});
             }
         });
         var timespanSelector = $("#timespan-selector").dxRangeSelector('instance');
@@ -1121,7 +1077,8 @@
         window.outflowTimespanSelector = outflowTimespanSelector;
         //window.fillGauge = fillGauge;
 	window.loadGraphs = loadGraphs;
-	window.convertCapacity = convertCapacity
+	window.convertCapacity = convertCapacity;
+	window.demandmax = demandmax;
     }
         
     $(document).ready(function(){init(); loadGraphs()});
