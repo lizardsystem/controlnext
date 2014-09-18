@@ -379,3 +379,14 @@ table.basin-data-detail-table-3 tr td {
 .controlnexttable {
     background-color: #ccc;
 }
+
+.form-group-demand {
+    #background-color: grey;
+    width: 150px;
+    height: 300px;
+    overflow-y: auto;
+}
+
+.label-current-week {
+   background-color: red !important;
+} 

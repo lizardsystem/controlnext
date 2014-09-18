@@ -109,6 +109,23 @@ class BasinView(UiView):
                 self.crop_type = self.basin.owner.crop
         return super(BasinView, self).get(request, *args, **kwargs)
 
+    def current_demand(self):
+        return 5
+
+    def current_week(self):
+        now = datetime.datetime.now()
+        weekNumber = ((now - datetime.datetime(now.year,1,1)).days/7) + 1
+        return unicode(weekNumber)
+
+    def demand_table(self):
+        return [
+            {"w": "1", "v": "13"}, {"w": "2", "v": "13"}, {"w": "3", "v": "13"}, {"w": "4", "v": "13"},
+            {"w": "1", "v": "13"}, {u"w": "3", "v": "13"},
+            {"w": "1", "v": "13"}, {"w": "2", "v": "13"}, {"w": "3", "v": "13"}, {"w": "4", "v": "13"},
+            {"w": "3", "v": "13"}, {"w": "38", "v": "13"},
+            {"w": "1", "v": "13"}, {"w": "2", "v": "13"}, {"w": "3", "v": "13"}, {"w": "4", "v": "13"},
+        ]
+
 
 class DataService(APIView):
     def store_parameters(self, desired_fill, demand_exaggerate,

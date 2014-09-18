@@ -18,8 +18,9 @@
     var outflowmin = moment(now).subtract({minutes: 120});
     var outflowmax = moment(now);
 
-    var demandmax = 4;
-    
+    var demandmax = null;
+    var precipitationmax = null;
+
     var lineWidth = 4;
     
     var convertCapacity = function(capacityPerHour) {
@@ -47,19 +48,22 @@
             success: function (response) {
                 //set_rain_data(response.rain_graph_info.data);
 		var data = [];
+		var newDemandMax = 0;
 		var demandRaw = response.graph_info.data;
 		for (var i = 0; i < demandRaw.length; i++){
+		    newDemandMax = (newDemandMax < demandRaw[i][1]) ? demandRaw[i][1]: newDemandMax;
 		    var arg = new Date(demandRaw[i][0]);
 		    data.push({arg: arg, y: demandRaw[i][1]});
 		}	
-		demandChart.beginUpdate();
+		//demandChart.beginUpdate();
 		//demandChart.getSeriesByName("small block").reinitData(data);
 		//demandChart._invalidate();
-		self.demandmax = 10;
-		demandChart.option("series.1.data", data);
-		dashboardViewModel.demandMax(self.demandmax);
-		demandChart.endUpdate();
+		//demandChart.option("series.1.data", data);
+		// add 1 voor visualization
+		dashboardViewModel.demandMax(newDemandMax + 1);
+		//demandChart.endUpdate();
 		//dashboardViewModel.viewTimespan({start: viewmin, end: viewmax});
+		initDemandChart(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 var $error = $('<p>Fout bij het laden van de grafiekdata: '
@@ -89,27 +93,31 @@
 		var sumData = []
 		var mean_rain = response.rain_graph_info.data.mean;
 		var sum_rain = response.rain_graph_info.data.sum;
-		var kwadrant = response.rain_graph_info.data.kwadrant;;
-		for (var i = 0; i < mean_rain.length; i++){
-		    var arg = new Date(mean_rain[i][0]);
-		    // multiply with 4 to convert to mm/hour
-		    // plus 0.2 to visualize 0 value
-		    var mean_value = mean_rain[i][1] * 4 + 0.2;
-		    meanData.push({arg: arg, mean: mean_value});
-		}
+		var kwadrant = response.rain_graph_info.data.kwadrant;
+		var newPrecipitaionMax = 0;
 		var priv_sum = -999;
 		for (var i = 0; i < sum_rain.length; i++){
 		    if ((priv_sum != sum_rain[i][1]) || (i == 0) || (i == sum_rain.length -1)) {
+			newPrecipitaionMax = (newPrecipitaionMax < sum_rain[i][1]) ? sum_rain[i][1]: newPrecipitaionMax;
 			var arg = new Date(sum_rain[i][0]);
-			sumData.push({arg: arg, y: sum_rain[i][1] * 4});
+			sumData.push({arg: arg, sum: sum_rain[i][1] * 4});
 		    }
 		    priv_sum = sum_rain[i][1];
 		}
-		precipitationChart.beginUpdate();
-		precipitationChart.option("series.2.data", meanData); 
-		precipitationChart.option("series.0.data", sumData);
-		precipitationChart.endUpdate();
-
+		for (var i = 0; i < mean_rain.length; i++){
+		    var arg = new Date(mean_rain[i][0]);
+		    // multiply with 4 to convert to mm/hour
+		    // plus newPrecipitaionMax/10 to visualize 0 value
+		    var mean_value = mean_rain[i][1] * 4 + newPrecipitaionMax / 10;
+		    meanData.push({arg: arg, mean: mean_value});
+		}
+		
+		//precipitationChart.beginUpdate();
+		//precipitationChart.option("series.2.data", meanData); 
+		//precipitationChart.option("series.0.data", sumData);
+		//precipitationChart.endUpdate();
+		dashboardViewModel.precipitationMax(newPrecipitaionMax + 1);
+		initPrecipitationChart(meanData, sumData);
 		if ((kwadrant != null) && (kwadrant.length > 0)) {
 		    $('#quadrant-control').quadrant('option', 'activequadrant',
 						    parseInt(kwadrant[0][1]));
@@ -213,20 +221,182 @@
 	$("#label-actual-water").text(parseInt(valueToRainPerMM) + " mm beschikbaar");	
     }
 
+    // Initialize a bound Knockout.js model.
+    var dashboardViewModel = {
+	viewTimespan: ko.observable({start: viewmin, end: viewmax}), // moment.js objects
+	dataTimespan: ko.observable({start: argmin, end: argmax}),   // moment.js objects
+	currentDate: ko.observable(now),                             // moment.js object
+	outflowOpened: ko.observable(outflowmin),   // moment.js object
+	outflowClosed: ko.observable(outflowmax),   // moment.js object
+	actualFill: ko.observable(40),              // number
+	outflowCapacity: ko.observable(outflowcapacity),
+	osmoseCapacity: ko.observable(osmosecapacity),
+	rainFloodSurface: ko.observable(rainfloodsurface),
+	basinMaxStorage: ko.observable(basinmaxstorage),
+	demandMax: ko.observable(demandmax),
+	precipitationMax: ko.observable(precipitationmax),
+	currentDemand: ko.observable(currentdemand),
+
+	//advisedFill: ko.observable(60),             // number
+	reset: function(model, event) {
+	    window.location = ".";
+	},
+	calculate: function(model, event) {
+	    loadGraphs();
+	},
+	selectTimespan: function(model, event) {
+	    // Change the chart timespan to 48h, 4d, et cetera.
+	    var hours = $(event.target).data('timespan');
+	    var hoursRelative = Math.round(hours / 2);
+	    var start = moment().subtract({hours: hoursRelative});
+	    var end = moment().add({hours: hoursRelative});
+	    model.viewTimespan({start: start, end: end});
+	},
+	browseTimespan: function(model, event) {
+	    // Browse the chart timespan to the left or right.
+	    var direction = $(event.target).data('direction') === 'fwd' ? 'fwd' : 'bwd';
+	    var start = model.viewTimespan().start;
+	    var end = model.viewTimespan().end;
+	    // Browse 33% forwards or backwards.
+	    var diff = end.diff(start) / 3.0;
+	    if (direction === 'fwd') {
+		var newStart = moment(start).add({milliseconds: diff});
+		var newEnd = moment(end).add({milliseconds: diff});
+	    }
+	    else {
+		var newStart = moment(start).subtract({milliseconds: diff});
+		var newEnd = moment(end).subtract({milliseconds: diff});
+	    }
+	    model.viewTimespan({start: newStart, end: newEnd});
+	}
+    };
+
+    /* ************************************************************************ */
+    /* ***************************** Demand Chart ***************************** */
+    /* ************************************************************************ */
+    var initDemandChart = function(data) {
+	var demandChartSeries = [
+	{
+	    valueField: 'y',
+	    name: 'large block',
+	    //name: "",
+	    type: 'stepArea',
+	    //pane: 'defaultPane',
+	    data: [],//demandDataLargeBlocks,
+	    color: '#ff0000',
+	    opacity: 0.1,
+	    label: {
+		visible: false
+	    },
+	},
+	{
+	    valueField: 'y',
+	    name: 'small block',
+	    type: 'stepline',
+	    color: 'black',
+	    width: lineWidth,
+	    point: {
+		visible: false
+	    },
+	    data: data,//[],//demandData
+	}
+    ];
+
+    var demandChartOptions = {
+
+	animation: { enabled: false },
+	commonPaneSettings: {
+	    backgroundColor: 'rgb(255, 255, 255)',
+	    border: {
+		visible: true
+	    }
+	},
+	commonSeriesSettings: {
+	    argumentField: 'arg'
+	},
+	valueAxis: [
+	    {
+		title: {
+		    text: 'Watervraag (m&sup3;/15m)',
+		    font: { size: 14, color: 'rgb(151, 183, 199)', weight: 'bold', opacity: 1 }
+		},
+		min: 0,
+		max: dashboardViewModel.demandMax(),
+		//minValueMargin: 0,
+		//maxValueMargin: 0,
+		label: {
+		    font: {
+			color: 'rgb(51, 51, 51)',
+			opacity: 1
+		    }
+		}
+	    }
+	],
+	scaleOverride: true,
+	//scaleSteps: steps,
+	//scaleStepWidth: Math.ceil(max / steps),
+	//scaleStartValue: 0
+	size: { height: 170 },
+	series: demandChartSeries,
+	legend: {
+	    visible: false
+	},
+	adjustOnZoom: false,
+	argumentAxis: {
+	    valueType: 'datetime',
+	    min: dashboardViewModel.viewTimespan().start.toDate(),
+	    max: dashboardViewModel.viewTimespan().end.toDate(),
+	    //min: moment(dashboardViewModel.viewTimespan().end).subtract("days", 31).toDate(),
+	    //max: moment(dashboardViewModel.viewTimespan().end).add("days", 5).toDate(),
+	    valueMarginsEnabled: false,
+	    visible: false,
+	    label: {
+		visible: false
+	    },
+	    strips: [
+		{startValue: moment(now).subtract({days: 200}),
+		 endValue: dashboardViewModel.currentDate().toDate(),
+		 color: 'rgba(204, 204, 204, 0.2)',
+		 label: { text: 'gemeten', 
+			  horizontalAlignment: 'right',
+			  verticalAlignment: 'top' }},
+		{startValue: dashboardViewModel.currentDate().toDate(),
+		 endValue: dashboardViewModel.dataTimespan().end.toDate(),
+		 color: 'white',
+		 label: { text: 'voorspeld',
+			  horizontalAlignment: 'left',
+			  verticalAlignment: 'top' }},
+	    ],
+	    // tickInterval: {
+	    //      hours: 3
+	    //  },
+	    setTicksAtUnitBeginning: true,
+	    discreteAxisDivisionMode: 'crossLabels',
+	},
+	incidentOccured: function(message) {
+	    console.log(message);
+	}
+    };
+
+
+        $("#demand-chart").dxChart(demandChartOptions);
+        self.demandChart = $("#demand-chart").dxChart('instance');
+    };
+
     /* ************************************************************************ */
     /* ****************************** Main init ******************************* */
     /* ************************************************************************ */
-    var initPrecipitationChart = function(data, beginDate, endDate, currentDate) {
+    var initPrecipitationChart = function(meanData, sumData) {
 	/* ************************************************************************ */
         /* ************************** Precipitation Chart ************************* */
         /* ************************************************************************ */
         var precipitationChartSeries = [
             {
-                valueField: 'y',
-                name: 'y',
+                valueField: 'sum',
+                name: 'sum',
                 type: 'stepArea',
                 //pane: 'defaultPane',
-                //data: precipitationDataLargeBlocks,
+                data: sumData,//precipitationDataLargeBlocks,
                 color: '#2222ee',
                 opacity: 0.07,
                 label: {
@@ -251,31 +421,12 @@
                 },
             },
             {
-                valueField: 'min',
-                name: 'min',
-                type: 'stackedBar',
-                //pane: 'defaultPane',
-                //data: precipitationData,
-                color: '#a3b6e0',
-                opacity: 1
-            },
-            {
                 valueField: 'mean',
                 name: 'mean',
                 type: 'bar',
                 //pane: 'defaultPane',
-                data: [],// precipitationData,
+                data: meanData, //[],// precipitationData,
                 color: '#4777c1',
-                opacity: 1
-            },
-            {
-                valueField: 'max',
-                name: 'max',
-                type: 'stackedBar',
-                //pane: 'defaultPane',
-                //data: precipitationData,
-		data: [],//data,
-                color: '#a3b6e0',
                 opacity: 1
             }
         ];
@@ -294,7 +445,7 @@
                     //pane: 'defaultPane',
                     axisDivisionFactor: 30,
                     min: 0,
-                    max: 15.0,
+                    max: dashboardViewModel.precipitationMax(), //15.0,
                     minValueMargin: 0,
                     maxValueMargin: 0,
                     valueMarginsEnabled: false,
@@ -329,8 +480,8 @@
                 valueMarginsEnabled: false,
 		//min: moment(dashboardViewModel.viewTimespan().end).subtract("days", 31).toDate(),
 		//max: moment(dashboardViewModel.viewTimespan().end).add("days", 5).toDate(),
-                min: beginDate,//dashboardViewModel.viewTimespan().start.toDate(),
-                max: endDate, //dashboardViewModel.viewTimespan().end.toDate(),
+                min: dashboardViewModel.viewTimespan().start.toDate(),
+                max: dashboardViewModel.viewTimespan().end.toDate(),
                 //title: 'Tijd',
                 label: {
                     visible: false,
@@ -338,10 +489,10 @@
                 },
                 strips: [
 		    {startValue: moment(now).subtract({days: 200}),
-		     endValue: currentDate,
+		     endValue: dashboardViewModel.currentDate(),
 		     color: 'rgba(204, 204, 204, 0.2)'},
-                    {startValue: currentDate,
-		     endValue: endDate,
+                    {startValue: dashboardViewModel.currentDate().toDate(),
+		     endValue: dashboardViewModel.viewTimespan().end.toDate(),
 		     color: 'white'},
                 ]
             },
@@ -367,53 +518,7 @@
             container: 'body',
             placement: 'auto left'
         });
-        // Initialize a bound Knockout.js model.
-        var dashboardViewModel = {
-            viewTimespan: ko.observable({start: viewmin, end: viewmax}), // moment.js objects
-            dataTimespan: ko.observable({start: argmin, end: argmax}),   // moment.js objects
-            currentDate: ko.observable(now),                             // moment.js object
-            outflowOpened: ko.observable(outflowmin),   // moment.js object
-            outflowClosed: ko.observable(outflowmax),   // moment.js object
-            actualFill: ko.observable(40),              // number
-	    outflowCapacity: ko.observable(outflowcapacity),
-	    osmoseCapacity: ko.observable(osmosecapacity),
-	    rainFloodSurface: ko.observable(rainfloodsurface),
-	    basinMaxStorage: ko.observable(basinmaxstorage),
-	    demandMax: ko.observable(demandmax),
-	    
-            //advisedFill: ko.observable(60),             // number
-	    reset: function(model, event) {
-		window.location = ".";
-	    },
-	    calculate: function(model, event) {
-		loadGraphs();
-	    },
-            selectTimespan: function(model, event) {
-                // Change the chart timespan to 48h, 4d, et cetera.
-                var hours = $(event.target).data('timespan');
-                var hoursRelative = Math.round(hours / 2);
-                var start = moment().subtract({hours: hoursRelative});
-                var end = moment().add({hours: hoursRelative});
-                model.viewTimespan({start: start, end: end});
-            },
-            browseTimespan: function(model, event) {
-                // Browse the chart timespan to the left or right.
-                var direction = $(event.target).data('direction') === 'fwd' ? 'fwd' : 'bwd';
-                var start = model.viewTimespan().start;
-                var end = model.viewTimespan().end;
-                // Browse 33% forwards or backwards.
-                var diff = end.diff(start) / 3.0;
-                if (direction === 'fwd') {
-                    var newStart = moment(start).add({milliseconds: diff});
-                    var newEnd = moment(end).add({milliseconds: diff});
-                }
-                else {
-                    var newStart = moment(start).subtract({milliseconds: diff});
-                    var newEnd = moment(end).subtract({milliseconds: diff});
-                }
-                model.viewTimespan({start: newStart, end: newEnd});
-            }
-        };
+        
         ko.applyBindings(dashboardViewModel);
 	
         // Update the Chart.js charts timespans when the model changes.
@@ -465,113 +570,6 @@
             },
             data: labelData
         };
-
-        /* ************************************************************************ */
-        /* ***************************** Demand Chart ***************************** */
-        /* ************************************************************************ */
-        var demandChartSeries = [
-            {
-                valueField: 'y',
-                name: 'large block',
-		//name: "",
-                type: 'stepArea',
-                //pane: 'defaultPane',
-                data: [],//demandDataLargeBlocks,
-                color: '#ff0000',
-                opacity: 0.1,
-                label: {
-                    visible: false
-                },
-            },
-            {
-                valueField: 'y',
-		name: 'small block',
-                type: 'stepline',
-                color: 'black',
-                point: {
-                    visible: false
-                },
-                data: [],//demandData
-            }
-        ];
-        var demandChartOptions = {
-            animation: { enabled: false },
-            commonPaneSettings: {
-                backgroundColor: 'rgb(255, 255, 255)',
-                border: {
-                    visible: true
-                }
-            },
-            commonSeriesSettings: {
-                argumentField: 'arg'
-            },
-            valueAxis: [
-                {
-                    title: {
-                        text: 'Watervraag (m&sup3;/15m)',
-                        font: { size: 14, color: 'rgb(151, 183, 199)', weight: 'bold', opacity: 1 }
-                    },
-                    min: 0,
-                    max: dashboardViewModel.demandMax(),
-                    //minValueMargin: 0,
-                    //maxValueMargin: 0,
-                    label: {
-                        font: {
-                            color: 'rgb(51, 51, 51)',
-                            opacity: 1
-                        }
-                    }
-                }
-            ],
-	    scaleOverride: true,
-	    //scaleSteps: steps,
-	    //scaleStepWidth: Math.ceil(max / steps),
-	    //scaleStartValue: 0
-            size: { height: 170 },
-            series: demandChartSeries,
-            legend: {
-                visible: false
-            },
-            adjustOnZoom: false,
-            argumentAxis: {
-                valueType: 'datetime',
-                min: dashboardViewModel.viewTimespan().start.toDate(),
-                max: dashboardViewModel.viewTimespan().end.toDate(),
-		//min: moment(dashboardViewModel.viewTimespan().end).subtract("days", 31).toDate(),
-		//max: moment(dashboardViewModel.viewTimespan().end).add("days", 5).toDate(),
-                valueMarginsEnabled: false,
-                visible: false,
-                label: {
-                    visible: false
-                },
-                strips: [
-                    {startValue: moment(now).subtract({days: 200}),
-		     endValue: dashboardViewModel.currentDate().toDate(),
-		     color: 'rgba(204, 204, 204, 0.2)',
-		     label: { text: 'gemeten', 
-			      horizontalAlignment: 'right',
-			      verticalAlignment: 'top' }},
-                    {startValue: dashboardViewModel.currentDate().toDate(),
-		     endValue: dashboardViewModel.dataTimespan().end.toDate(),
-		     color: 'white',
-		     label: { text: 'voorspeld',
-			      horizontalAlignment: 'left',
-			      verticalAlignment: 'top' }},
-                ],
-		// tickInterval: {
-                //      hours: 3
-                //  },
-                setTicksAtUnitBeginning: true,
-		discreteAxisDivisionMode: 'crossLabels',
-            },
-            incidentOccured: function(message) {
-                console.log(message);
-            }
-        };
-        $("#demand-chart").dxChart(demandChartOptions);
-        var demandChart = $("#demand-chart").dxChart('instance');
-
-        
 
         /* ************************************************************************ */
         /* ******************************* Fill Chart ***************************** */
@@ -626,18 +624,18 @@
                     visible: false
                 }
             },
-	    {
-                valueField: 'actueel',
-                type: 'line',
-		dashStyle: 'dash',
-		width: lineWidth,
-                color: '#46b4ff',
-                name: 'actueel',
-                point: {
-                    visible: false,
-                },
-                data: [],
-            },
+	    // {
+            //     valueField: 'actueel',
+            //     type: 'line',
+	    // 	dashStyle: 'dash',
+	    // 	width: lineWidth,
+            //     color: '#46b4ff',
+            //     name: 'actueel',
+            //     point: {
+            //         visible: false,
+            //     },
+            //     data: [],
+            // },
             labelSeriesItem
             /*
             {
@@ -774,10 +772,9 @@
         $("#fill-chart").dxChart(fillChartOptions);
         var fillChart = $("#fill-chart").dxChart('instance');
 
-	initPrecipitationChart([],
-			       dashboardViewModel.viewTimespan().start.toDate(),
-			       dashboardViewModel.viewTimespan().end.toDate(),
-			       dashboardViewModel.currentDate().toDate());
+	initDemandChart([]);
+
+	initPrecipitationChart([], []);
 
         /* ************************************************************************ */
         /* ***************************** Outflow selector ************************* */
@@ -1073,13 +1070,24 @@
         window.dashboardViewModel = dashboardViewModel;
         window.precipitationChart = precipitationChart;
         window.fillChart = fillChart;
-	window.demandChart = demandChart;
+	//window.demandChart = demandChart;
         window.outflowTimespanSelector = outflowTimespanSelector;
         //window.fillGauge = fillGauge;
 	window.loadGraphs = loadGraphs;
 	window.convertCapacity = convertCapacity;
 	window.demandmax = demandmax;
+	window.initDemandChart = initDemandChart;
     }
+
+    $('.popover-markup>.trigger').popover({
+	html: true,
+	title: function () {
+            return $(this).parent().find('.head').html();
+	},
+	content: function () {
+            return $(this).parent().find('.content').html();
+	}
+    });
         
     $(document).ready(function(){init(); loadGraphs()});
 } (window.jQuery);
