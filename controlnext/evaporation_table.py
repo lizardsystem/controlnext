@@ -7,7 +7,7 @@ import logging
 
 from django.conf import settings
 
-#from controlnext.utils import cache_result, validate_date, mktim
+from controlnext.utils import cache_result, validate_date, mktim
 
 import pytz
 import pandas as pd
@@ -110,7 +110,7 @@ class EvaporationTable(object):
             for line in file:
                 row = line.strip().split(CSV_COL_DELIMITER)
                 # convert everything to floats
-                #row = map(float, row)
+                row = map(float, row)
                 result[int(row[week_column])] = row[evaporation_column] + 10
         return result
 
