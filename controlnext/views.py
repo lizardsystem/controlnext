@@ -10,6 +10,8 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework.response import Response as RestResponse
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view
+from django.views.decorators.csrf import csrf_protect
 
 import pytz
 
@@ -22,6 +24,7 @@ from controlnext.demand_table import DemandTable
 from controlnext.calc_model import CalculationModel
 from controlnext.conf import settings
 from controlnext.evaporation_table import EvaporationTable
+from controlnext.evaporation_table import rewrite_demand_csv
 from controlnext.fews_data import FewsJdbcDataSource
 from controlnext.utils import round_date
 from controlnext.models import Constants, Basin,\
@@ -43,6 +46,23 @@ def series_to_js(pdseries):
     # bfill because sometimes first element is a NaN
     pdseries = pdseries.fillna(method='bfill')
     return [(datetime_to_js(dt), value) for dt, value in pdseries.iterkv()]
+ 
+  
+@csrf_protect
+@api_view(['POST'])
+def update_demand(request, basin_id):
+    """
+    Update demand table.
+    """
+    try:
+        basin = models.Basin.objects.get(id=basin_id)
+    except ObjectDoesNotExist:
+        raise Http404
+    if request.method == 'POST':
+        rewrite_demand_csv(request.DATA, basin.owner.crop)
+        return RestResponse({'success': True})
+    else:
+        return RestResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class DashboardView(AppView):
@@ -77,22 +97,6 @@ class DashboardView(AppView):
 
         return super(DashboardView, self).dispatch(request, *args, **kwargs)
 
-# this is an old view
-# class BasinView(UiView):
-#     template_name = 'controlnext/basin_detail.html'
-#     page_title = _('ControlNEXT')
-
-#     def get(self, request, basin_id, *args, **kwargs):
-#         try:
-#             self.basin = models.Basin.objects.get(id=basin_id)
-#         except ObjectDoesNotExist:
-#             raise Http404
-#         else:
-#             if (self.basin.owner.crop and
-#                     is_valid_crop_type(self.basin.owner.crop)):
-#                 self.crop_type = self.basin.owner.crop
-#         return super(BasinView, self).get(request, *args, **kwargs)
-
 
 class BasinView(UiView):
     template_name = 'controlnext/basin_detail.html'
@@ -118,13 +122,9 @@ class BasinView(UiView):
         return unicode(weekNumber)
 
     def demand_table(self):
-        return [
-            {"w": "1", "v": "13"}, {"w": "2", "v": "13"}, {"w": "3", "v": "13"}, {"w": "4", "v": "13"},
-            {"w": "1", "v": "13"}, {u"w": "3", "v": "13"},
-            {"w": "1", "v": "13"}, {"w": "2", "v": "13"}, {"w": "3", "v": "13"}, {"w": "4", "v": "13"},
-            {"w": "3", "v": "13"}, {"w": "38", "v": "13"},
-            {"w": "1", "v": "13"}, {"w": "2", "v": "13"}, {"w": "3", "v": "13"}, {"w": "4", "v": "13"},
-        ]
+        
+        table = EvaporationTable(self.basin.owner.crop, None)
+        return table.read_csv_for_gui()
 
 
 class DataService(APIView):

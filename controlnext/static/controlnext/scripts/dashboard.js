@@ -108,6 +108,7 @@
 		    var arg = new Date(mean_rain[i][0]);
 		    // multiply with 4 to convert to mm/hour
 		    // plus newPrecipitaionMax/10 to visualize 0 value
+		    newPrecipitaionMax = (newPrecipitaionMax < mean_rain[i][1]) ? mean_rain[i][1]: newPrecipitaionMax;
 		    var mean_value = mean_rain[i][1] * 4 + newPrecipitaionMax / 10;
 		    meanData.push({arg: arg, mean: mean_value});
 		}
@@ -116,7 +117,7 @@
 		//precipitationChart.option("series.2.data", meanData); 
 		//precipitationChart.option("series.0.data", sumData);
 		//precipitationChart.endUpdate();
-		dashboardViewModel.precipitationMax(newPrecipitaionMax + 1);
+		dashboardViewModel.precipitationMax(newPrecipitaionMax + 3);
 		initPrecipitationChart(meanData, sumData);
 		if ((kwadrant != null) && (kwadrant.length > 0)) {
 		    $('#quadrant-control').quadrant('option', 'activequadrant',
@@ -244,6 +245,29 @@
 	calculate: function(model, event) {
 	    loadGraphs();
 	},
+	updateDemand: function(model, event) {
+	    var $constants = $('#data-constants');
+	    var data_url = $constants.attr('data-demand-url');
+	    inputs = $('#demandForm :input');
+	    data = {};
+	    for (var i=0; i < inputs.length; i++){
+		data[inputs[i].name] = inputs[i].value;
+	    }
+            $.ajax({
+		url: data_url,
+		type: "POST",
+		data: data,
+		success: function (data, response) {
+		    $('#bewerken').click();
+		    loadGraphs();
+
+		},
+		error: function (jqXHR, textStatus, errorThrown) {
+                    var $error = $('<p>Fout bij het updaten van de demand tabel: '
+				   + errorThrown + '</p>');
+		}
+            });
+	},
 	selectTimespan: function(model, event) {
 	    // Change the chart timespan to 48h, 4d, et cetera.
 	    var hours = $(event.target).data('timespan');
@@ -317,7 +341,7 @@
 	valueAxis: [
 	    {
 		title: {
-		    text: 'Watervraag (m&sup3;/15m)',
+		    text: 'Watervraag (l/m&sup2;/etmaal)',
 		    font: { size: 14, color: 'rgb(151, 183, 199)', weight: 'bold', opacity: 1 }
 		},
 		min: 0,

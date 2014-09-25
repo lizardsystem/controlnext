@@ -9,7 +9,7 @@ import pandas as pd
 
 from lizard_fewsjdbc.models import JdbcSource
 
-from controlnext.utils import cache_result, validate_date
+#from controlnext.utils import cache_result, validate_date
 from controlnext.conf import settings
 from controlnext.models import Constants
 

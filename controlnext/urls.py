@@ -20,6 +20,9 @@ urlpatterns = patterns(
     url(r'^data_service/(?P<basin_id>\d+)/$',
         views.DataService.as_view(),
         name='controlnext-data-service'),
+    url(r'^data_service/(?P<basin_id>\d+)/demand/$',
+        views.update_demand,
+        name='controlnext-data-demand')
 )
 
 if getattr(settings, 'LIZARD_CONTROLNEXT_STANDALONE', False):
