@@ -98,19 +98,20 @@
 		var priv_sum = -999;
 		for (var i = 0; i < sum_rain.length; i++){
 		    if ((priv_sum != sum_rain[i][1]) || (i == 0) || (i == sum_rain.length -1)) {
-			newPrecipitaionMax = (newPrecipitaionMax < sum_rain[i][1]) ? sum_rain[i][1]: newPrecipitaionMax;
+			
 			var arg = new Date(sum_rain[i][0]);
-			sumData.push({arg: arg, sum: sum_rain[i][1] * 4});
+			var sumPerHour = sum_rain[i][1] * 4;
+			newPrecipitaionMax = (newPrecipitaionMax < sumPerHour) ? sumPerHour: newPrecipitaionMax;
+			sumData.push({arg: arg, sum: sumPerHour});
 		    }
 		    priv_sum = sum_rain[i][1];
 		}
 		for (var i = 0; i < mean_rain.length; i++){
 		    var arg = new Date(mean_rain[i][0]);
-		    // multiply with 4 to convert to mm/hour
-		    // plus newPrecipitaionMax/10 to visualize 0 value
-		    newPrecipitaionMax = (newPrecipitaionMax < mean_rain[i][1]) ? mean_rain[i][1]: newPrecipitaionMax;
-		    var mean_value = mean_rain[i][1] * 4 + newPrecipitaionMax / 10;
-		    meanData.push({arg: arg, mean: mean_value});
+		    
+		    var meanPerHour = mean_rain[i][1] * 4;
+		    newPrecipitaionMax = (newPrecipitaionMax < meanPerHour) ? meanPerHour: newPrecipitaionMax;
+		    meanData.push({arg: arg, mean: meanPerHour});
 		}
 		
 		//precipitationChart.beginUpdate();
@@ -130,6 +131,33 @@
             }
         });
     };
+
+    var emptyPrecipitationChart = function() {
+	var series = precipitationChart.series;
+	precipitationChart.beginUpdate();
+	for (var i = 0; i < series.length; i++) {
+	    precipitationChart.option("series." + i + ".data", []);
+	}
+	precipitationChart.endUpdate();
+    }
+
+    var emptyDemandChart = function() {
+	var series = demandChart.series;
+	demandChart.beginUpdate();
+	for (var i = 0; i < series.length; i++) {
+	    demandChart.option("series." + i + ".data", []);
+	}
+	demandChart.endUpdate();
+    }
+
+    var emptyFillChart = function() {
+	var series = fillChart.series;
+	fillChart.beginUpdate();
+	for (var i = 0; i < series.length; i++) {
+	    fillChart.option("series." + i + ".data", []);
+	}
+	fillChart.endUpdate();
+    }
 
     var loadPredictedData = function() {
 	//Vullingsgraad
@@ -253,12 +281,14 @@
 	    for (var i=0; i < inputs.length; i++){
 		data[inputs[i].name] = inputs[i].value;
 	    }
+	    emptyAllCharts();
             $.ajax({
 		url: data_url,
 		type: "POST",
 		data: data,
 		success: function (data, response) {
 		    $('#bewerken').click();
+		    
 		    loadGraphs();
 
 		},
@@ -365,7 +395,7 @@
 	legend: {
 	    visible: false
 	},
-	adjustOnZoom: false,
+	//adjustOnZoom: false,
 	argumentAxis: {
 	    valueType: 'datetime',
 	    min: dashboardViewModel.viewTimespan().start.toDate(),
@@ -391,9 +421,9 @@
 			  horizontalAlignment: 'left',
 			  verticalAlignment: 'top' }},
 	    ],
-	    // tickInterval: {
-	    //      hours: 3
-	    //  },
+	    tickInterval: {
+	         hours: 3
+	     },
 	    setTicksAtUnitBeginning: true,
 	    discreteAxisDivisionMode: 'crossLabels',
 	},
@@ -483,8 +513,7 @@
                     }
                 }
             ],
-            size: { height: 170 },
-	    width: 1,
+            size: { height: 170},
             series: precipitationChartSeries,
             legend: {
                 visible: false,
@@ -494,13 +523,17 @@
                 paddingLeftRight: 5,
                 paddingTopBottom: 5
             },
-            adjustOnZoom: false,
+	    tickInterval: {
+		hours: 3
+            },
+            //adjustOnZoom: false,
             argumentAxis: {
                 //indentFromMin: 0.02,
                 //indentFromMax: 0.02
                 //minValueMargin: 0,
                 //maxValueMargin: 0,
                 valueType: 'datetime',
+		discreteAxisDivisionMode: 'crossLabels',
                 valueMarginsEnabled: false,
 		//min: moment(dashboardViewModel.viewTimespan().end).subtract("days", 31).toDate(),
 		//max: moment(dashboardViewModel.viewTimespan().end).add("days", 5).toDate(),
@@ -796,9 +829,9 @@
         $("#fill-chart").dxChart(fillChartOptions);
         var fillChart = $("#fill-chart").dxChart('instance');
 
-	initDemandChart([]);
+	//initDemandChart([]);
 
-	initPrecipitationChart([], []);
+	//initPrecipitationChart([], []);
 
         /* ************************************************************************ */
         /* ***************************** Outflow selector ************************* */
@@ -1090,6 +1123,12 @@
 	    loadRainData();
 	    loadPredictedData();
 	}
+
+	var emptyAllCharts = function() {
+	    emptyPrecipitationChart();
+	    emptyDemandChart();
+	    emptyFillChart();
+	}
         // Debug.
         window.dashboardViewModel = dashboardViewModel;
         window.precipitationChart = precipitationChart;
@@ -1101,6 +1140,7 @@
 	window.convertCapacity = convertCapacity;
 	window.demandmax = demandmax;
 	window.initDemandChart = initDemandChart;
+	window.emptyAllCharts = emptyAllCharts;
     }
 
     $('.popover-markup>.trigger').popover({
@@ -1112,6 +1152,16 @@
             return $(this).parent().find('.content').html();
 	}
     });
+
+    $(window).resize(function() {
+	clearTimeout(resizeId);
+	resizeId = setTimeout(doneResizing, 500);
+    });
+ 
+ 
+    function doneResizing(){
+	window.location = ".";
+    }
         
     $(document).ready(function(){init(); loadGraphs()});
 } (window.jQuery);

@@ -119,7 +119,7 @@ class BasinView(UiView):
     def current_week(self):
         now = datetime.datetime.now()
         weekNumber = ((now - datetime.datetime(now.year,1,1)).days/7) + 1
-        return unicode(weekNumber)
+        return weekNumber
 
     def demand_table(self):
         

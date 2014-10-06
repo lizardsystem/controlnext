@@ -66,13 +66,13 @@
 				  <form id="demandForm" class="form-group form-group-demand">
 				    
 				    {% for k,v in view.demand_table.iteritems %}
-				    {% ifequal k view.current_week %}
+				    {% if k == view.current_week %}
 				      <label class="label label-default label-current-week">week {{ k }}</label>
-				      <input name="{{k}}" type="text" class="form-control" autofocus value={{ v }} />
+				      <input name="{{k}}" type="text" class="form-control" autofocus value={{ v|floatformat:1 }} />
 				    {% else %}
 				      <label class="label label-default">week {{ k }}</label>
-				      <input name="{{k}}" type="text" class="form-control" value={{ v }} />
-				    {% endifequal %}
+				      <input name="{{k}}" type="text" class="form-control" value={{ v|floatformat:1 }} />
+				    {% endif %}
 				    
 				    {% endfor%} 
 				  </form>
@@ -238,15 +238,15 @@
             <!-- </div> -->
 
                 </div>
-                <div class="col-sm-2">
-                    <div class="box-timespan-controls-labels">
-                        <div id="outflow-label">Aflaat<span class="info-popup" data-content="uitleg" style="width: 25px; height: 25px; line-height: 25px; right: 0;"><i class="fa fa-info"></i></span></div>
-			<div class="box-main-controls">
-                        <!--div><span class="info-popup" data-content="uitleg" style="width: 25px; height: 25px; line-height: 25px;"><i class="fa fa-info"></i></span></div-->
-			</div>
-                    </div>
-
-                </div>
+                <!-- <div class="col-sm-2"> -->
+<!--                     <div class="box-timespan-controls-labels"> -->
+<!--                         <div id="outflow-label">Aflaat<span class="info-popup" data-content="uitleg" style="width: 25px; height: 25px; line-height: 25px; right: 0;"><i class="fa fa-info"></i></span></div> -->
+<!-- 			<div class="box-main-controls"> -->
+<!--                         <\!--div><span class="info-popup" data-content="uitleg" style="width: 25px; height: 25px; line-height: 25px;"><i class="fa fa-info"></i></span></div-\-> -->
+<!-- 			</div> -->
+<!--                     </div> -->
+<!--  -->
+<!--                 </div> -->
             
             <!-- <hr> -->
             <!-- <div class="col-sm-3"> -->
