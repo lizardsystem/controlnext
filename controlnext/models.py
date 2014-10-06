@@ -103,6 +103,17 @@ def is_valid_crop_type(crop_type):
     return False
 
 
+class WaterDemand(models.Model):
+
+    daynumber = models.IntegerField()
+    weeknumber = models.IntegerField()
+    demand = models.FloatField()
+    owner = models.ForeignKey(GrowerInfo)
+    
+    def __unicode__(self):
+        return "Demand for {}.".format(owner.name) 
+
+        
 class Basin(geomodels.Model):
     """Basin specific model.
 
