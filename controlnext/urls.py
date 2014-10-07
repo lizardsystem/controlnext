@@ -21,7 +21,7 @@ urlpatterns = patterns(
         views.DataService.as_view(),
         name='controlnext-data-service'),
     url(r'^data_service/(?P<basin_id>\d+)/demand/$',
-        views.update_demand,
+        views.DemandView.as_view(),
         name='controlnext-data-demand')
 )
 

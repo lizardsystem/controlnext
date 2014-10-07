@@ -111,9 +111,9 @@ class WaterDemand(models.Model):
     owner = models.ForeignKey(GrowerInfo)
     
     def __unicode__(self):
-        return "Demand for {}.".format(owner.name) 
+        return "Demand for {}.".format(self.owner.name)
 
-        
+    
 class Basin(geomodels.Model):
     """Basin specific model.
 

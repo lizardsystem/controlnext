@@ -281,14 +281,20 @@
 	    for (var i=0; i < inputs.length; i++){
 		data[inputs[i].name] = inputs[i].value;
 	    }
+	    $('#bewerken').click();
 	    emptyAllCharts();
+	    
             $.ajax({
 		url: data_url,
 		type: "POST",
 		data: data,
+		dataType: 'json',
+		contentType: 'application/json; charset=utf-8',
 		success: function (data, response) {
-		    $('#bewerken').click();
-		    
+		    inputs = $('#demandForm :input');
+		    for (var i=0; i < inputs.length; i++){
+			inputs[i].setAttribute("value", data[inputs[i].name]);
+		    }
 		    loadGraphs();
 
 		},
@@ -395,7 +401,7 @@
 	legend: {
 	    visible: false
 	},
-	//adjustOnZoom: false,
+	adjustOnZoom: false,
 	argumentAxis: {
 	    valueType: 'datetime',
 	    min: dashboardViewModel.viewTimespan().start.toDate(),
@@ -421,9 +427,9 @@
 			  horizontalAlignment: 'left',
 			  verticalAlignment: 'top' }},
 	    ],
-	    tickInterval: {
-	         hours: 3
-	     },
+	    // tickInterval: {
+	    //      hours: 3
+	    //  },
 	    setTicksAtUnitBeginning: true,
 	    discreteAxisDivisionMode: 'crossLabels',
 	},
@@ -513,7 +519,8 @@
                     }
                 }
             ],
-            size: { height: 170},
+            size: { height: 170 },
+	    width: 1,
             series: precipitationChartSeries,
             legend: {
                 visible: false,
@@ -526,14 +533,13 @@
 	    tickInterval: {
 		hours: 3
             },
-            //adjustOnZoom: false,
+            adjustOnZoom: false,
             argumentAxis: {
                 //indentFromMin: 0.02,
                 //indentFromMax: 0.02
                 //minValueMargin: 0,
                 //maxValueMargin: 0,
                 valueType: 'datetime',
-		discreteAxisDivisionMode: 'crossLabels',
                 valueMarginsEnabled: false,
 		//min: moment(dashboardViewModel.viewTimespan().end).subtract("days", 31).toDate(),
 		//max: moment(dashboardViewModel.viewTimespan().end).add("days", 5).toDate(),
@@ -829,9 +835,9 @@
         $("#fill-chart").dxChart(fillChartOptions);
         var fillChart = $("#fill-chart").dxChart('instance');
 
-	//initDemandChart([]);
+	initDemandChart([]);
 
-	//initPrecipitationChart([], []);
+	initPrecipitationChart([], []);
 
         /* ************************************************************************ */
         /* ***************************** Outflow selector ************************* */
@@ -1152,16 +1158,6 @@
             return $(this).parent().find('.content').html();
 	}
     });
-
-    $(window).resize(function() {
-	clearTimeout(resizeId);
-	resizeId = setTimeout(doneResizing, 500);
-    });
- 
- 
-    function doneResizing(){
-	window.location = ".";
-    }
         
     $(document).ready(function(){init(); loadGraphs()});
 } (window.jQuery);

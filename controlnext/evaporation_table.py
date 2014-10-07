@@ -8,6 +8,7 @@ import logging
 from django.conf import settings
 
 from controlnext.utils import cache_result, validate_date, mktim
+from controlnext import models
 
 import pytz
 import pandas as pd
@@ -33,86 +34,28 @@ ONE_DAY = datetime.timedelta(days=1)
 
 def get_day(date):
     return int(date.strftime('%j'))
-
-
-def rewrite_demand_csv(data, crop):
-    
-    file_path = os.path.join(
-        EVAPORATION_TABLE_PATH, "%s%s.csv" %(
-            EVAPORATION_TABLE_FILE_PREFIX, crop))
-    logging.debug('Writing to %s', file_path)
-    with open(file_path, 'wb') as file:
-        file.write(str(DAY_COLUMN_NAME) + CSV_COL_DELIMITER)
-        file.write(str(EVAPORATION_COLUMN_NAME) + CSV_COL_DELIMITER)
-        file.write(str(WEEK_COLUMN_NAME) + '\n')
-        year_days = 365
-        day = 1
-        for key in sorted(data.iterkeys()):
-            for week_day in range(1, 8):
-                if day > year_days:
-                    break
-                file.write(str(day) + CSV_COL_DELIMITER)
-                file.write(str(data[key]) + CSV_COL_DELIMITER)
-                file.write(str(key) + '\n')
-                day = day + 1
                 
         
 class EvaporationTable(object):
-    def __init__(self, crop_type, crop_surface):
-        self.crop_type = crop_type
+    def __init__(self, basin, crop_surface):
+        self.crop_type = basin.owner.crop
         self.crop_surface = crop_surface
-        self.data = self._read_csv()
+        self.owner = basin.owner
+        self.data = self._retrieve_demand()
 
-#    @cache_result(3600, ignore_cache=False, instancemethod=True)
-    def _read_csv(self):
-        '''
-        Reads the evaporation csv file and return its contents in a dict
-        int(day number) -> int(evaporation_value).
-        Evaporation values are in m3 / acre.
-        '''
-        # dont use the csv module here, its ancient (no unicode)
-        # and less dependencies is generally better
-        file_path = os.path.join(
-            EVAPORATION_TABLE_PATH, "%s%s.csv" %
-            (EVAPORATION_TABLE_FILE_PREFIX, self.crop_type))
-        logging.debug('Reading %s', file_path)
-        result = {}
-        with open(file_path, 'rb') as file:
-            cols = file.next().strip().split(CSV_COL_DELIMITER)
-            # do some validation, raises value error on missing column
-            day_column = cols.index(DAY_COLUMN_NAME)
-            evaporation_column = cols.index(EVAPORATION_COLUMN_NAME)
-            for line in file:
-                row = line.strip().split(CSV_COL_DELIMITER)
-                # convert everything to floats
-                row = map(float, row)
-                result[row[day_column]] = row[evaporation_column] + 10
-        return result
+    def _retrieve_demand(self):
+        demands = models.WaterDemand.objects.filter(owner__id=1)
+        demand_dict = {}
+        for demand in demands:
+            demand_dict[demand.daynumber] = demand.demand
+        return demand_dict
 
-    def read_csv_for_gui(self):
-        '''
-        Reads the evaporation csv file and return its contents in a dict
-        int(week number) -> int(evaporation_value).
-        Evaporation values are in m3 / acre.
-        '''
-        # dont use the csv module here, its ancient (no unicode)
-        # and less dependencies is generally better
-        file_path = os.path.join(
-            EVAPORATION_TABLE_PATH, "%s%s.csv" %
-            (EVAPORATION_TABLE_FILE_PREFIX, self.crop_type))
-        logging.debug('Reading %s', file_path)
-        result = {}
-        with open(file_path, 'rb') as file:
-            cols = file.next().strip().split(CSV_COL_DELIMITER)
-            # do some validation, raises value error on missing column
-            week_column = cols.index(WEEK_COLUMN_NAME)
-            evaporation_column = cols.index(EVAPORATION_COLUMN_NAME)
-            for line in file:
-                row = line.strip().split(CSV_COL_DELIMITER)
-                # convert everything to floats
-                row = map(float, row)
-                result[int(row[week_column])] = row[evaporation_column] + 10
-        return result
+    def demands_for_gui(self):
+        demands = models.WaterDemand.objects.filter(owner__id=1)
+        demand_dict = {}
+        for demand in demands:
+            demand_dict[demand.weeknumber] = demand.demand
+        return demand_dict
 
     def get_evaporation_for_day(self, day_number):
         '''

@@ -11,7 +11,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.response import Response as RestResponse
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
-from django.views.decorators.csrf import csrf_protect
+from rest_framework import status
+from django.views.decorators.csrf import csrf_protect, csrf_exempt
 
 import pytz
 
@@ -24,7 +25,6 @@ from controlnext.demand_table import DemandTable
 from controlnext.calc_model import CalculationModel
 from controlnext.conf import settings
 from controlnext.evaporation_table import EvaporationTable
-from controlnext.evaporation_table import rewrite_demand_csv
 from controlnext.fews_data import FewsJdbcDataSource
 from controlnext.utils import round_date
 from controlnext.models import Constants, Basin,\
@@ -47,22 +47,24 @@ def series_to_js(pdseries):
     pdseries = pdseries.fillna(method='bfill')
     return [(datetime_to_js(dt), value) for dt, value in pdseries.iterkv()]
  
-  
-@csrf_protect
-@api_view(['POST'])
-def update_demand(request, basin_id):
-    """
-    Update demand table.
-    """
-    try:
-        basin = models.Basin.objects.get(id=basin_id)
-    except ObjectDoesNotExist:
-        raise Http404
-    if request.method == 'POST':
-        rewrite_demand_csv(request.DATA, basin.owner.crop)
-        return RestResponse({'success': True})
-    else:
-        return RestResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+class DemandView(APIView):
+    """Update demands."""
+    def post(self, request, basin_id, format=None):
+        try:
+            basin = models.Basin.objects.get(id=basin_id)
+        except ObjectDoesNotExist:
+            raise Http404
+        data = request.POST
+        for key in sorted(data.iterkeys()):
+            demands = models.WaterDemand.objects.filter(**{'owner':basin.owner, 'weeknumber':key})
+            for demand in demands:
+                if data.get(key) is None:
+                    continue
+                if demand.demand != float(data[key]):
+                    demand.demand = data[key]
+                    demand.save()
+        return RestResponse(request.POST)
 
 
 class DashboardView(AppView):
@@ -120,10 +122,9 @@ class BasinView(UiView):
         now = datetime.datetime.now()
         return now.isocalendar()[1]
 
-    def demand_table(self):
-        
-        table = EvaporationTable(self.basin.owner.crop, None)
-        return table.read_csv_for_gui()
+    def demand_table(self):        
+        table = EvaporationTable(self.basin, None)
+        return table.demands_for_gui()
 
 
 class DataService(APIView):
@@ -142,7 +143,7 @@ class DataService(APIView):
         parameters = [desired_fill, demand_exaggerate, rain_exaggerate, extra]
         parameters = map(str, parameters)
         with open(path, 'a') as file:
-            file.write(';'.join(parameters) + '\n')
+            file.write(';'.join(parameters) + '\n')            
 
     def get(self, request, basin_id, *args, **kwargs):
         try:
@@ -229,9 +230,9 @@ class DataService(APIView):
         crop = self.request.GET.get('crop')  # None if none given
         if crop and is_valid_crop_type(crop):
             # also need a <crop>.jpg in the static/ directory
-            table = EvaporationTable(crop, self.constants.rain_flood_surface)
+            table = EvaporationTable(self.basin, self.constants.rain_flood_surface)
         elif self.basin.owner.crop:
-            table = EvaporationTable(self.basin.owner.crop,
+            table = EvaporationTable(self.basin,
                                      self.constants.rain_flood_surface)
         else:
             # fallback to generic demand table (not linked to crop)
