@@ -427,9 +427,9 @@
 			  horizontalAlignment: 'left',
 			  verticalAlignment: 'top' }},
 	    ],
-	    // tickInterval: {
-	    //      hours: 3
-	    //  },
+	    tickInterval: {
+		hours: 3
+	    },
 	    setTicksAtUnitBeginning: true,
 	    discreteAxisDivisionMode: 'crossLabels',
 	},
@@ -533,7 +533,7 @@
 	    tickInterval: {
 		hours: 3
             },
-            adjustOnZoom: false,
+            //adjustOnZoom: false,
             argumentAxis: {
                 //indentFromMin: 0.02,
                 //indentFromMax: 0.02
@@ -1158,6 +1158,15 @@
             return $(this).parent().find('.content').html();
 	}
     });
+    var resizeId;
+    $(window).resize(function() {
+	clearTimeout(resizeId);
+	resizeId = setTimeout(doneResizing, 100);
+    });
+
+    function doneResizing(){
+	window.location = ".";
+    }
         
     $(document).ready(function(){init(); loadGraphs()});
 } (window.jQuery);

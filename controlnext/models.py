@@ -80,7 +80,7 @@ class GrowerInfo(models.Model):
 
     jdbc_source = models.ForeignKey('lizard_fewsjdbc.JdbcSource', blank=True,
                                     null=True)
-
+    
     class Meta:
         ordering = ('name',)
         verbose_name = _("grower info")
@@ -134,6 +134,8 @@ class Basin(geomodels.Model):
     parameter_id = models.CharField(max_length=100, blank=True,
                                     null=True)
 
+    recirculation = models.FloatField(default=float(0.0),
+                                      help_text=("Water recirculation coefficient from 0.0 to 1.0."))
     # water level meter params for grower's own meter
     own_meter_filter_id = models.CharField(
         verbose_name=_("grower fill meter - filter id"),

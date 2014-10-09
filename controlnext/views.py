@@ -220,30 +220,32 @@ class DataService(APIView):
                 t0, desired_fill, demand_exaggerate, rain_exaggerate,
                 graph_type, outflow_open, outflow_closed, outflow_capacity)
         else:
-            response_dict = self.advanced(
-                t0, desired_fill, demand_exaggerate, rain_exaggerate,
-                graph_type)
+            table = EvaporationTable(self.basin, self.constants.rain_flood_surface)
+            future = t0 + settings.CONTROLNEXT_FILL_PREDICT_FUTURE
+            history = t0 - settings.CONTROLNEXT_FILL_HISTORY
+            data = table.get_demand_raw(history, future)
+            result = {
+                'graph_info': {
+                    'data': series_to_js(data),
+                    'x0': datetime_to_js(t0),
+                    'unit': 'mmmm',
+                    'type': graph_type
+                }
+            }
+            response_dict = result
         return RestResponse(response_dict)
 
     def get_demand_table(self):
         # first try to get crop and surface from request
         crop = self.request.GET.get('crop')  # None if none given
-        if crop and is_valid_crop_type(crop):
-            # also need a <crop>.jpg in the static/ directory
-            table = EvaporationTable(self.basin, self.constants.rain_flood_surface)
-        elif self.basin.owner.crop:
-            table = EvaporationTable(self.basin,
-                                     self.constants.rain_flood_surface)
-        else:
-            # fallback to generic demand table (not linked to crop)
-            table = DemandTable()
+        table = EvaporationTable(self.basin, self.constants.rain_flood_surface)
         return table
 
     def prediction(self, t0, desired_fill_pct, demand_exaggerate,
                    rain_exaggerate, graph_type, outflow_open,
                    outflow_closed, outflow_capacity):
-
-        tbl = self.get_demand_table()
+        
+        tbl = EvaporationTable(self.basin, self.constants.rain_flood_surface)
         ds = FewsJdbcDataSource(self.basin, self.constants)
         model = CalculationModel(tbl, ds)
         future = t0 + settings.CONTROLNEXT_FILL_PREDICT_FUTURE
@@ -297,7 +299,7 @@ class DataService(APIView):
         tbl = self.get_demand_table()
         ds = FewsJdbcDataSource(self.basin, self.constants)
         model = CalculationModel(tbl, ds)
-
+        import pdb; pdb.set_trace()
         future = t0 + settings.CONTROLNEXT_FILL_PREDICT_FUTURE
 
         prediction = model.predict_fill(

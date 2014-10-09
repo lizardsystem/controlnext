@@ -30,6 +30,7 @@ DAY_COLUMN_NAME = 'day_number'
 WEEK_COLUMN_NAME = 'week_number'
 ACRE_IN_M2 = 10000  # one acre is 10000 square meters
 ONE_DAY = datetime.timedelta(days=1)
+TWO_WEEKS = datetime.timedelta(days=14)
 
 
 def get_day(date):
@@ -42,16 +43,17 @@ class EvaporationTable(object):
         self.crop_surface = crop_surface
         self.owner = basin.owner
         self.data = self._retrieve_demand()
+        self.basin = basin
 
     def _retrieve_demand(self):
-        demands = models.WaterDemand.objects.filter(owner__id=1)
+        demands = models.WaterDemand.objects.filter(owner=self.owner)
         demand_dict = {}
         for demand in demands:
             demand_dict[demand.daynumber] = demand.demand
         return demand_dict
 
     def demands_for_gui(self):
-        demands = models.WaterDemand.objects.filter(owner__id=1)
+        demands = models.WaterDemand.objects.filter(owner=self.owner)
         demand_dict = {}
         for demand in demands:
             demand_dict[demand.weeknumber] = demand.demand
@@ -82,28 +84,52 @@ class EvaporationTable(object):
         end_date = start_date + datetime.timedelta(days=7)
         return self.get_total_demand(start_date, end_date)
 
-    def get_demand(self, _from, to):
+    def get_demand_raw(self, _from, to):
+        """Use for demand chart."""
         validate_date(_from)
         validate_date(to)
-
-        # ensure we deal with broader range to avoid resample edge problems
-        from_adj = _from - ONE_DAY
-        to_adj = to + ONE_DAY
+        from_adj = _from
+        to_adj = to
         dayly = pd.date_range(from_adj, to_adj, freq='D', tz=pytz.utc)
         values = [self.get_day_evaporation_on(date) for date in dayly]
-
+        
         ts = pd.Series(values, dayly, name='evaporation')
-        ts = ts.resample('15min')
-        ts[0] = values[0]
+
         # use fillna with ffill instead of ts.interpolate() to keep the data
         # as accurate as possible
         ts.fillna(method='ffill', inplace=True)
         # divide by amount of quarter hours in a day
+        recirculation = float(0.66)
+       
+        return ts[from_adj:to_adj]
+
+    def get_demand(self, _from, to):
+        """Use for prediction chart. Convert demand from m2 to m3."""
+        validate_date(_from)
+        validate_date(to)
+
+        # ensure we deal with broader range to avoid resample edge problems
+        from_adj = _from
+        to_adj = to
+        dayly = pd.date_range(from_adj, to_adj, freq='D', tz=pytz.utc)
+        values = [self.get_day_evaporation_on(date) for date in dayly]
+        #import pdb; pdb.set_trace()
+        ts = pd.Series(values, dayly, name='evaporation')
+        ts = ts.resample('15min')
+        
+        # use fillna with ffill instead of ts.interpolate() to keep the data
+        # as accurate as possible
+        ts.fillna(method='ffill', inplace=True)
+        # divide by amount of quarter hours in a day
+        recirculation = float(0.66)
         ts /= 24 * 4
+        ts *= float(0.001)
         # correct for crop surface
-        surface_correction_factor = self.crop_surface / ACRE_IN_M2
-        ts *= surface_correction_factor
-        result = ts[_from:to]
+        #surface_correction_factor = self.crop_surface
+        ts *= self.crop_surface
+        ts *= self.basin.recirculation
+        #result = ts[_from:to]
+        result= ts[from_adj:to_adj]
         return result
 
     def get_total_demand(self, _from, to):

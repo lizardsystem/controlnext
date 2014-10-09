@@ -40,6 +40,7 @@ class BasinAdmin(GeoModelAdmin):
                 'owner', 'name', 'filter_id', 'location_id', 'parameter_id',
                 'own_meter_filter_id', 'own_meter_location_id',
                 'own_meter_parameter_id',
+                'recirculation',
                 # discharge valve parameters
                 'discharge_valve_filter_id',
                 'discharge_valve_location_id',
