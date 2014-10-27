@@ -294,9 +294,11 @@
 		    inputs = $('#demandForm :input');
 		    for (var i=0; i < inputs.length; i++){
 			inputs[i].setAttribute("value", data[inputs[i].name]);
+			if (inputs[i].name == currentweek){
+			    dashboardViewModel.currentDemand(data[inputs[i].name]);
+			} 
 		    }
 		    loadGraphs();
-
 		},
 		error: function (jqXHR, textStatus, errorThrown) {
                     var $error = $('<p>Fout bij het updaten van de demand tabel: '

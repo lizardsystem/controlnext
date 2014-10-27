@@ -116,7 +116,7 @@ class BasinView(UiView):
         return super(BasinView, self).get(request, *args, **kwargs)
 
     def current_demand(self):
-        return 5
+        return self.demand_table().get(self.current_week())
 
     def current_week(self):
         now = datetime.datetime.now()
