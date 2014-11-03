@@ -99,7 +99,6 @@ class EvaporationTable(object):
         # as accurate as possible
         ts.fillna(method='ffill', inplace=True)
         # divide by amount of quarter hours in a day
-        recirculation = float(0.66)
        
         return ts[from_adj:to_adj]
 

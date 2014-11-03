@@ -223,7 +223,7 @@ class DataService(APIView):
             table = EvaporationTable(self.basin, self.constants.rain_flood_surface)
             future = t0 + settings.CONTROLNEXT_FILL_PREDICT_FUTURE
             history = t0 - settings.CONTROLNEXT_FILL_HISTORY
-            data = table.get_demand(history, future)
+            data = table.get_demand_raw(history, future)
             result = {
                 'graph_info': {
                     'data': series_to_js(data),
