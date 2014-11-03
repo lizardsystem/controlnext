@@ -152,8 +152,10 @@ class CalculationModel(object):
         # numbers
         validate_date(_from)
         validate_date(to)
-        if 0 > desired_fill_pct > 100:
-            raise ValueError('value should be a percentage between 0 and 100')
+        # @TODO remove desired_fill_pct, deactivated with 200.0 up to new mission
+        desired_fill_pct = float(200.0)
+        #if 0 > desired_fill_pct > 100:
+        #    raise ValueError('value should be a percentage between 0 and 100')
         if 0 > demand_exaggerate_pct:
             raise ValueError('value should be a percentage > 0')
         if 0 > rain_exaggerate_pct:

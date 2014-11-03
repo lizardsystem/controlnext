@@ -113,7 +113,7 @@ class EvaporationTable(object):
         to_adj = to
         dayly = pd.date_range(from_adj, to_adj, freq='D', tz=pytz.utc)
         values = [self.get_day_evaporation_on(date) for date in dayly]
-        #import pdb; pdb.set_trace()
+
         ts = pd.Series(values, dayly, name='evaporation')
         ts = ts.resample('15min')
         
@@ -121,14 +121,10 @@ class EvaporationTable(object):
         # as accurate as possible
         ts.fillna(method='ffill', inplace=True)
         # divide by amount of quarter hours in a day
-        recirculation = float(0.66)
         ts /= 24 * 4
         ts *= float(0.001)
-        # correct for crop surface
-        #surface_correction_factor = self.crop_surface
         ts *= self.crop_surface
         ts *= self.basin.recirculation
-        #result = ts[_from:to]
         result= ts[from_adj:to_adj]
         return result
 
