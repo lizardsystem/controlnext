@@ -390,3 +390,8 @@ table.basin-data-detail-table-3 tr td {
 .label-current-week {
    background-color: red !important;
 } 
+
+.datepicker-input {
+    height: 20px;
+    width: 100px;
+}

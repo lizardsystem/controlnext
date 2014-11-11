@@ -10,6 +10,8 @@
 <script src="{{ STATIC_URL }}controlnext/lib/pace-0.4.15/pace.min.js"></script>
 <link href="{{ STATIC_URL }}controlnext/lib/bootstrap-3.0.0/dist/css/bootstrap.min.css"
       rel="stylesheet">
+<link href="{{ STATIC_URL }}controlnext/lib/datepicker/css/datepicker.css"
+      rel="stylesheet">
 <link href="{{ STATIC_URL }}controlnext/lib/font-awesome-4.0.3/css/font-awesome.min.css"
       rel="stylesheet">
 <link href="{{ STATIC_URL }}controlnext/styles/dashboard.css" rel="stylesheet">
@@ -84,7 +86,9 @@
 			  </tr>
 			  <tr><td><b>Teeltareaal</b><br><input class="small-input" size="7" data-bind="value: rainFloodSurface"><span> m<sup>2</sup></span></td></tr>
 			  <tr><td><b>Capaciteit bassin</b><br><input class="small-input" size="7" data-bind="value: basinMaxStorage"><span> m<sup>3</sup></span></td></tr>
-                          <tr><td><b>Capaciteit omgekeerde osmose</b><br><input class="small-input" size="7" data-bind="value: osmoseCapacity"><span> m<sup>3</sup>/uur</span></td></tr>
+                          <tr><td><b>Capaciteit omgekeerde osmose</b><br><input class="small-input" size="7" data-bind="value: osmoseCapacity"><span> m<sup>3</sup>/uur</span>
+			     &nbsp;<span class="label label-default " >tot:</span>&nbsp;<input class="datepicker small-input datepicker-input" data-date-format="dd-mm-yyyy">
+			  </td></tr>
                           <tr><td><b>Aflaat capaciteit</b><br><input class="small-input" size="7" data-bind="value: outflowCapacity"><span> m<sup>3</sup>/uur</span></td></tr>
                           <tr><td><b>Datum</b><br><span class="label label-default" data-bind="text: currentDate().format('LLL')">&ndash;</span></td></tr>
                           <tr><td><b>Aflaat open</b><br><span class="label label-default" data-bind="text: outflowOpened().format('LLL')">&ndash;</span></td></tr>
@@ -237,9 +241,13 @@
             <!-- </div> -->
 
                 </div>
-                <!-- <div class="col-sm-2"> -->
+                <div class="col-sm-2">
 <!--                     <div class="box-timespan-controls-labels"> -->
-<!--                         <div id="outflow-label">Aflaat<span class="info-popup" data-content="uitleg" style="width: 25px; height: 25px; line-height: 25px; right: 0;"><i class="fa fa-info"></i></span></div> -->
+                         <div id="outflow-label">Aflaat
+			   <!-- <span class="info-popup" data-content="uitleg" style="width: 25px; height: 25px; line-height: 25px; right: 0;"> -->
+			   <!--   <i class="fa fa-info"></i> -->
+			   <!-- </span> -->
+			 </div>
 <!-- 			<div class="box-main-controls"> -->
 <!--                         <\!--div><span class="info-popup" data-content="uitleg" style="width: 25px; height: 25px; line-height: 25px;"><i class="fa fa-info"></i></span></div-\-> -->
 <!-- 			</div> -->
@@ -312,6 +320,8 @@
 <script src="{{ STATIC_URL }}controlnext/widgets/js/quadrant.js"></script>
 <!--script src="{{ STATIC_URL }}controlnext/widgets/js/reverseosmose.js"></script-->
 <script src="{{ STATIC_URL }}controlnext/widgets/js/script.js"></script>
+<script src="{{ STATIC_URL }}controlnext/lib/datepicker/js/bootstrap-datepicker.js"></script>
 <script src="{{ STATIC_URL }}controlnext/scripts/dashboard.js"></script>
+
 </body>
 </html>

@@ -13,11 +13,11 @@
 
     var argmin = moment(hist);
     var argmax = moment(future);
-    var viewmin = moment(now).subtract({hours: 30});
-    var viewmax = moment(now).add({hours: 30});
+    var viewmin = moment(now).subtract({hours: 336});
+    var viewmax = moment(now).add({hours: 336});
     var outflowmin = moment(now).subtract({minutes: 120});
     var outflowmax = moment(now);
-
+    var osmosedatefrom = null;
     var demandmax = null;
     var precipitationmax = null;
 
@@ -161,6 +161,7 @@
 
     var loadPredictedData = function() {
 	//Vullingsgraad
+	var osmoseDateFrom = $(".datepicker").val();
 	var $constants = $('#data-constants');
 	var data_url = $constants.attr('data-data-url');
         //var query_params = get_query_params('rain');
@@ -181,7 +182,8 @@
 	    + "outflowClosed=" + dashboardViewModel.outflowClosed().toDate().getTime() + "&"
 	    + "outflowCapacity=" + outflowPer15min + "&"
 	    + "rain_flood_surface=" + dashboardViewModel.rainFloodSurface() + "&"
-	    + "basin_storage=" + dashboardViewModel.basinMaxStorage();
+	    + "basin_storage=" + dashboardViewModel.basinMaxStorage() + "&"
+	    + "osmose_date_from=" + osmoseDateFrom;
 
 	$.ajax({
             url: data_url + '?' + query_params,
@@ -265,6 +267,8 @@
 	demandMax: ko.observable(demandmax),
 	precipitationMax: ko.observable(precipitationmax),
 	currentDemand: ko.observable(currentdemand),
+	viewMin: ko.observable(viewmin),
+	viewMax: ko.observable(viewmax),
 
 	//advisedFill: ko.observable(60),             // number
 	reset: function(model, event) {
@@ -313,6 +317,8 @@
 	    var start = moment().subtract({hours: hoursRelative});
 	    var end = moment().add({hours: hoursRelative});
 	    model.viewTimespan({start: start, end: end});
+	    model.viewMin(start);
+	    model.viewMax(end);
 	},
 	browseTimespan: function(model, event) {
 	    // Browse the chart timespan to the left or right.
@@ -338,29 +344,29 @@
     /* ************************************************************************ */
     var initDemandChart = function(data) {
 	var demandChartSeries = [
+	// {
+	//     valueField: 'y',
+	//     name: 'large block',
+	//     //name: "",
+	//     type: 'stepArea',
+	//     //pane: 'defaultPane',
+	//     data: [],//demandDataLargeBlocks,
+	//     color: '#ff0000',
+	//     opacity: 0.1,
+	//     label: {
+	// 	visible: false
+	//     },
+	// },
 	{
 	    valueField: 'y',
-	    name: 'large block',
-	    //name: "",
-	    type: 'stepArea',
-	    //pane: 'defaultPane',
-	    data: [],//demandDataLargeBlocks,
-	    color: '#ff0000',
-	    opacity: 0.1,
-	    label: {
-		visible: false
-	    },
-	},
-	{
-	    valueField: 'y',
-	    name: 'small block',
+	    name: 'Een text ???',
 	    type: 'stepline',
 	    color: 'black',
 	    width: lineWidth,
 	    point: {
 		visible: false
 	    },
-	    data: data,//[],//demandData
+	    data: data
 	}
     ];
 
@@ -401,9 +407,15 @@
 	size: { height: 170 },
 	series: demandChartSeries,
 	legend: {
-	    visible: false
-	},
-	adjustOnZoom: false,
+	        //customizeText: function() { return "tyest"; },
+                visible: true,
+                position: 'inside',
+                verticalAlignment: 'top',
+                horizontalAlignment: 'right',
+                paddingLeftRight: 5,
+                paddingTopBottom: 5
+            },
+	adjustOnZoom: true,
 	argumentAxis: {
 	    valueType: 'datetime',
 	    min: dashboardViewModel.viewTimespan().start.toDate(),
@@ -433,7 +445,7 @@
 		hours: 3
 	    },
 	    setTicksAtUnitBeginning: true,
-	    discreteAxisDivisionMode: 'crossLabels',
+	    //discreteAxisDivisionMode: 'crossLabels',
 	},
 	incidentOccured: function(message) {
 	    console.log(message);
@@ -455,7 +467,7 @@
         var precipitationChartSeries = [
             {
                 valueField: 'sum',
-                name: 'sum',
+                name: 'opgeteld',
                 type: 'stepArea',
                 //pane: 'defaultPane',
                 data: sumData,//precipitationDataLargeBlocks,
@@ -484,7 +496,7 @@
             },
             {
                 valueField: 'mean',
-                name: 'mean',
+                name: 'gemiddeld',
                 type: 'bar',
                 //pane: 'defaultPane',
                 data: meanData, //[],// precipitationData,
@@ -525,7 +537,7 @@
 	    width: 1,
             series: precipitationChartSeries,
             legend: {
-                visible: false,
+                visible: true,
                 position: 'inside',
                 verticalAlignment: 'top',
                 horizontalAlignment: 'right',
@@ -773,14 +785,14 @@
             size: { height: 400 },
             series: fillChartSeries,
             legend: {
-                visible: false,
+                visible: true,
                 position: 'inside',
                 verticalAlignment: 'top',
                 horizontalAlignment: 'right',
                 paddingLeftRight: 5,
                 paddingTopBottom: 5
             },
-            //adjustOnZoom: false,
+            adjustOnZoom: false,
             argumentAxis: {
                 visible: true,
                 grid: {
@@ -1169,6 +1181,8 @@
     function doneResizing(){
 	window.location = ".";
     }
+
+    $('.datepicker').datepicker(); 
         
     $(document).ready(function(){init(); loadGraphs()});
 } (window.jQuery);
