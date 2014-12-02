@@ -313,7 +313,7 @@
 	selectTimespan: function(model, event) {
 	    // Change the chart timespan to 48h, 4d, et cetera.
 	    var hours = $(event.target).data('timespan');
-	    var hoursRelative = Math.round(hours / 2);
+	    var hoursRelative = Math.round(hours);
 	    var start = moment().subtract({hours: hoursRelative});
 	    var end = moment().add({hours: hoursRelative});
 	    model.viewTimespan({start: start, end: end});
@@ -359,9 +359,9 @@
 	// },
 	{
 	    valueField: 'y',
-	    name: 'Een text ???',
+	    name: 'watervraag',
 	    type: 'stepline',
-	    color: 'black',
+	    color: 'rgba(204, 204, 204, 0.2)',
 	    width: lineWidth,
 	    point: {
 		visible: false
@@ -428,18 +428,18 @@
 		visible: false
 	    },
 	    strips: [
-		{startValue: moment(now).subtract({days: 200}),
-		 endValue: dashboardViewModel.currentDate().toDate(),
-		 color: 'rgba(204, 204, 204, 0.2)',
-		 label: { text: 'gemeten', 
-			  horizontalAlignment: 'right',
-			  verticalAlignment: 'top' }},
-		{startValue: dashboardViewModel.currentDate().toDate(),
-		 endValue: dashboardViewModel.dataTimespan().end.toDate(),
-		 color: 'white',
-		 label: { text: 'voorspeld',
-			  horizontalAlignment: 'left',
-			  verticalAlignment: 'top' }},
+	    	{startValue: moment(now).subtract({days: 200}),
+	    	 endValue: dashboardViewModel.currentDate().toDate(),
+	    	 color: 'rgba(204, 204, 204, 0.2)',
+	    	 label: { text: '', 
+	    		  horizontalAlignment: 'right',
+	    		  verticalAlignment: 'top' }},
+	    	{startValue: dashboardViewModel.currentDate().toDate(),
+	    	 endValue: dashboardViewModel.dataTimespan().end.toDate(),
+	    	 color: 'white',
+	    	 label: { text: '',
+	    		  horizontalAlignment: 'left',
+	    		  verticalAlignment: 'top' }},
 	    ],
 	    tickInterval: {
 		hours: 3
@@ -475,7 +475,7 @@
                 opacity: 0.07,
                 label: {
                     visible: true,
-                    format: 'fixedPoint',
+                    format: 'point',
                     backgroundColor: 'transparant',
                     font: {
                         color: '#565656',
@@ -485,12 +485,13 @@
                     },
                     precision: 0,
                     verticalOffset: -20,
+		    //horizontalOffset: 100,
                     alignment: 'center',
-                    //customizeText: function() {
+                    customizeText: function() {
                         //var series = fillChart.getSeriesByName(this.seriesName);
                         //var point = series.getPointByArg(this.argument);
-                        //return point.tag;
-                    //}
+                        return "1";
+                    }
                     //verticalOffset: 100
                 },
             },
@@ -608,7 +609,7 @@
             fillChart.zoomArgument(startValue, endValue);
             outflowTimespanSelector.option({
                 scale: {
-                    startValue: startValue,
+                    startValue: now.toDate(),
                     endValue: endValue
                 }
             });
@@ -867,12 +868,13 @@
             },*/
             margin: {
                 top: 0,
-                left: 58,
-                bottom: 0,
-                right: 0
+                left: 70,
+                bottom: 0
+                //right: 0
             },
             size: {
-                height: 25 //80
+                height: 25, //80
+		//width: demandChart.canvas.width / 2 //$('#fill-chart').width() / 2
             },
             behavior: {
                 //snapToTicks: false,
@@ -880,7 +882,7 @@
                 animationEnabled: false
             },
             scale: {
-                startValue: dashboardViewModel.viewTimespan().start.toDate(),
+                startValue: now.toDate(),//dashboardViewModel.viewTimespan().start.toDate(),
                 endValue: dashboardViewModel.viewTimespan().end.toDate(),
                 minorTickInterval: { minutes: 15 },
                 majorTickInterval: { days: 1 },
