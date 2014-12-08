@@ -82,9 +82,17 @@ class CalculationModel(object):
         # Correct for optional reverse osmosis inflow.
         if (self.constants.reverse_osmosis and
                 self.constants.reverse_osmosis > 0):
-            toestroom_m3 += self.constants.reverse_osmosis
-        vaste_verandering = toestroom_m3 - demand_m3  # + current_fill_m3
+            till_year = self.constants.osmose_till_date.year
+            till_month = self.constants.osmose_till_date.month
+            till_day = self.constants.osmose_till_date.day
+            till_datetime = datetime.datetime(till_year, till_month, till_day, _from.hour, tzinfo=pytz.utc)
+            if till_datetime > _from:
+                periods = (till_datetime - _from).total_seconds() / 900
+                osmose_indexes = pd.date_range(_from, periods=periods, freq='15min',
+                              tz=pytz.utc)            
+                toestroom_m3[osmose_indexes[0]:osmose_indexes[-1]] += self.constants.reverse_osmosis
 
+        vaste_verandering = toestroom_m3 - demand_m3  # + current_fill_m3
         if ((dt_aflaat_open is not None) and (dt_aflaat_dicht is not None)):
             aflaat_uitstroom = rain_mm.copy()
             aflaat_uitstroom[pd.Timestamp(dt_aflaat_open):pd.Timestamp(dt_aflaat_dicht)] = aflaat_capaciteit
@@ -251,10 +259,10 @@ class CalculationModel(object):
             'mean': rain_mean,
             #'max': rain_max,
         }
-
         for scenario, rain in calc_scenarios.items():
             result['scenarios'][scenario] = self.predict_scenario(
                 _from, current_fill_m3, desired_fill_m3, demand_m3, rain,
                 max_uitstroom_m3, outflow_open, outflow_closed, outflow_capacity)
 
+        
         return result

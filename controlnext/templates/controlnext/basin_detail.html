@@ -87,7 +87,7 @@
 			  <tr><td><b>Teeltareaal</b><br><input class="small-input" size="7" data-bind="value: rainFloodSurface"><span> m<sup>2</sup></span></td></tr>
 			  <tr><td><b>Capaciteit bassin</b><br><input class="small-input" size="7" data-bind="value: basinMaxStorage"><span> m<sup>3</sup></span></td></tr>
                           <tr><td><b>Capaciteit omgekeerde osmose</b><br><input class="small-input" size="7" data-bind="value: osmoseCapacity"><span> m<sup>3</sup>/uur</span>
-			     &nbsp;<span class="label label-default " >tot:</span>&nbsp;<input class="datepicker small-input datepicker-input" data-date-format="dd-mm-yyyy">
+			     &nbsp;<span class="label label-default " >tot:</span>&nbsp;<input class="datepicker small-input datepicker-input" data-bind="value: osmoseTillDate" data-date-format="dd-mm-yyyy">
 			  </td></tr>
                           <tr><td><b>Aflaat capaciteit</b><br><input class="small-input" size="7" data-bind="value: outflowCapacity"><span> m<sup>3</sup>/uur</span></td></tr>
                           <tr><td><b>Datum</b><br><span class="label label-default" data-bind="text: currentDate().format('LLL')">&ndash;</span></td></tr>
@@ -149,15 +149,15 @@
                         <div id="quadrant-control">
 			  <div id="quadrant-label">Buien kwadrant<!--<span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; right: 0;"><i class="fa fa-info"></i></span>--></div>
 			  <div id="quadrant-1" class="">
-			    <img src="{{ STATIC_URL }}controlnext/images/icon-dromedary.png">
+			    <img src="{{ STATIC_URL }}controlnext/images/icon-dromedary.png" data-toggle="tooltip" title="dromedary" >
 			    <div id="quadrant-camel" class="hide"></div></div>
 			  <div id="quadrant-2">
-			    <img src="{{ STATIC_URL }}controlnext/images/icon-camel.png">
+			    <img src="{{ STATIC_URL }}controlnext/images/icon-camel.png" data-toggle="tooltip" title="camel" >
 			    <div id="quadrant-dromedary" class="hide"></div></div>
 			  <div id="quadrant-3" class="active">
-			    <img src="{{ STATIC_URL }}controlnext/images/icon-cavia.png">
+			    <img src="{{ STATIC_URL }}controlnext/images/icon-cavia.png" data-toggle="tooltip" title="cavia">
 			    <div id=" quadrant-squirrel" =""="" class="hide"></div></div>
-			  <div id="quadrant-4" class=""><img src="{{ STATIC_URL }}controlnext/images/icon-squirrel.png">
+			  <div id="quadrant-4" class=""><img src="{{ STATIC_URL }}controlnext/images/icon-squirrel.png" data-toggle="tooltip" title="squirrel">
 			    <div id="quadrant-guinea-pig" class="hide"></div></div>
 			  <!--div id="quadrant-dot"></div-->
                         </div>
@@ -309,11 +309,13 @@
     Globalize.culture('nl-NL');
     moment.lang('nl');
     var outflowcapacity = {{ view.basin.owner.max_outflow_per_timeunit|default:0 }};
-    var osmosecapacity = {{ view.basin.owner.reverse_osmosis|default:0 }};
+    var osmosecapacity = {{ view.basin.reverse_osmosis|default:0 }};
+    var osmosetilldate = moment("{{ view.basin.osmose_till_date }}").format("DD-MM-YYYY");
     var rainfloodsurface = {{ view.basin.owner.rain_flood_surface|default:0 }};
     var basinmaxstorage = {{ view.basin.max_storage|default:0 }};
     var currentdemand = {{ view.current_demand|default:0 }};
     var currentweek = moment.utc().isoWeeks();
+    var save_basin_data_url = "{% url controlnext_save_basin_data view.basin.id %}";
 </script>
 <script src="{{ STATIC_URL }}controlnext/lib/ChartJS-13.1.8/dx.chartjs.debug.js"></script>
 <script src="{{ STATIC_URL }}controlnext/widgets/js/actualwater.js"></script>

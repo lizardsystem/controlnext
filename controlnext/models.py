@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 import json
 import logging
+from datetime import datetime
 
 from django.db import models
 from django.contrib.gis.db import models as geomodels
@@ -239,6 +240,9 @@ class Basin(geomodels.Model):
     reverse_osmosis = models.IntegerField(
         blank=True, null=True,
         verbose_name=_("reverse osmosis capacity (m3/h)"))
+    osmose_till_date = models.DateField(blank=True, null=True,
+                                        default=datetime.now,
+                                        verbose_name=_("reverse osmosis date till (m3/h)"))
     # current fill data
     # in m^3
     current_fill = models.DecimalField(

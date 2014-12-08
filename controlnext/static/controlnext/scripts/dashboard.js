@@ -13,8 +13,8 @@
 
     var argmin = moment(hist);
     var argmax = moment(future);
-    var viewmin = moment(now).subtract({hours: 336});
-    var viewmax = moment(now).add({hours: 336});
+    var viewmin = moment(now).subtract({hours: 672});
+    var viewmax = moment(now).add({hours: 672});
     var outflowmin = moment(now).subtract({minutes: 120});
     var outflowmax = moment(now);
     var osmosedatefrom = null;
@@ -183,7 +183,7 @@
 	    + "outflowCapacity=" + outflowPer15min + "&"
 	    + "rain_flood_surface=" + dashboardViewModel.rainFloodSurface() + "&"
 	    + "basin_storage=" + dashboardViewModel.basinMaxStorage() + "&"
-	    + "osmose_date_from=" + osmoseDateFrom;
+	    + "osmose_date_till=" + $('.datepicker')[0].value;
 
 	$.ajax({
             url: data_url + '?' + query_params,
@@ -262,6 +262,7 @@
 	actualFill: ko.observable(40),              // number
 	outflowCapacity: ko.observable(outflowcapacity),
 	osmoseCapacity: ko.observable(osmosecapacity),
+	osmoseTillDate: ko.observable(osmosetilldate),
 	rainFloodSurface: ko.observable(rainfloodsurface),
 	basinMaxStorage: ko.observable(basinmaxstorage),
 	demandMax: ko.observable(demandmax),
@@ -275,6 +276,19 @@
 	    window.location = ".";
 	},
 	calculate: function(model, event) {
+	    var data = {};
+	    data['osmose_till_date'] = $('.datepicker')[0].value;
+	    $.ajax({
+		url: save_basin_data_url,
+		type: "POST",
+		data: data,
+		dataType: 'json',
+		contentType: 'application/json; charset=utf-8',
+		error: function (jqXHR, textStatus, errorThrown) {
+                    var $error = $('<p>Fout bij het updaten van de demand tabel: '
+				   + errorThrown + '</p>');
+		}
+            });
 	    loadGraphs();
 	},
 	updateDemand: function(model, event) {
@@ -364,10 +378,12 @@
 	    color: 'rgba(204, 204, 204, 0.2)',
 	    width: lineWidth,
 	    point: {
-		visible: false
+		visible: false,
+		color: 'rgba(204, 204, 204, 0.2)'
 	    },
-	    data: data
-	}
+	    data: data, 
+	    hoverMode: 'none'
+	},
     ];
 
     var demandChartOptions = {
@@ -415,7 +431,7 @@
                 paddingLeftRight: 5,
                 paddingTopBottom: 5
             },
-	adjustOnZoom: true,
+	adjustOnZoom: false,
 	argumentAxis: {
 	    valueType: 'datetime',
 	    min: dashboardViewModel.viewTimespan().start.toDate(),
@@ -431,25 +447,32 @@
 	    	{startValue: moment(now).subtract({days: 200}),
 	    	 endValue: dashboardViewModel.currentDate().toDate(),
 	    	 color: 'rgba(204, 204, 204, 0.2)',
-	    	 label: { text: '', 
-	    		  horizontalAlignment: 'right',
-	    		  verticalAlignment: 'top' }},
+	    	 // label: { text: '', 
+	    	 // 	  horizontalAlignment: 'right',
+	    	 // 	  verticalAlignment: 'top' }},
+		 },
 	    	{startValue: dashboardViewModel.currentDate().toDate(),
 	    	 endValue: dashboardViewModel.dataTimespan().end.toDate(),
-	    	 color: 'white',
-	    	 label: { text: '',
-	    		  horizontalAlignment: 'left',
-	    		  verticalAlignment: 'top' }},
+	    	 color: 'white'
+	    	 // label: { text: '',
+	    	 // 	  horizontalAlignment: 'left',
+	    	 // 	  verticalAlignment: 'top' }
+		},
 	    ],
 	    tickInterval: {
 		hours: 3
 	    },
 	    setTicksAtUnitBeginning: true,
-	    //discreteAxisDivisionMode: 'crossLabels',
+	    discreteAxisDivisionMode: 'crossLabels',
 	},
 	incidentOccured: function(message) {
 	    console.log(message);
-	}
+	},
+	tooltip: {
+                enabled: true,
+                paddingLeftRight: 0,
+                paddingTopBottom: 0
+       }
     };
 
 
@@ -471,11 +494,11 @@
                 type: 'stepArea',
                 //pane: 'defaultPane',
                 data: sumData,//precipitationDataLargeBlocks,
-                color: '#2222ee',
+                color: 'rgb(70, 180, 255)',
                 opacity: 0.07,
                 label: {
                     visible: true,
-                    format: 'point',
+                    format: 'fixedPoint',
                     backgroundColor: 'transparant',
                     font: {
                         color: '#565656',
@@ -487,11 +510,11 @@
                     verticalOffset: -20,
 		    //horizontalOffset: 100,
                     alignment: 'center',
-                    customizeText: function() {
-                        //var series = fillChart.getSeriesByName(this.seriesName);
-                        //var point = series.getPointByArg(this.argument);
-                        return "1";
-                    }
+                    // customizeText: function() {
+                    //     var series = fillChart.getSeriesByName(this.seriesName);
+                    //     var point = series.getPointByArg(this.argument);
+                    //     return point.tag;
+                    // }
                     //verticalOffset: 100
                 },
             },
@@ -609,7 +632,7 @@
             fillChart.zoomArgument(startValue, endValue);
             outflowTimespanSelector.option({
                 scale: {
-                    startValue: now.toDate(),
+                    startValue: startValue,
                     endValue: endValue
                 }
             });
@@ -702,18 +725,6 @@
                     visible: false
                 }
             },
-	    // {
-            //     valueField: 'actueel',
-            //     type: 'line',
-	    // 	dashStyle: 'dash',
-	    // 	width: lineWidth,
-            //     color: '#46b4ff',
-            //     name: 'actueel',
-            //     point: {
-            //         visible: false,
-            //     },
-            //     data: [],
-            // },
             labelSeriesItem
             /*
             {
@@ -763,17 +774,17 @@
                     min: 0,
                     max: 120,
                     valueMarginsEnabled: false,
-                    strips: [
-                        {startValue: 100,
-			 endValue: 120,
-			 color: 'rgba(232, 10, 10, 0.05)',
-			 //label: { text: 'max berging', horizontalAlignment: 'right' }
-			}
-                        // {startValue: 20,
-			//  endValue:0,
-			//  color: 'rgba(232, 10, 10, 0.05)',
-			//  label: { text: 'min berging', horizontalAlignment: 'right' }}
-                    ],
+                    // strips: [
+                    //     {startValue: 100,
+		    // 	 endValue: 120,
+		    // 	 color: 'rgba(232, 10, 10, 0.05)',
+		    // 	 label: { text: 'max berging', horizontalAlignment: 'right' }
+		    // 	},
+                    //     {startValue: 20,
+		    // 	 endValue:0,
+		    // 	 color: 'rgba(232, 10, 10, 0.05)',
+		    // 	 label: { text: 'min berging', horizontalAlignment: 'right' }}
+                    // ],
                     label: {
                         font: {
                             color: 'rgb(51, 51, 51)',
@@ -803,8 +814,8 @@
                 valueType: 'datetime',
                 discreteAxisDivisionMode: 'crossLabels',
                 valueMarginsEnabled: false,
-                //min: moment(dashboardViewModel.viewTimespan().start).subtract('days', 31).toDate(),
-                //max: moment(dashboardViewModel.viewTimespan().end).add('days', 5).toDate(),
+                //min: moment(dashboardViewModel.viewTimespan().start).subtract('days', 28).toDate(),
+                //max: moment(dashboardViewModel.viewTimespan().end).add('days', 28).toDate(),
 		min: dashboardViewModel.viewTimespan().start.toDate(),
                 max: dashboardViewModel.viewTimespan().end.toDate(),
 		//min: moment(1383228000000.0).toDate(),
@@ -868,13 +879,12 @@
             },*/
             margin: {
                 top: 0,
-                left: 70,
-                bottom: 0
-                //right: 0
+                left: 58,
+                bottom: 0,
+                right: 0
             },
             size: {
                 height: 25, //80
-		//width: demandChart.canvas.width / 2 //$('#fill-chart').width() / 2
             },
             behavior: {
                 //snapToTicks: false,
@@ -882,7 +892,7 @@
                 animationEnabled: false
             },
             scale: {
-                startValue: now.toDate(),//dashboardViewModel.viewTimespan().start.toDate(),
+                startValue: dashboardViewModel.viewTimespan().start.toDate(),
                 endValue: dashboardViewModel.viewTimespan().end.toDate(),
                 minorTickInterval: { minutes: 15 },
                 majorTickInterval: { days: 1 },
@@ -1185,6 +1195,10 @@
     }
 
     $('.datepicker').datepicker(); 
+
+    $(document).ready(function() {
+	$("body").tooltip({ selector: '[data-toggle=tooltip]' });
+    });
         
     $(document).ready(function(){init(); loadGraphs()});
 } (window.jQuery);

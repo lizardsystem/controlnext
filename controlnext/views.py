@@ -48,6 +48,21 @@ def series_to_js(pdseries):
     return [(datetime_to_js(dt), value) for dt, value in pdseries.iterkv()]
  
 
+class BasinDataView(APIView):
+    """Update basin."""
+    def post(self, request, basin_id, format=None):
+        try:
+            basin = models.Basin.objects.get(id=basin_id)
+        except ObjectDoesNotExist:
+            raise Http404
+        osmose_date = request.POST.get("osmose_till_date")
+        date_format = "%d-%m-%Y"
+        if basin.osmose_till_date.strftime(date_format) != osmose_date:
+            basin.osmose_till_date = datetime.datetime.strptime(osmose_date, date_format).date()
+            basin.save()
+        return RestResponse({"success": True})
+
+
 class DemandView(APIView):
     """Update demands."""
     def post(self, request, basin_id, format=None):
@@ -165,7 +180,7 @@ class DataService(APIView):
             rain_flood_surface = request.GET.get('basin_surface', None)
         basin_storage = request.GET.get('basin_storage', None)
         reverse_osmosis = request.GET.get('reverse_osmosis', None)
-
+        
         if rain_flood_surface:
             try:
                 # basic validation, if not integer, default value is used
@@ -191,6 +206,10 @@ class DataService(APIView):
             except ValueError:
                 logger.error("invalid value for reverse_osmosis: %s" %
                              reverse_osmosis)
+        osmose_till_date = request.GET.get('osmose_date_till', None)
+        if osmose_till_date is not None:
+            date_format = "%d-%m-%Y"
+            self.constants.osmose_till_date = datetime.datetime.strptime(osmose_till_date, date_format).date()
 
         desired_fill = request.GET.get('desired_fill')
         demand_exaggerate = request.GET.get('demand_exaggerate')
