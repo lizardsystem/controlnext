@@ -249,7 +249,7 @@
 	    var availableValue = (dashboardViewModel.basinMaxStorage() * availableWaterPr / 100);
 	    valueToRainPerMM = (availableValue / dashboardViewModel.rainFloodSurface()) * 1000;	    
 	}
-	$("#label-actual-water").text(parseInt(valueToRainPerMM) + " mm beschikbaar");	
+	$("#label-actual-water").text(parseInt(valueToRainPerMM) + " mm opvang capaciteit");	
     }
 
     // Initialize a bound Knockout.js model.
@@ -693,7 +693,7 @@
                 type: 'line',
 		width: lineWidth,
                 color: 'blue',
-                name: 'voorspeld',
+                name: 'verwacht',
                 //pane: 'defaultPane',
                 point: {
                     visible: false,

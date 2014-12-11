@@ -28,15 +28,15 @@
 
 .graphpattern .label {	
 	position: absolute;
-	padding: 0% 20%;
+	padding: 0% 0%;
 	width: 90%;
 	margin-top: 1px;
 	top: 0;
 	left: 0;
 	line-height: 30px;
-	font-size: 14px;
-	font-weight: 100;	
-	color: #93b3ca;
+	font-size: 13px;
+	font-weight: 100 bold;
+	color: blue;
 	text-align: center;
 	white-space: normal !important;
 	text-break: break-all;
