@@ -45,7 +45,7 @@ def datetime_to_js(dt):
 def series_to_js(pdseries):
     # bfill because sometimes first element is a NaN
     pdseries = pdseries.fillna(method='bfill')
-    return [(datetime_to_js(dt), value) for dt, value in pdseries.iterkv()]
+    return [(datetime_to_js(dt), str(value)) for dt, value in pdseries.iterkv()]
  
 
 class BasinDataView(APIView):
@@ -252,6 +252,7 @@ class DataService(APIView):
                 }
             }
             response_dict = result
+
         return RestResponse(response_dict)
 
     def get_demand_table(self):
@@ -318,7 +319,6 @@ class DataService(APIView):
         tbl = self.get_demand_table()
         ds = FewsJdbcDataSource(self.basin, self.constants)
         model = CalculationModel(tbl, ds)
-        import pdb; pdb.set_trace()
         future = t0 + settings.CONTROLNEXT_FILL_PREDICT_FUTURE
 
         prediction = model.predict_fill(
