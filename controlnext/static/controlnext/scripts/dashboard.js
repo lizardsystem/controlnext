@@ -951,8 +951,8 @@
         });
 
 	var loadGraphs = function() {
-	    //loadDemandData();
-	    //loadRainData();
+	    loadDemandData();
+	    loadRainData();
 	    loadPredictedData();
 	}
 
