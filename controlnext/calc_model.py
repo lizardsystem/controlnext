@@ -96,7 +96,7 @@ class CalculationModel(object):
         if ((dt_aflaat_open is not None) and (dt_aflaat_dicht is not None)):
             aflaat_uitstroom = rain_mm.copy()
             aflaat_uitstroom[pd.Timestamp(dt_aflaat_open):pd.Timestamp(dt_aflaat_dicht)] = aflaat_capaciteit
-            vaste_verandering = vaste_verandering - aflaat_uitstroom.values
+            vaste_verandering = vaste_verandering - aflaat_uitstroom
 
         variabele_verandering = np.zeros(len(vaste_verandering))        
         totale_verandering = vaste_verandering + variabele_verandering

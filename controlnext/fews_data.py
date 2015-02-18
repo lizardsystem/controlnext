@@ -344,8 +344,6 @@ class FewsJdbcDataSource(object):
             check_frequency=False):
         row_data = self._get_timeseries(filter_id, location_id,
                                         parameter_id, _from, to)
-        
-        #import pdb; pdb.set_trace()
         if len(row_data) == 0:
             raise Exception('No data available')
 

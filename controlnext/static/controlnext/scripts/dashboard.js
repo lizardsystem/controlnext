@@ -64,7 +64,7 @@
 		// add 1 voor visualization
 		dashboardViewModel.demandMax(newDemandMax + 1);
 		//demandChart.endUpdate();
-		//dashboardViewModel.viewTimespan({start: viewmin, end: viewmax});
+		dashboardViewModel.viewTimespan({start: viewmin, end: viewmax});
 		initDemandChart(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -121,6 +121,7 @@
 		//precipitationChart.option("series.0.data", sumData);
 		//precipitationChart.endUpdate();
 		dashboardViewModel.precipitationMax(newPrecipitaionMax + 3);
+		dashboardViewModel.viewTimespan({start: viewmin, end: viewmax});
 		initPrecipitationChart(meanData, sumData);
 		if ((kwadrant != null) && (kwadrant.length > 0)) {
 		    $('#quadrant-control').quadrant('option', 'activequadrant',
@@ -227,7 +228,7 @@
 		    actualwater: (actualwaterValue * 100 / 120)
 		});
 		//$('#fill-gauge').actualwater({actualwater: 100});
-		//dashboardViewModel.viewTimespan({start: viewmin, end: viewmax});
+		dashboardViewModel.viewTimespan({start: viewmin, end: viewmax});
 		$('#overflow-24h-value').html(Math.round(response.overflow_24h) + ' m<sup>3</sup>');
                 $('#overflow-5d-value').html(Math.round(response.overflow_5d) + ' m<sup>3</sup>');
 
@@ -270,8 +271,6 @@
 	demandMax: ko.observable(demandmax),
 	precipitationMax: ko.observable(precipitationmax),
 	currentDemand: ko.observable(currentdemand),
-	viewMin: ko.observable(viewmin),
-	viewMax: ko.observable(viewmax),
 
 	//advisedFill: ko.observable(60),             // number
 	reset: function(model, event) {
@@ -280,6 +279,7 @@
 	calculate: function(model, event) {
 	    var data = {};
 	    data['osmose_till_date'] = $('.datepicker')[0].value;
+	    setTimeSpan(selectedTimeSpan);
 	    $.ajax({
 		url: save_basin_data_url,
 		type: "POST",
@@ -333,8 +333,10 @@
 	    var start = moment().subtract({hours: hoursRelative});
 	    var end = moment().add({hours: hoursRelative});
 	    model.viewTimespan({start: start, end: end});
-	    model.viewMin(start);
-	    model.viewMax(end);
+	    selectedTimeSpan = hours;
+	    viewmin = moment(now).subtract({hours: hours});
+	    viewmax = moment(now).add({hours: hours});
+	   
 	},
 	browseTimespan: function(model, event) {
 	    // Browse the chart timespan to the left or right.
@@ -997,13 +999,12 @@
 	window.location = ".";
     }
 
-    function setDefaultTimeSpan(){
-	var hoursRelative = Math.round(defaultTimeSpan);
+    function setTimeSpan(hoursRel){
+	var hoursRelative = Math.round(hoursRel);
 	var start = moment().subtract({hours: hoursRelative});
 	var end = moment().add({hours: hoursRelative});
 	dashboardViewModel.viewTimespan({start: start, end: end});
-	dashboardViewModel.viewMin(start);
-	dashboardViewModel.viewMax(end);
+	$( "button[data-timespan='" + hoursRel + "']")[0].click()
     }
 
     $('.datepicker').datepicker(); 
@@ -1012,5 +1013,6 @@
 	$("body").tooltip({ selector: '[data-toggle=tooltip]' });
     });
         
-    $(document).ready(function(){init(); loadGraphs(); setDefaultTimeSpan();});
+    $(document).ready(function(){init(); setTimeSpan(defaultTimeSpan); loadGraphs(); });
+
 } (window.jQuery);
