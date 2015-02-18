@@ -4,7 +4,9 @@
     /* ************************************************************************ */
     var fillData = [];
     //var predictFillSplineData = [];
-
+    var defaultTimeSpan = 96;
+    var selectedTimeSpan = defaultTimeSpan;
+    
     var nowReal = moment();
     var now = moment(nowReal).startOf('hour');
     var hist = moment(now).subtract({days: 2});
@@ -950,9 +952,10 @@
             //    .needleValue(0, newValue);
         });
 
+
 	var loadGraphs = function() {
-	    //loadDemandData();
-	    //loadRainData();
+	    loadDemandData();
+	    loadRainData();
 	    loadPredictedData();
 	}
 
@@ -994,11 +997,20 @@
 	window.location = ".";
     }
 
+    function setDefaultTimeSpan(){
+	var hoursRelative = Math.round(defaultTimeSpan);
+	var start = moment().subtract({hours: hoursRelative});
+	var end = moment().add({hours: hoursRelative});
+	dashboardViewModel.viewTimespan({start: start, end: end});
+	dashboardViewModel.viewMin(start);
+	dashboardViewModel.viewMax(end);
+    }
+
     $('.datepicker').datepicker(); 
 
     $(document).ready(function() {
 	$("body").tooltip({ selector: '[data-toggle=tooltip]' });
     });
         
-    $(document).ready(function(){init(); loadGraphs()});
+    $(document).ready(function(){init(); loadGraphs(); setDefaultTimeSpan();});
 } (window.jQuery);
