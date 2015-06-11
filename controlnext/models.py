@@ -20,11 +20,11 @@ logger = logging.getLogger(__name__)
 class GrowerInfo(models.Model):
     """Model for holding grower info."""
     # crop type constants
-    TOMATO = 'tomato'
-    CHRYSANTHEMUM = 'chrysanthemum'
+    TOMAAT = 'tomaat'
+    CHRYSANT= 'chrysant'
     CROP_CHOICES = (
-        (TOMATO, _("tomato")),
-        (CHRYSANTHEMUM, _("chrysanthemum")),
+        (TOMAAT, _("tomaat")),
+        (CHRYSANT, _("chrysant")),
     )
     # general info
     name = models.CharField(max_length=100, blank=True, null=True,

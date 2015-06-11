@@ -99,25 +99,14 @@ class FewsJdbcDataSource(object):
         # max_storage can come from request, therefore from self.constants
         max_storage = self.constants.max_storage
 
-        # waarden zijn in cm onder overstortbuis
+        # waarden zijn in percentage tov max_storage
         ts = self._get_timeseries_as_pd_series(
             fill_filter_id,
             fill_location_id,
             fill_parameter_id,
             _from, to, 'fill'
         )
-
-        # deal with NaN values
-        #if np.NaN in ts:
-        #    raise Exception('Found NaN in results')
-        #ts = ts.fillna(0)
-
-        # zet om in cm vanaf bodem bak
-        ts += level_indicator_height
-        # zet om naar fractie totale bak
-        ts /= basin_top
-        # zet om naar m3
-        ts *= max_storage
+        ts = self.fill_pct_to_m3(ts, max_storage)
 
         return ts
 
@@ -141,21 +130,25 @@ class FewsJdbcDataSource(object):
         validate_date(_from)
         validate_date(to)
 
-        # basin parameters
+        # Basin parameters
         fill_filter_id = self.basin.own_meter_filter_id
         fill_location_id = self.basin.own_meter_location_id
         fill_parameter_id = self.basin.own_meter_parameter_id
-        # max_storage could come from request, therefore use self.constants
+        # Max_storage could come from request, therefore use self.constants.
         max_storage = self.constants.max_storage
 
-        # waarden zijn in cm onder overstortbuis
+        # Values are in cm below overflow outlet.
         ts = self._get_timeseries_as_pd_series(
             fill_filter_id,
             fill_location_id,
             fill_parameter_id,
             _from, to, 'fill'
         )
+        ts = self.fill_pct_to_m3(ts, max_storage)
 
+        return ts
+
+    def fill_pct_to_m3(self, ts, max_storage):
         # values are percentages (0-100)
         ts /= 100
         # convert to m3
@@ -193,7 +186,7 @@ class FewsJdbcDataSource(object):
         location_id = self.basin.discharge_valve_location_id
         parameter_id = self.basin.discharge_valve_parameter_id
 
-        # waarden zijn in cm onder overstortbuis
+        # Values are in cm below overflow outlet
         ts = self._get_timeseries_as_pd_series(
             filter_id,
             location_id,

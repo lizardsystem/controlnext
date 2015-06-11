@@ -43,7 +43,7 @@
 		    </tr>
 		    <tr>
 		      <td valign="bottom">
-			<h5 data-bind="text: moment().format('D MMMM YYYY') + ' (week: ' +  currentweek + ')'" />
+			<h5 data-bind="text: moment().format('D MMMM YYYY') + ' (week: ' +  currentweek + ') | ' + moment().format('h:mm')" />
 		      </td>
 		    </tr>
 		 </table>
@@ -90,7 +90,6 @@
 			     &nbsp;<span class="label label-default " >tot:</span>&nbsp;<input class="datepicker small-input datepicker-input" data-bind="value: osmoseTillDate" data-date-format="dd-mm-yyyy">
 			  </td></tr>
                           <tr><td><b>Aflaat capaciteit</b><br><input class="small-input" size="7" data-bind="value: outflowCapacity"><span> m<sup>3</sup>/uur</span></td></tr>
-                          <tr><td><b>Datum</b><br><span class="label label-default" data-bind="text: currentDate().format('LLL')">&ndash;</span></td></tr>
                           <tr><td><b>Aflaat open</b><br><span class="label label-default" data-bind="text: outflowOpened().format('LLL')">&ndash;</span></td></tr>
                           <tr><td><b>Aflaat dicht</b><br><span class="label label-default" data-bind="text: outflowClosed().format('LLL')">&ndash;</span></td></tr>
                         </table>
@@ -147,7 +146,7 @@
                 <div class="col-sm-3">
                     <div class="box-quadrant">
                         <div id="quadrant-control">
-			  <div id="quadrant-label">Buien kwadrant<!--<span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; right: 0;"><i class="fa fa-info"></i></span>--></div>
+			  <div id="quadrant-label" style="text-align: center">Buienkwadrant<!--<span class="info-popup" data-content="uitleg" style="width: 20px; height: 20px; line-height: 20px; right: 0;"><i class="fa fa-info"></i></span>--></div>
 			  <div id="quadrant-1" class="">
 			    <img src="{{ STATIC_URL }}controlnext/images/icon-dromedary.png" data-toggle="tooltip" title="Korte&nbsp;termijn&nbsp;0-6&nbsp;uur&nbsp;>&nbsp;40mm Lange&nbsp;termijn&nbsp;6-48&nbsp;uur&nbsp;<&nbsp;20mm" >
 			    <div id="quadrant-camel" class="hide"></div></div>
