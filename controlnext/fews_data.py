@@ -106,10 +106,7 @@ class FewsJdbcDataSource(object):
             fill_parameter_id,
             _from, to, 'fill'
         )
-
         ts = self.fill_pct_to_m3(ts, max_storage)
-
-        print(ts.head)
 
         return ts
 
@@ -147,7 +144,6 @@ class FewsJdbcDataSource(object):
             fill_parameter_id,
             _from, to, 'fill'
         )
-
         ts = self.fill_pct_to_m3(ts, max_storage)
 
         return ts
