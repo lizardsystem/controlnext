@@ -379,7 +379,7 @@
 	    valueField: 'y',
 	    name: 'watervraag',
 	    type: 'stepline',
-	    color: 'rgba(44, 62, 80, 0.4)', //'rgba(204, 204, 204, 0.2)'
+	    color: 'rgba(71, 119, 193, 0.8)', //'rgba(204, 204, 204, 0.2)'
 	    width: lineWidth,
 	    point: {
 		visible: false,
