@@ -2,7 +2,7 @@ Changelog of controlnext
 ===================================================
 
 
-0.14 (unreleased)
+0.14 (2015-06-11)
 -----------------
 
 - Cm calculation changed to percentage.
