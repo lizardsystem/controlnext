@@ -1,5 +1,6 @@
 # From https://github.com/github/gitignore/blob/master/Python.gitignore
 
+# Pycharm files
 .idea
 
 # Pyc/pyo files.
@@ -40,5 +41,3 @@ etc/*.logrotate
 
 # ipython notebooks
 notebooks
-
-# Pycharm files
