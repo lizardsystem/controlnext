@@ -342,6 +342,10 @@
     var currentdemand = {{ view.current_demand|default:0 }};
     var currentweek = moment.utc().isoWeeks();
     var save_basin_data_url = "{% url controlnext_save_basin_data view.basin.id %}";
+    $('body').on('click', '.btn-group button', function (e) {
+         $(this).addClass('active');
+         $(this).siblings().removeClass('active');
+    });
 </script>
 <script src="{{ STATIC_URL }}controlnext/lib/ChartJS-13.1.8/dx.chartjs.debug.js"></script>
 <script src="{{ STATIC_URL }}controlnext/widgets/js/actualwater.js"></script>
