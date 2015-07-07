@@ -1,26 +1,17 @@
 import datetime
 import logging
 
-from django.test import TestCase
-
-import json
 import mock
 from pandas import Series
 import pytz
-
-try:
-    # new style
-    from lizard_fewsjdbc.tests.factories import JdbcSourceFactory
-except ImportError:
-    # old style
-    from lizard_fewsjdbc.tests import JdbcSourceF as JdbcSourceFactory
+from django.test import TestCase
+from lizard_fewsjdbc.tests.factories import JdbcSourceFactory
 
 from controlnext.calc_model import CalculationModel
 from controlnext.conf import settings
 from controlnext.demand_table import DemandTable
 from controlnext.fews_data import FewsJdbcDataSource
 from controlnext.utils import round_date, mktim
-from controlnext.wur_data import WURXMLService, WURJSONService
 from controlnext.tests.factories import GrowerInfoFactory, BasinFactory
 
 
@@ -141,52 +132,3 @@ class CalculationModelTest(TestCase):
         ts = self.model.predict_fill(now, future, 20, 100, 100)
 
         self.assertGreater(len(ts['scenarios']['mean']['prediction']), 10)
-
-
-def get_wur_service_mock_data(self):
-    try:
-        from controlnext.tests.data.wur_response_data import DATA
-    except ImportError, info:
-        module_name = "controlnext.tests.data.wur_response_data"
-        msg = MOCK_DATA_IMPORT_ERROR % module_name
-        error_msg = "%s (%s)" % (msg, info)
-        logger.error(error_msg)
-        raise Exception(error_msg)
-    return DATA
-
-
-def get_wur_json_service_mock_data(self, url):
-    try:
-        from controlnext.tests.data.wur_response_from_json import DATA
-    except ImportError, info:
-        module_name = "controlnext.tests.data.wur_response_from_json"
-        msg = MOCK_DATA_IMPORT_ERROR % module_name
-        error_msg = "%s (%s)" % (msg, info)
-        logger.error(error_msg)
-        raise Exception(error_msg)
-    return DATA
-
-
-class WURServiceTests(TestCase):
-
-    def setUp(self):
-        now = datetime.datetime.now()
-        _from = now - datetime.timedelta(days=2)
-        to = now
-        self.xml_service = WURXMLService(_from, to)
-
-    # TODO: mock suds response with wur_response.xml
-    @mock.patch('controlnext.wur_data.WURXMLService.get_data',
-                get_wur_service_mock_data)
-    def test_get_data(self):
-        data = self.xml_service.get_data()
-        self.assertEqual(len(data), 48)  # 2 days
-
-    @mock.patch('controlnext.wur_data.WURJSONService.get_data_from_url',
-        get_wur_json_service_mock_data)
-    def test_json_service(self):
-        start_date = datetime.datetime(2013, 1, 1)
-        end_date = datetime.datetime(2013, 1, 2)
-        json_service = WURJSONService(start_date, end_date)
-        data = json_service.get_data()
-        self.assertGreater(len(data), 0)
