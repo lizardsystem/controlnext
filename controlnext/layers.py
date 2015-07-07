@@ -1,20 +1,19 @@
 import os
 import logging
 
-import mapnik
-import pyproj
-
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
-
 from lizard_map.coordinates import WGS84, wgs84_to_google, google_to_wgs84
 from lizard_map.models import ICON_ORIGINALS
-from lizard_map.workspace import WorkspaceItemAdapter
+import mapnik
+import pyproj
 from lizard_map.symbol_manager import SymbolManager
+from lizard_map.workspace import WorkspaceItemAdapter
 
 from controlnext.calc_model import fill_m3_to_pct
 from controlnext.conf import settings
-from controlnext.models import GrowerInfo, Basin
+from controlnext.models import Basin
+from controlnext.models import GrowerInfo
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +50,7 @@ class BasinsAdapter(WorkspaceItemAdapter):
     def __init__(self, *args, **kwargs):
         super(BasinsAdapter, self).__init__(*args, **kwargs)
         self.growers = GrowerInfo.objects.all()
+        print(self.growers)
 
     def layer(self, layer_ids=None, request=None):
         layers = []

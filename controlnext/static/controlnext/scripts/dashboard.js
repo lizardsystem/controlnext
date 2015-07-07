@@ -1015,4 +1015,9 @@
         
     $(document).ready(function(){init(); setTimeSpan(defaultTimeSpan); loadGraphs(); });
 
+	$('body').on('click', '.btn-group button', function (e) {
+        $(this).addClass('active');
+        $(this).siblings().removeClass('active');
+    });
+
 } (window.jQuery);

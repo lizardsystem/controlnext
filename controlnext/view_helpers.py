@@ -1,13 +1,11 @@
 # (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.rst.
 from __future__ import unicode_literals
-import datetime
 from decimal import Decimal
+import datetime
 import logging
 
 import pytz
-
 from django.db.backends.util import format_number
-
 from lizard_map.coordinates import transform_point
 
 from controlnext.fews_data import FewsJdbcDataSource

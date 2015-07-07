@@ -1,17 +1,16 @@
 # (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.rst.
-from __future__ import unicode_literals
 from __future__ import division
-import os
+from __future__ import unicode_literals
 import datetime
 import logging
 
 from django.conf import settings
-
-from controlnext.utils import cache_result, validate_date, mktim
-from controlnext import models
-
-import pytz
 import pandas as pd
+import pytz
+
+from controlnext import models
+from controlnext.utils import mktim
+from controlnext.utils import validate_date
 
 logger = logging.getLogger(__name__)
 
@@ -20,8 +19,6 @@ EVAPORATION_TABLE_FILE_PREFIX = 'evaporation_table_'
 
 if not EVAPORATION_TABLE_PATH:
     logger.warn('EVAPORATION_TABLE_PATH is not configured.')
-#elif not os.path.isfile(EVAPORATION_TABLE_PATH):
-#    logger.warn('Could not find a file at %s.', EVAPORATION_TABLE_PATH)
 
 # semi configurable constants
 CSV_COL_DELIMITER = ';'

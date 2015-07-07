@@ -7,7 +7,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from controlnext.models import GrowerInfo, Basin, WaterDemand
 
-
 class BasinInline(admin.TabularInline):
     model = Basin
     extra = 1

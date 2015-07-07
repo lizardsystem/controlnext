@@ -1,14 +1,13 @@
 # (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.rst.
 from __future__ import unicode_literals
+from datetime import datetime
 import json
 import logging
-from datetime import datetime
 
-from django.db import models
 from django.contrib.gis.db import models as geomodels
 from django.core.urlresolvers import reverse
+from django.db import models
 from django.utils.translation import ugettext_lazy as _
-
 from lizard_map.coordinates import transform_point
 
 SRID_WGS84 = 4326
@@ -342,7 +341,7 @@ class Basin(geomodels.Model):
 class Constants(object):
     """
     Utility class for accessing basin specific constants. Also used to store
-    user-defined request parameters for controlnext_demo app. FOr now,
+    user-defined request parameters for controlnext_demo app. For now,
     user-defined parameters are rain_flood_surface and max_storage.
 
     """

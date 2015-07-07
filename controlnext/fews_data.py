@@ -1,17 +1,16 @@
 # (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.rst.
 from __future__ import unicode_literals
-import logging
 import datetime
+import logging
 
 import iso8601
-import pytz
 import pandas as pd
-
+import pytz
 from lizard_fewsjdbc.models import JdbcSource
 
-from controlnext.utils import cache_result, validate_date
 from controlnext.conf import settings
 from controlnext.models import Constants
+from controlnext.utils import validate_date
 
 logger = logging.getLogger(__name__)
 
