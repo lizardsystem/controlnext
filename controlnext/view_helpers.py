@@ -64,8 +64,8 @@ def update_current_fill(basin):
         # basin.current_fill
         current_formatted = Decimal(format_number(current_fill_m3, 10, 2))
         if not basin.current_fill == current_formatted:
-            logger.debug("updating current fill for basin '%s' from %s to %s" %
-                (basin, basin.current_fill, current_formatted))
+            logger.debug("updating current fill for basin '%s' from %s to %s"
+                         % (basin, basin.current_fill, current_formatted))
             basin.current_fill = current_fill_m3
             basin.current_fill_updated = now
             basin.save()

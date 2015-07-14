@@ -41,8 +41,8 @@ class BasinDataView(APIView):
         osmose_date = request.POST.get("osmose_till_date")
         date_format = "%d-%m-%Y"
         if basin.osmose_till_date.strftime(date_format) != osmose_date:
-            basin.osmose_till_date = datetime.datetime.strptime(osmose_date,
-                                                                date_format).date()
+            basin.osmose_till_date = datetime.datetime\
+                .strptime(osmose_date, date_format).date()
             basin.save()
         return RestResponse({"success": True})
 
@@ -159,7 +159,7 @@ class DataService(APIView):
         with open(path, 'a') as file:
             file.write(';'.join(parameters) + '\n')
 
-    def get(self, request, basin_id, *args, **kwargs):
+    def get(self, request, basin_id, *args, **kwargs):  # @TODO: TOO COMPLEX!!!
         try:
             self.basin = Basin.objects.get(id=basin_id)
             # still needed for request params rain_flood_surface and
@@ -259,8 +259,7 @@ class DataService(APIView):
         return RestResponse(response_dict)
 
     def get_demand_table(self):
-        # first try to get crop and surface from request
-        crop = self.request.GET.get('crop')  # None if none given
+        # first try to get surface from request
         table = EvaporationTable(self.basin, self.constants.rain_flood_surface)
         return table
 
@@ -317,7 +316,7 @@ class DataService(APIView):
         return result
 
     def advanced(self, t0, desired_fill_pct, demand_exaggerate,
-                 rain_exaggerate, graph_type):
+                 rain_exaggerate, graph_type):  # @TODO: TOO COMPLEX!!!
         tbl = self.get_demand_table()
         ds = FewsJdbcDataSource(self.basin, self.constants)
         model = CalculationModel(tbl, ds)

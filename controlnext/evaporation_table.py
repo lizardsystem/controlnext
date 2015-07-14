@@ -32,8 +32,8 @@ TWO_WEEKS = datetime.timedelta(days=14)
 
 def get_day(date):
     return int(date.strftime('%j'))
-                
-        
+
+
 class EvaporationTable(object):
     def __init__(self, basin, crop_surface):
         self.crop_type = basin.owner.crop
@@ -89,14 +89,14 @@ class EvaporationTable(object):
         to_adj = to
         dayly = pd.date_range(from_adj, to_adj, freq='D', tz=pytz.utc)
         values = [self.get_day_evaporation_on(date) for date in dayly]
-        
+
         ts = pd.Series(values, dayly, name='evaporation')
 
         # use fillna with ffill instead of ts.interpolate() to keep the data
         # as accurate as possible
         ts.fillna(method='ffill', inplace=True)
         # divide by amount of quarter hours in a day
-       
+
         return ts[from_adj:to_adj]
 
     def get_demand(self, _from, to):
@@ -112,7 +112,7 @@ class EvaporationTable(object):
 
         ts = pd.Series(values, dayly, name='evaporation')
         ts = ts.resample('15min')
-        
+
         # use fillna with ffill instead of ts.interpolate() to keep the data
         # as accurate as possible
         ts.fillna(method='ffill', inplace=True)
@@ -121,7 +121,7 @@ class EvaporationTable(object):
         ts *= float(0.001)
         ts *= self.crop_surface
         ts *= self.basin.recirculation
-        result= ts[from_adj:to_adj]
+        result = ts[from_adj:to_adj]
         return result
 
     def get_total_demand(self, _from, to):

@@ -15,11 +15,11 @@ from controlnext.utils import validate_date
 logger = logging.getLogger(__name__)
 
 RAIN_PARAMETER_IDS = {
-    'min': 'P.min',   # Minimum
-    'mean': 'P.gem',  # Gemiddeld
-    'max': 'P.max',    # Maximum
-    'sum': 'P.voorsp', # Sum
-    'kwadrant': 'advies.kwadrant' 
+    'min': 'P.min',     # Minimum
+    'mean': 'P.gem',    # Gemiddeld
+    'max': 'P.max',     # Maximum
+    'sum': 'P.voorsp',  # Sum
+    'kwadrant': 'advies.kwadrant'
 }
 FREQUENCY = datetime.timedelta(minutes=15)
 
@@ -93,8 +93,6 @@ class FewsJdbcDataSource(object):
         fill_filter_id = self.basin.filter_id
         fill_location_id = self.basin.location_id
         fill_parameter_id = self.basin.parameter_id
-        level_indicator_height = self.basin.level_indicator_height
-        basin_top = self.basin.basin_top
         # max_storage can come from request, therefore from self.constants
         max_storage = self.constants.max_storage
 
@@ -378,11 +376,11 @@ class FewsJdbcDataSource(object):
                 'and to.')
 
         qw = ("select time, value from "
-             "extimeseries where filterid='%s' and locationid='%s' "
-             "and parameterid='%s' and time between '%s' and '%s'" %
-             (filter_id, location_id, parameter_id,
-              _from.strftime(settings.CONTROLNEXT_JDBC_DATE_FORMAT),
-              to.strftime(settings.CONTROLNEXT_JDBC_DATE_FORMAT)))
+              "extimeseries where filterid='%s' and locationid='%s' "
+              "and parameterid='%s' and time between '%s' and '%s'" %
+              (filter_id, location_id, parameter_id,
+               _from.strftime(settings.CONTROLNEXT_JDBC_DATE_FORMAT),
+               to.strftime(settings.CONTROLNEXT_JDBC_DATE_FORMAT)))
         #import pdb; pdb.set_trace()
         result = self.jdbc_source.query(qw)
 

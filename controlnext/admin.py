@@ -7,6 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from controlnext.models import GrowerInfo, Basin, WaterDemand
 
+
 class BasinInline(admin.TabularInline):
     model = Basin
     extra = 1
@@ -59,8 +60,8 @@ class BasinAdmin(GeoModelAdmin):
                 # other basin parameters
                 'max_storage', 'min_storage_pct', 'max_storage_pct',
                 'rain_flood_surface', 'max_outflow_per_timeunit', 'basin_top',
-                'level_indicator_height', 'reverse_osmosis', 'osmose_till_date', 'jdbc_source',
-                'on_main_map'
+                'level_indicator_height', 'reverse_osmosis',
+                'osmose_till_date', 'jdbc_source', 'on_main_map'
             )
         }),
         (_("location"), {

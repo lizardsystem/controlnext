@@ -53,7 +53,7 @@ def fill_m3_to_pct(ts, max_storage):
     return ts
 
 
-class CalculationModel(object):
+class CalculationModel(object):     # @TODO: TOO COMPLEX!!!! REMOVE COMPLEXITY
     def __init__(self, demand_table, fews_data):
         self.demand_table = demand_table
         self.fews_data = fews_data
@@ -75,7 +75,7 @@ class CalculationModel(object):
         return ts
 
     def predict_scenario(self, _from, current_fill_m3, desired_fill_m3,
-                         demand_m3, rain_mm, max_uitstroom_m3, 
+                         demand_m3, rain_mm, max_uitstroom_m3,
                          dt_aflaat_open=None, dt_aflaat_dicht=None,
                          aflaat_capaciteit=0):
         toestroom_m3 = rain_mm * (self.constants.rain_flood_surface / 1000)
@@ -85,22 +85,23 @@ class CalculationModel(object):
             till_year = self.constants.osmose_till_date.year
             till_month = self.constants.osmose_till_date.month
             till_day = self.constants.osmose_till_date.day
-            till_datetime = datetime.datetime(till_year, till_month, till_day, _from.hour, tzinfo=pytz.utc)
+            till_datetime = datetime.datetime(till_year, till_month, till_day,
+                                              _from.hour, tzinfo=pytz.utc)
             if till_datetime > _from:
                 periods = (till_datetime - _from).total_seconds() / 900
-                osmose_indexes = pd.date_range(_from, periods=periods, freq='15min',
-                              tz=pytz.utc)            
-                toestroom_m3[osmose_indexes[0]:osmose_indexes[-1]] += self.constants.reverse_osmosis
+                osmose_indexes = pd.date_range(_from, periods=periods,
+                                               freq='15min', tz=pytz.utc)
+                toestroom_m3[osmose_indexes[0]:osmose_indexes[-1]] += \
+                    self.constants.reverse_osmosis
 
         vaste_verandering = toestroom_m3 - demand_m3  # + current_fill_m3
         if ((dt_aflaat_open is not None) and (dt_aflaat_dicht is not None)):
             aflaat_uitstroom = rain_mm.copy()
-            aflaat_uitstroom[pd.Timestamp(dt_aflaat_open):pd.Timestamp(dt_aflaat_dicht)] = aflaat_capaciteit
+            aflaat_uitstroom[pd.Timestamp(dt_aflaat_open):pd.Timestamp(
+                dt_aflaat_dicht)] = aflaat_capaciteit
             vaste_verandering = vaste_verandering - aflaat_uitstroom
-
-        variabele_verandering = np.zeros(len(vaste_verandering))        
+        variabele_verandering = np.zeros(len(vaste_verandering))
         totale_verandering = vaste_verandering + variabele_verandering
-        
         result = totale_verandering.cumsum() + current_fill_m3
         for i in xrange(len(vaste_verandering) - 1):
             if result[i + 1] > desired_fill_m3:
@@ -154,13 +155,14 @@ class CalculationModel(object):
         }
 
     def predict_fill(self, _from, to, desired_fill_pct, demand_exaggerate_pct,
-                     rain_exaggerate_pct, outflow_open=None, outflow_closed=None,
-                     outflow_capacity=0):
+                     rain_exaggerate_pct, outflow_open=None,
+                     outflow_closed=None, outflow_capacity=0):
         # do some input validation here, to ensure we are dealing with sane
         # numbers
         validate_date(_from)
         validate_date(to)
-        # @TODO remove desired_fill_pct, deactivated with 200.0 up to new mission
+        # @TODO remove desired_fill_pct, deactivated with 200.0 up to new
+        # @TODO mission
         desired_fill_pct = float(200.0)
         #if 0 > desired_fill_pct > 100:
         #    raise ValueError('value should be a percentage between 0 and 100')
@@ -177,10 +179,9 @@ class CalculationModel(object):
         if to < round_date(datetime.datetime.now(tz=pytz.utc)):
             # HACK: indien data uit het verleden wordt opgevraagd, zit er geen
             # min en max meer in FEWS
-            rain_min = rain_max = rain_mean
+            rain_min = rain_mean
         else:
             rain_min = self.fews_data.get_rain('min', _from, to)
-            #rain_max = self.fews_data.get_rain('max', _from, to)
         # gebruik de datum van de laatst beschikbaar regenvoorspelling als
         # from en to waarden
         _from = rain_mean.index[0]
@@ -191,7 +192,6 @@ class CalculationModel(object):
             rain_exaggerate = rain_exaggerate_pct / 100
             rain_min *= rain_exaggerate
             rain_mean *= rain_exaggerate
-            #rain_max *= rain_exaggerate
 
         # create a no rain series
         rain_zero = rain_min.copy()
@@ -255,14 +255,12 @@ class CalculationModel(object):
         # bereken de drie scenarios
         calc_scenarios = {
             'no_rain': rain_zero,
-            #'min': rain_min,
             'mean': rain_mean,
-            #'max': rain_max,
         }
         for scenario, rain in calc_scenarios.items():
             result['scenarios'][scenario] = self.predict_scenario(
                 _from, current_fill_m3, desired_fill_m3, demand_m3, rain,
-                max_uitstroom_m3, outflow_open, outflow_closed, outflow_capacity)
+                max_uitstroom_m3, outflow_open, outflow_closed,
+                outflow_capacity)
 
-        
         return result

@@ -99,7 +99,6 @@ class BasinsAdapter(WorkspaceItemAdapter):
 
         return layers, styles
 
-
     def search(self, x, y, radius=None):
         pt = Point(google_to_wgs84(x, y), 4326)
         # Looking at how radius is derived in lizard_map.js, it's best applied
@@ -113,11 +112,11 @@ class BasinsAdapter(WorkspaceItemAdapter):
         # Find all basins within the search distance. Order them by distance.
         for basin in Basin.objects.filter(
             on_main_map=True,
-            location__distance_lte=(pt, D(m=distance))).\
-            distance(pt).order_by('distance'):
+            location__distance_lte=(pt, D(m=distance)))\
+                .distance(pt).order_by('distance'):
 
             fill_percentage = fill_m3_to_pct(basin.current_fill,
-                basin.owner.max_storage)
+                                             basin.owner.max_storage)
             result = {
                 'grouping_hint': 'controlnext basin %d' % (
                     self.workspace_item.id),
@@ -129,7 +128,6 @@ class BasinsAdapter(WorkspaceItemAdapter):
             results.append(result)
         return results
 
-
     def icon_filename(self, basin, max_storage):
         """Icon file based on basin fill percentage."""
         fill_percentage = fill_m3_to_pct(basin.current_fill, max_storage)
@@ -140,10 +138,8 @@ class BasinsAdapter(WorkspaceItemAdapter):
             BASIN_ICON, color=color_as_float)
         return symbol
 
-
     def color_by_percentage(self, percentage):
         return BASIN_FILL_COLOR_MAP[int(percentage)]
-
 
     def float_color(self, color):
         """Return the color as a float 4-tuple as used by
@@ -155,7 +151,6 @@ class BasinsAdapter(WorkspaceItemAdapter):
         r, g, b = color[0:2], color[2:4], color[4:6]
         rr, gg, bb = int(r, 16), int(g, 16), int(b, 16)
         return (rr / 255.0, gg / 255.0, bb / 255.0, 1.0)
-
 
     def round_percentage_for_icon(self, percentage, divisor=5):
         """Round percentage by divisor. Used for minimizing number of icons.

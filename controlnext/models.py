@@ -20,7 +20,7 @@ class GrowerInfo(models.Model):
     """Model for holding grower info."""
     # crop type constants
     TOMAAT = 'tomaat'
-    CHRYSANT= 'chrysant'
+    CHRYSANT = 'chrysant'
     CROP_CHOICES = (
         (TOMAAT, _("tomaat")),
         (CHRYSANT, _("chrysant")),
@@ -80,7 +80,7 @@ class GrowerInfo(models.Model):
 
     jdbc_source = models.ForeignKey('lizard_fewsjdbc.JdbcSource', blank=True,
                                     null=True)
-    
+
     class Meta:
         ordering = ('name',)
         verbose_name = _("grower info")
@@ -109,11 +109,11 @@ class WaterDemand(models.Model):
     weeknumber = models.IntegerField()
     demand = models.FloatField()
     owner = models.ForeignKey(GrowerInfo)
-    
+
     def __unicode__(self):
         return "Demand for {}.".format(self.owner.name)
 
-    
+
 class Basin(geomodels.Model):
     """Basin specific model.
 
@@ -135,7 +135,10 @@ class Basin(geomodels.Model):
                                     null=True)
 
     recirculation = models.FloatField(default=float(0.0),
-                                      help_text=("Water recirculation coefficient from 0.0 to 1.0."))
+                                      help_text=(
+                                          "Water recirculation coefficient " +
+                                          "from 0.0 to 1.0.")
+                                      )
     # water level meter params for grower's own meter
     own_meter_filter_id = models.CharField(
         verbose_name=_("grower fill meter - filter id"),
@@ -241,7 +244,9 @@ class Basin(geomodels.Model):
         verbose_name=_("reverse osmosis capacity (m3/h)"))
     osmose_till_date = models.DateField(blank=True, null=True,
                                         default=datetime.now,
-                                        verbose_name=_("reverse osmosis date till (m3/h)"))
+                                        verbose_name=_(
+                                            "reverse osmosis date till (m3/h)")
+                                        )
     # current fill data
     # in m^3
     current_fill = models.DecimalField(
