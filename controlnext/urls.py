@@ -8,11 +8,14 @@ from lizard_ui.urls import debugmode_urlpatterns
 
 from controlnext import views
 
+
 admin.autodiscover()
 
 urlpatterns = patterns(
     '',
-    url(r'^$', views.DashboardView.as_view(), name='controlnext-dashboard'),
+    url(r'^$', views.ControlnextLoginView.as_view(), name='controlnext-login'),
+    url(r'^login_error/$', views.ControlnextLoginErrorView.as_view(), name='controlnext-login-error'),
+    url(r'^$', views.ControlnextLogoutView.as_view(), name='controlnext-logout'),
     url(r'^(?P<basin_id>\d+)/$', views.BasinView.as_view(),
         name='controlnext-basin'),
     url(r'^data_service/(?P<basin_id>\d+)/$',
@@ -23,7 +26,7 @@ urlpatterns = patterns(
         name='controlnext-data-demand'),
     url(r'^data_service/(?P<basin_id>\d+)/save/$',
         views.BasinDataView.as_view(),
-        name='controlnext_save_basin_data')
+        name='controlnext_save_basin_data'),
 )
 
 if getattr(settings, 'LIZARD_CONTROLNEXT_STANDALONE', False):

@@ -4,11 +4,16 @@ import datetime
 import logging
 import os
 
+from django.contrib.auth.models import User
+from django.contrib.auth import login
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
+from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext as _
 from lizard_map.models import WorkspaceEdit
 from lizard_map.views import AppView
+from lizard_ui.views import LoginView
+from lizard_ui.views import LogoutView
 from lizard_ui.views import UiView
 from rest_framework.response import Response as RestResponse
 from rest_framework.views import APIView
@@ -21,6 +26,7 @@ from controlnext.evaporation_table import EvaporationTable
 from controlnext.fews_data import FewsJdbcDataSource
 from controlnext.models import Basin
 from controlnext.models import Constants
+from controlnext.models import UserProfile
 from controlnext.models import is_valid_crop_type
 from controlnext.utils import round_date
 from controlnext.view_helpers import update_basin_coordinates
@@ -28,6 +34,17 @@ from controlnext.view_helpers import update_current_fill
 
 
 logger = logging.getLogger(__name__)
+
+
+class NoLoginMixin(object):
+
+    def dispatchmixin(self, request, superclass, *args, **kwargs):
+        if self.required_permission:
+            print(request.user)
+            if not request.user.has_perm(self.required_permission):
+                return HttpResponseRedirect('/controlnext/')
+        return superclass.dispatch(request, *args, **kwargs)
+
 
 
 class BasinDataView(APIView):
@@ -68,42 +85,10 @@ class DemandView(APIView):
         return RestResponse(request.POST)
 
 
-class DashboardView(AppView):
-    template_name = 'controlnext/dashboard.html'
-    page_title = _('ControlNEXT Delfland dashboard')
-
-    def get_context_data(self, *args, **kwargs):
-        context = super(DashboardView, self).get_context_data(**kwargs)
-        context['basins'] = Basin.objects.filter(on_main_map=True).order_by(
-            'owner__id')
-        return context
-
-    def dispatch(self, request, *args, **kwargs):
-        """Add in the omnipresent workspace item, then proceed as normal."""
-
-        workspace_edit = WorkspaceEdit.get_or_create(
-            request.session.session_key, request.user)
-
-        # add default layer with selected basins (see layers.py)
-        workspace_edit.add_workspace_item(
-            "Basins", "adapter_basin_fill", "{}")
-
-        # check basin coordinates and update current fill when the basin is
-        # shown on the main map
-        basins = Basin.objects.filter(on_main_map=True)
-        for basin in basins:
-            if not basin.location:
-                # ^^^ only get coordinates for basins without coordinates
-                update_basin_coordinates(basin)
-            update_current_fill(basin)  # is cached, no need to update on
-            # every request
-
-        return super(DashboardView, self).dispatch(request, *args, **kwargs)
-
-
 class BasinView(UiView):
     template_name = 'controlnext/basin_detail.html'
     page_title = _('ControlNEXT')
+    required_permission = True
 
     def get(self, request, basin_id, *args, **kwargs):
         try:
@@ -406,3 +391,35 @@ class DataService(APIView):
             't0': t0,
             'rain_graph_info': rain_graph_info,
         }
+
+
+class ControlnextLoginView(LoginView):
+    default_redirect = "/controlnext/"
+    template_name = 'controlnext/controlnextlogin.html'
+
+    def post(self, request, *args, **kwargs):
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        if form.is_valid():
+            login(self.request, form.get_user())
+            if request.session.test_cookie_worked():
+                request.session.delete_test_cookie()
+            username = form.cleaned_data['username']
+            userid = User.objects.get(username=username).id
+            try:
+                grower_name = UserProfile.objects.get(user=userid).grower_id
+                grower_id = GrowerInfo.objects.get(name=grower_name).id
+                next_url = "/controlnext/" + str(grower_id)
+            except ObjectDoesNotExist:
+                next_url = "/controlnext/login_error"
+            return HttpResponseRedirect(next_url)
+        return self.form_invalid(form)
+
+
+class ControlnextLoginErrorView(ControlnextLoginView):
+    template_name = 'controlnext/loginerror.html'
+
+
+class ControlnextLogoutView(LogoutView):
+    template_name = 'controlnext/controlnextlogout.html'
+    default_redirect = "/controlnext/"

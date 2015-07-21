@@ -5,7 +5,10 @@ from django.contrib import admin
 from django.contrib.gis.admin import GeoModelAdmin
 from django.utils.translation import ugettext_lazy as _
 
-from controlnext.models import GrowerInfo, Basin, WaterDemand
+from controlnext.models import Basin
+from controlnext.models import GrowerInfo
+from controlnext.models import UserProfile
+from controlnext.models import WaterDemand
 
 
 class BasinInline(admin.TabularInline):
@@ -71,6 +74,7 @@ class BasinAdmin(GeoModelAdmin):
     )
 
 
+admin.site.register(UserProfile)
 admin.site.register(GrowerInfo, GrowerInfoAdmin)
 admin.site.register(Basin, BasinAdmin)
 admin.site.register(WaterDemand)

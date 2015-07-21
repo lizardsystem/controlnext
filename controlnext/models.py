@@ -3,8 +3,11 @@ from __future__ import unicode_literals
 from datetime import datetime
 import json
 import logging
+import random
+import string
 
 from django.contrib.gis.db import models as geomodels
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -14,6 +17,17 @@ SRID_WGS84 = 4326
 SRID = SRID_WGS84
 
 logger = logging.getLogger(__name__)
+
+
+def random_slug(length=20):
+    # generate a string, which is not already existing in the earlier Promotion instances
+    while True:
+        slug = ''.join(random.choice(string.ascii_lowercase + string.digits)
+                       for _ in range(length))
+        try:
+            GrowerInfo.objects.get(random_url_slug=slug)
+        except:
+            return slug
 
 
 class GrowerInfo(models.Model):
@@ -32,6 +46,8 @@ class GrowerInfo(models.Model):
     crop = models.CharField(max_length=100, blank=True, null=True,
                             verbose_name=_("type of crop"),
                             choices=CROP_CHOICES)
+    random_url_slug = models.CharField(max_length=20, unique=True,
+                                       default=random_slug)
     crop_surface = models.IntegerField(
         blank=True, null=True, verbose_name=_("crop surface area (m2)"))
     location = geomodels.PointField(blank=True, null=True, srid=SRID)
@@ -361,3 +377,17 @@ class Constants(object):
                     item = item[5:]
             return getattr(self.instance, item)
         raise Exception("should never reach this point")
+
+
+class UserProfile(models.Model):
+    user = models.ForeignKey(User)
+    grower_id = models.ForeignKey(GrowerInfo)
+
+    def __unicode__(self):
+        identifier = self.user if self.user else self.id
+        return "{} ({})".format(self.grower_id, identifier)
+
+    class Meta:
+        ordering = ("grower_id",)
+        verbose_name = _("user profile")
+        verbose_name_plural = _("grower info")
