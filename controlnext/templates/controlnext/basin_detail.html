@@ -310,8 +310,8 @@
 </div>
 <div id="data-constants"
      data-url-base="{{ STATIC_URL }}controlnext/"
-     data-data-url="{% url controlnext-data-service view.basin.id %}"
-     data-demand-url = "{% url controlnext-data-demand view.basin.id %}"
+     data-data-url="{% url controlnext-data-service view.random_url_slug %}"
+     data-demand-url = "{% url controlnext-data-demand view.random_url_slug %}"
      data-oppervlakte="{{ view.basin.owner.rain_flood_surface }}"
      data-max-orraad="{{ view.basin.max_storage }}"
      style="display:none;">

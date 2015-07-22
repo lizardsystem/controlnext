@@ -7,11 +7,10 @@ import os
 from django.contrib.auth.models import User
 from django.contrib.auth import login
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import MultipleObjectsReturned
 from django.http import Http404
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext as _
-from lizard_map.models import WorkspaceEdit
-from lizard_map.views import AppView
 from lizard_ui.views import LoginView
 from lizard_ui.views import LogoutView
 from lizard_ui.views import UiView
@@ -24,35 +23,35 @@ from controlnext.calc_model import CalculationModel
 from controlnext.conf import settings
 from controlnext.evaporation_table import EvaporationTable
 from controlnext.fews_data import FewsJdbcDataSource
-from controlnext.models import Basin
 from controlnext.models import Constants
 from controlnext.models import UserProfile
 from controlnext.models import is_valid_crop_type
 from controlnext.utils import round_date
-from controlnext.view_helpers import update_basin_coordinates
-from controlnext.view_helpers import update_current_fill
 
 
 logger = logging.getLogger(__name__)
 
 
-class NoLoginMixin(object):
-
-    def dispatchmixin(self, request, superclass, *args, **kwargs):
-        if self.required_permission:
-            print(request.user)
-            if not request.user.has_perm(self.required_permission):
-                return HttpResponseRedirect('/controlnext/')
-        return superclass.dispatch(request, *args, **kwargs)
-
+def find_basin(random_url_slug):
+    try:
+        grower = models.GrowerInfo.objects.get(
+            random_url_slug=random_url_slug)
+        basin = models.Basin.objects.get(owner=grower)
+        return basin
+    except MultipleObjectsReturned:
+        logger.error("Multiple basins found for one grower ({grower}), "
+                     "redirected to first.".format(grower=grower.name))
+        return models.Basin.objects.filter(owner=grower)[:1].get()
+    except ObjectDoesNotExist:
+        raise Http404
 
 
 class BasinDataView(APIView):
     """Update basin."""
 
-    def post(self, request, basin_id):
+    def post(self, request, random_url_slug):
         try:
-            basin = models.Basin.objects.get(id=basin_id)
+            basin = models.Basin.objects.get(random_url_slug=random_url_slug)
         except ObjectDoesNotExist:
             raise Http404
         osmose_date = request.POST.get("osmose_till_date")
@@ -67,15 +66,16 @@ class BasinDataView(APIView):
 class DemandView(APIView):
     """Update demands."""
 
-    def post(self, request, basin_id):
+    def post(self, request, random_url_slug):
         try:
-            basin = models.Basin.objects.get(id=basin_id)
+            grower = models.GrowerInfo.objects.get(
+                random_url_slug=random_url_slug)
         except ObjectDoesNotExist:
             raise Http404
         data = request.POST
         for key in sorted(data.iterkeys()):
             demands = models.WaterDemand.objects.filter(
-                **{'owner': basin.owner, 'weeknumber': key})
+                **{'owner': grower, 'weeknumber': key})
             for demand in demands:
                 if data.get(key) is None:
                     continue
@@ -90,15 +90,12 @@ class BasinView(UiView):
     page_title = _('ControlNEXT')
     required_permission = True
 
-    def get(self, request, basin_id, *args, **kwargs):
-        try:
-            self.basin = models.Basin.objects.get(id=basin_id)
-        except ObjectDoesNotExist:
-            raise Http404
-        else:
-            if (self.basin.owner.crop and
-                    is_valid_crop_type(self.basin.owner.crop)):
-                self.crop_type = self.basin.owner.crop
+    def get(self, request, random_url_slug, *args, **kwargs):
+        self.basin = find_basin(random_url_slug)
+        self.random_url_slug = random_url_slug
+        if (self.basin.owner.crop and
+                is_valid_crop_type(self.basin.owner.crop)):
+            self.crop_type = self.basin.owner.crop
         return super(BasinView, self).get(request, *args, **kwargs)
 
     def current_demand(self):
@@ -144,15 +141,9 @@ class DataService(APIView):
         with open(path, 'a') as file:
             file.write(';'.join(parameters) + '\n')
 
-    def get(self, request, basin_id, *args, **kwargs):  # @TODO: TOO COMPLEX!!!
-        try:
-            self.basin = Basin.objects.get(id=basin_id)
-            # still needed for request params rain_flood_surface and
-            # basin_storage/max_storage
-            self.constants = Constants(self.basin)
-        except ObjectDoesNotExist:
-            raise Http404
-
+    def get(self, request, random_url_slug, *args, **kwargs):  # @TODO: TOO COMPLEX!!!
+        self.basin = find_basin(random_url_slug)
+        self.constants = Constants(self.basin)
         graph_type = request.GET.get('graph_type', None)
         hours_diff = request.GET.get('hours_diff', None)  # debug param
 
@@ -405,11 +396,11 @@ class ControlnextLoginView(LoginView):
             if request.session.test_cookie_worked():
                 request.session.delete_test_cookie()
             username = form.cleaned_data['username']
-            userid = User.objects.get(username=username).id
+            user = User.objects.get(username=username)
             try:
-                grower_name = UserProfile.objects.get(user=userid).grower_id
-                grower_id = GrowerInfo.objects.get(name=grower_name).id
-                next_url = "/controlnext/" + str(grower_id)
+                grower_url_slug = UserProfile.objects.get(user=user).owner\
+                    .random_url_slug
+                next_url = "/controlnext/" + grower_url_slug
             except ObjectDoesNotExist:
                 next_url = "/controlnext/login_error"
             return HttpResponseRedirect(next_url)

@@ -1,4 +1,6 @@
 {% extends 'controlnext/controlnextlogin.html' %}
 {% block error_message %}
-<p><strong style="color:darkred">Onjuiste naam of wachtwoord.</strong></p>
+    <div class="alert alert-error">
+        <p>Onvoldoende rechten. Vraag een administrator om hulp.</p>
+    </div>
 {% endblock %}
