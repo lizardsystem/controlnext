@@ -42,58 +42,15 @@ class GrowerInfo(models.Model):
     # general info
     name = models.CharField(max_length=100, blank=True, null=True,
                             verbose_name=_("name of the grower"))
-    # TODO: consider making crop a separate model
     crop = models.CharField(max_length=100, blank=True, null=True,
                             verbose_name=_("type of crop"),
                             choices=CROP_CHOICES)
     random_url_slug = models.CharField(max_length=20, unique=True,
                                        default=random_slug)
-    crop_surface = models.IntegerField(
-        blank=True, null=True, verbose_name=_("crop surface area (m2)"))
     location = geomodels.PointField(blank=True, null=True, srid=SRID)
-    # fill info
-    # fill_filter_id = 'waterstand_basins' # Waterstanden
-    fill_filter_id = models.CharField(
-        max_length=100, blank=True, null=True,
-        help_text=_("e.g. waterstand_basins"))
-    # fill_location_id = '467446797569' # Van der Lans-west, niveau1
     fill_location_id = models.CharField(max_length=100, blank=True, null=True)
-    # fill_parameter_id = 'WNS2820' # Waterdiepte (cm)
-    fill_parameter_id = models.CharField(max_length=100, blank=True,
-                                         null=True)
-    # rain info
-    # rain_filter_id = 'neerslag_combo' # Neerslag gecombimeerd
-    rain_filter_id = models.CharField(max_length=100, blank=True, null=True,
-                                      help_text=_("e.g. neerslag_combo"))
-    # rain_location_id = 'OPP1'  # Oranjebinnenpolder Oost
-    rain_location_id = models.CharField(
-        max_length=100, blank=True, null=True,
-        help_text=_("e.g. OPP1 (i.e. Oranjebinnenpolder Oost)"))
-    # basin info (translated legacy constants from constants.py)
-    max_storage = models.IntegerField(
-        blank=True, null=True,
-        verbose_name=_("maximum storage capacity (m3)"))
-    # orig: min_berging_pct = 20
-    min_storage_pct = models.IntegerField(
-        blank=True, null=True, verbose_name=_("minimum storage capacity (%)"))
-    max_storage_pct = models.IntegerField(
-        blank=True, null=True, verbose_name=_("maximum storage capacity (%)"))
-    rain_flood_surface = models.IntegerField(
-        blank=True, null=True, verbose_name=_("rain flood surface (m2)"))
-    max_outflow_per_timeunit = models.DecimalField(
-        max_digits=10, decimal_places=2, blank=True, null=True,
-        verbose_name=_("maximum outflow per time unit (m3)"))
-    basin_top = models.IntegerField(
-        blank=True, null=True, verbose_name=_("top of basin (cm)"))
-    level_indicator_height = models.IntegerField(
-        blank=True, null=True,
-        verbose_name=_("height of level indicator (cm)"))
-
-    # custom image field for logo, can be empty, if that case a default
-    # will be used
     image = models.ImageField(verbose_name=_("image"), blank=True, null=True,
                               upload_to='grower_images')
-
     jdbc_source = models.ForeignKey('lizard_fewsjdbc.JdbcSource', blank=True,
                                     null=True)
 
@@ -119,23 +76,10 @@ def is_valid_crop_type(crop_type):
     return False
 
 
-class WaterDemand(models.Model):
-
-    daynumber = models.IntegerField()
-    weeknumber = models.IntegerField()
-    demand = models.FloatField()
-    owner = models.ForeignKey(GrowerInfo)
-
-    def __unicode__(self):
-        return "Demand for {}.".format(self.owner.name)
-
-
 class Basin(geomodels.Model):
     """Basin specific model.
-
-    TODO: remove basin specific fields from GrowerInfo
     """
-    owner = models.ForeignKey(GrowerInfo)
+    owner = models.ForeignKey('GrowerInfo')
     name = models.CharField(max_length=100, blank=True, null=True,
                             verbose_name=_("name of the basin"),
                             help_text=_("must be unique for grower"))
@@ -359,6 +303,17 @@ class Basin(geomodels.Model):
         return "%s - metadata" % unicode(self)
 
 
+class WaterDemand(models.Model):
+
+    daynumber = models.IntegerField()
+    weeknumber = models.IntegerField()
+    demand = models.FloatField()
+    owner = models.ForeignKey(GrowerInfo)
+
+    def __unicode__(self):
+        return "Demand for {}.".format(self.owner.name)
+
+
 class Constants(object):
     """
     Utility class for accessing basin specific constants. Also used to store
@@ -381,13 +336,13 @@ class Constants(object):
 
 class UserProfile(models.Model):
     user = models.ForeignKey(User)
-    grower_id = models.ForeignKey(GrowerInfo)
+    owner = models.ForeignKey(GrowerInfo)
 
     def __unicode__(self):
         identifier = self.user if self.user else self.id
-        return "{} ({})".format(self.grower_id, identifier)
+        return "{} ({})".format(self.basin, identifier)
 
     class Meta:
-        ordering = ("grower_id",)
+        ordering = ("owner",)
         verbose_name = _("user profile")
-        verbose_name_plural = _("grower info")
+        verbose_name_plural = _("user profile")
