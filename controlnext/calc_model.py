@@ -19,41 +19,13 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-def cross(series, cross=0, direction='cross'):
-    """
-    Given a Series returns all the index values where the data values equal
-    the 'cross' value.
-
-    Direction can be 'rising' (for rising edge), 'falling' (for only falling
-    edge), or 'cross' for both edges.
-    """
-    # Find if values are above or below yvalue crossing:
-    above = series.values > cross
-    below = np.logical_not(above)
-    left_shifted_above = above[1:]
-    left_shifted_below = below[1:]
-    # Find indexes on left side of crossing point
-    if direction == 'rising':
-        idxs = (left_shifted_above & below[0:-1]).nonzero()[0]
-    elif direction == 'falling':
-        idxs = (left_shifted_below & above[0:-1]).nonzero()[0]
-    else:
-        rising = left_shifted_above & below[0:-1]
-        falling = left_shifted_below & above[0:-1]
-        idxs = (rising | falling).nonzero()[0]
-
-    # Return crossings, if any
-    result = series.index[idxs]
-    return result
-
-
 def fill_m3_to_pct(ts, max_storage):
     ts /= max_storage
     ts *= 100
     return ts
 
 
-class CalculationModel(object):     # @TODO: TOO COMPLEX!!!! REMOVE COMPLEXITY
+class CalculationModel(object):
     def __init__(self, demand_table, fews_data):
         self.demand_table = demand_table
         self.fews_data = fews_data
@@ -74,8 +46,7 @@ class CalculationModel(object):     # @TODO: TOO COMPLEX!!!! REMOVE COMPLEXITY
         ts = pd.Series(values, dates, name='uitstroom')
         return ts
 
-    def predict_scenario(self, _from, current_fill_m3, desired_fill_m3,
-                         demand_m3, rain_mm, max_uitstroom_m3,
+    def predict_scenario(self, _from, current_fill_m3, demand_m3, rain_mm,
                          dt_aflaat_open=None, dt_aflaat_dicht=None,
                          aflaat_capaciteit=0):
         toestroom_m3 = rain_mm * (self.constants.rain_flood_surface / 1000)
@@ -94,33 +65,14 @@ class CalculationModel(object):     # @TODO: TOO COMPLEX!!!! REMOVE COMPLEXITY
                 toestroom_m3[osmose_indexes[0]:osmose_indexes[-1]] += \
                     self.constants.reverse_osmosis
 
-        vaste_verandering = toestroom_m3 - demand_m3  # + current_fill_m3
+        vaste_verandering = toestroom_m3 - demand_m3
         if ((dt_aflaat_open is not None) and (dt_aflaat_dicht is not None)):
             aflaat_uitstroom = rain_mm.copy()
             aflaat_uitstroom[pd.Timestamp(dt_aflaat_open):pd.Timestamp(
                 dt_aflaat_dicht)] = aflaat_capaciteit
             vaste_verandering = vaste_verandering - aflaat_uitstroom
-        variabele_verandering = np.zeros(len(vaste_verandering))
-        totale_verandering = vaste_verandering + variabele_verandering
-        result = totale_verandering.cumsum() + current_fill_m3
-        for i in xrange(len(vaste_verandering) - 1):
-            if result[i + 1] > desired_fill_m3:
-                # volgende tijdstap wordt gewenste vulgraad overschreden, dus
-                # zet de uitstroom aan
-                variabele_verandering[i] = (
-                    -self.basin.max_outflow_per_timeunit)
-                # bereken de nieuwe situatie
-                totale_verandering = vaste_verandering + variabele_verandering
-                result = totale_verandering.cumsum() + current_fill_m3
+        result = vaste_verandering.cumsum() + current_fill_m3
 
-        uitstroom_m3 = pd.Series(
-            variabele_verandering,
-            index=result.index,
-            name='uitstroom'
-        )
-        omslagpunten = cross(result, desired_fill_m3)
-        omslagpunt = omslagpunten[0] if len(omslagpunten) > 0 else None
-        #result[_from: _from + datetime.timedelta(hours=24)] += -50
         # sommeer waarden boven de max berging
         result_24h = result[:_from + datetime.timedelta(hours=24)]
         overstort_24h = result_24h[result_24h.values > self.constants.
@@ -145,17 +97,11 @@ class CalculationModel(object):     # @TODO: TOO COMPLEX!!!! REMOVE COMPLEXITY
 
         return {
             'prediction': result,
-            'omslagpunt': omslagpunt,
             'overstort_24h': overstort_24h,
             'overstort_5d': overstort_5d,
-            'intermediate': {
-                'uitstroom': uitstroom_m3,
-                'toestroom': toestroom_m3.cumsum(),
-            },
         }
 
-    def predict_fill(self, _from, to, desired_fill_pct, demand_exaggerate_pct,
-                     rain_exaggerate_pct, outflow_open=None,
+    def predict_fill(self, _from, to, outflow_open=None,
                      outflow_closed=None, outflow_capacity=0):
         # do some input validation here, to ensure we are dealing with sane
         # numbers
@@ -164,12 +110,6 @@ class CalculationModel(object):     # @TODO: TOO COMPLEX!!!! REMOVE COMPLEXITY
         # @TODO remove desired_fill_pct, deactivated with 200.0 up to new
         # @TODO mission
         desired_fill_pct = float(200.0)
-        #if 0 > desired_fill_pct > 100:
-        #    raise ValueError('value should be a percentage between 0 and 100')
-        if 0 > demand_exaggerate_pct:
-            raise ValueError('value should be a percentage > 0')
-        if 0 > rain_exaggerate_pct:
-            raise ValueError('value should be a percentage > 0')
 
         # determine desired fill in m^3
         desired_fill_m3 = (self.constants.max_storage *
@@ -187,12 +127,6 @@ class CalculationModel(object):     # @TODO: TOO COMPLEX!!!! REMOVE COMPLEXITY
         _from = rain_mean.index[0]
         to = rain_mean.index[-1]
 
-        # optionele overdrijf factor voor regen
-        if rain_exaggerate_pct != 100:
-            rain_exaggerate = rain_exaggerate_pct / 100
-            rain_min *= rain_exaggerate
-            rain_mean *= rain_exaggerate
-
         # create a no rain series
         rain_zero = rain_min.copy()
         rain_zero[...] = 0
@@ -203,21 +137,8 @@ class CalculationModel(object):     # @TODO: TOO COMPLEX!!!! REMOVE COMPLEXITY
         current_fill = self.fews_data.get_current_fill(to)
         current_fill_m3 = current_fill['current_fill_m3']
 
-        # define current_fill_own_meter if basin has its own meter
-        if self.basin.has_own_meter:
-            current_fill_own_meter = self.fews_data.get_current_fill(
-                to, own_meter=True)
-            current_fill_own_meter_m3 = (
-                current_fill_own_meter['current_fill_m3'])
-
         # bereken watervraag over deze periode
         demand_m3 = self.demand_table.get_demand(_from, to)
-
-        # pas reguliere watervraag aan met de opgegeven factor
-        if demand_exaggerate_pct != 100:
-            demand_exaggerate = demand_exaggerate_pct / 100
-            demand_m3 *= demand_exaggerate
-            #demand_m3 = demand_m3.cumsum()
 
         # leidt aantal periodes af uit een vd 'input' tijdreeksen
         periods = len(rain_mean)
@@ -242,15 +163,6 @@ class CalculationModel(object):     # @TODO: TOO COMPLEX!!!! REMOVE COMPLEXITY
                 'demand': demand_m3,
             }
         }
-        if self.basin.has_own_meter:
-            result.update({
-                'history_own_meter': fill_m3_to_pct(
-                    current_fill_own_meter['fill_history_m3'],
-                    self.constants.max_storage),
-                'current_fill_own_meter': fill_m3_to_pct(
-                    current_fill_own_meter_m3,
-                    self.constants.max_storage),
-            })
 
         # bereken de drie scenarios
         calc_scenarios = {
@@ -259,8 +171,7 @@ class CalculationModel(object):     # @TODO: TOO COMPLEX!!!! REMOVE COMPLEXITY
         }
         for scenario, rain in calc_scenarios.items():
             result['scenarios'][scenario] = self.predict_scenario(
-                _from, current_fill_m3, desired_fill_m3, demand_m3, rain,
-                max_uitstroom_m3, outflow_open, outflow_closed,
-                outflow_capacity)
+                _from, current_fill_m3, demand_m3, rain, outflow_open,
+                outflow_closed, outflow_capacity)
 
         return result

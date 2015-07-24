@@ -36,21 +36,21 @@ def get_day(date):
 
 class EvaporationTable(object):
     def __init__(self, basin, crop_surface):
-        self.crop_type = basin.owner.crop
+        self.crop_type = basin.grower.crop
         self.crop_surface = crop_surface
-        self.owner = basin.owner
+        self.grower = basin.grower
         self.data = self._retrieve_demand()
         self.basin = basin
 
     def _retrieve_demand(self):
-        demands = models.WaterDemand.objects.filter(owner=self.owner)
+        demands = models.WaterDemand.objects.filter(grower=self.grower)
         demand_dict = {}
         for demand in demands:
             demand_dict[demand.daynumber] = demand.demand
         return demand_dict
 
     def demands_for_gui(self):
-        demands = models.WaterDemand.objects.filter(owner=self.owner)
+        demands = models.WaterDemand.objects.filter(grower=self.grower)
         demand_dict = {}
         for demand in demands:
             demand_dict[demand.weeknumber] = demand.demand
@@ -75,11 +75,6 @@ class EvaporationTable(object):
         elif day_number == 366:
             day_number = 365
         return self.get_evaporation_for_day(day_number)
-
-    def get_week_demand_on(self, start_date):
-        # needed for calc model
-        end_date = start_date + datetime.timedelta(days=7)
-        return self.get_total_demand(start_date, end_date)
 
     def get_demand_raw(self, _from, to):
         """Use for demand chart."""
@@ -123,20 +118,3 @@ class EvaporationTable(object):
         ts *= self.basin.recirculation
         result = ts[from_adj:to_adj]
         return result
-
-    def get_total_demand(self, _from, to):
-        return self.get_demand(_from, to).sum()
-
-    def plot(self):
-        '''
-        Useful for debugging.
-        '''
-        import matplotlib.pyplot as plt
-        ts = self.get_demand(mktim(2012, 1, 1, 0, 0),
-                             mktim(2013, 1, 1, 0, 0))
-        fig = plt.figure(figsize=(24, 6))
-        axes = ts.plot()
-        fig.add_subplot(axes)
-        axes.set_ylabel('evaporation (in m3/acre/15min) (crop: %s)' %
-                        self.crop_type)
-        fig.savefig('evaporation_plot_%s.png' % self.crop_type)

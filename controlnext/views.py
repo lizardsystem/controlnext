@@ -36,12 +36,12 @@ def find_basin(random_url_slug):
     try:
         grower = models.GrowerInfo.objects.get(
             random_url_slug=random_url_slug)
-        basin = models.Basin.objects.get(owner=grower)
+        basin = models.Basin.objects.get(grower=grower)
         return basin
     except MultipleObjectsReturned:
         logger.error("Multiple basins found for one grower ({grower}), "
                      "redirected to first.".format(grower=grower.name))
-        return models.Basin.objects.filter(owner=grower)[:1].get()
+        return models.Basin.objects.filter(grower=grower)[:1].get()
     except ObjectDoesNotExist:
         raise Http404
 
@@ -50,10 +50,7 @@ class BasinDataView(APIView):
     """Update basin."""
 
     def post(self, request, random_url_slug):
-        try:
-            basin = models.Basin.objects.get(random_url_slug=random_url_slug)
-        except ObjectDoesNotExist:
-            raise Http404
+        basin = find_basin(random_url_slug)
         osmose_date = request.POST.get("osmose_till_date")
         date_format = "%d-%m-%Y"
         if basin.osmose_till_date.strftime(date_format) != osmose_date:
@@ -75,7 +72,7 @@ class DemandView(APIView):
         data = request.POST
         for key in sorted(data.iterkeys()):
             demands = models.WaterDemand.objects.filter(
-                **{'owner': grower, 'weeknumber': key})
+                **{'grower': grower, 'weeknumber': key})
             for demand in demands:
                 if data.get(key) is None:
                     continue
@@ -88,14 +85,13 @@ class DemandView(APIView):
 class BasinView(UiView):
     template_name = 'controlnext/basin_detail.html'
     page_title = _('ControlNEXT')
-    required_permission = True
 
     def get(self, request, random_url_slug, *args, **kwargs):
         self.basin = find_basin(random_url_slug)
         self.random_url_slug = random_url_slug
-        if (self.basin.owner.crop and
-                is_valid_crop_type(self.basin.owner.crop)):
-            self.crop_type = self.basin.owner.crop
+        if (self.basin.grower.crop and
+                is_valid_crop_type(self.basin.grower.crop)):
+            self.crop_type = self.basin.grower.crop
         return super(BasinView, self).get(request, *args, **kwargs)
 
     def current_demand(self):
@@ -141,7 +137,7 @@ class DataService(APIView):
         with open(path, 'a') as file:
             file.write(';'.join(parameters) + '\n')
 
-    def get(self, request, random_url_slug, *args, **kwargs):  # @TODO: TOO COMPLEX!!!
+    def get(self, request, random_url_slug, *args, **kwargs):
         self.basin = find_basin(random_url_slug)
         self.constants = Constants(self.basin)
         graph_type = request.GET.get('graph_type', None)
@@ -187,23 +183,14 @@ class DataService(APIView):
             self.constants.osmose_till_date = datetime.datetime.strptime(
                 osmose_till_date, date_format).date()
 
-        desired_fill = request.GET.get('desired_fill')
-        demand_exaggerate = request.GET.get('demand_exaggerate')
-        rain_exaggerate = request.GET.get('rain_exaggerate')
-        desired_fill = int(desired_fill)
-        demand_exaggerate = int(demand_exaggerate)
-        rain_exaggerate = int(rain_exaggerate)
-
         # note: t0 is Math.floor() 'ed to a full quarter
         t0 = round_date(datetime.datetime.now(pytz.utc))
         if hours_diff:
             t0 += datetime.timedelta(hours=int(hours_diff))
 
         if graph_type == 'rain':
-            response_dict = self.rain(t0, rain_exaggerate)
+            response_dict = self.rain(t0)
         elif graph_type == 'prediction' or graph_type == 'meter_comparison':
-            self.store_parameters(desired_fill, demand_exaggerate,
-                                  rain_exaggerate)
             outflow_open = request.GET.get('outflowOpen', None)
             outflow_closed = request.GET.get('outflowClosed', None)
             outflow_capacity = request.GET.get('outflowCapacity', 0)
@@ -214,8 +201,7 @@ class DataService(APIView):
                 outflow_closed = datetime.datetime.fromtimestamp(
                     int(outflow_closed) / 1000, pytz.utc)
             response_dict = self.prediction(
-                t0, desired_fill, demand_exaggerate, rain_exaggerate,
-                graph_type, outflow_open, outflow_closed, outflow_capacity)
+                t0, outflow_open, outflow_closed, outflow_capacity)
         else:
             table = EvaporationTable(self.basin,
                                      self.constants.rain_flood_surface)
@@ -225,9 +211,6 @@ class DataService(APIView):
             result = {
                 'graph_info': {
                     'data': self.series_to_js(data),
-                    'x0': self.datetime_to_js(t0),
-                    'unit': 'mmmm',
-                    'type': graph_type
                 }
             }
             response_dict = result
@@ -239,123 +222,28 @@ class DataService(APIView):
         table = EvaporationTable(self.basin, self.constants.rain_flood_surface)
         return table
 
-    def prediction(self, t0, desired_fill_pct, demand_exaggerate,
-                   rain_exaggerate, graph_type, outflow_open,
-                   outflow_closed, outflow_capacity):
-
+    def prediction(self, t0, outflow_open, outflow_closed, outflow_capacity):
         tbl = EvaporationTable(self.basin, self.constants.rain_flood_surface)
         ds = FewsJdbcDataSource(self.basin, self.constants)
         model = CalculationModel(tbl, ds)
         future = t0 + settings.CONTROLNEXT_FILL_PREDICT_FUTURE
 
-        prediction = model.predict_fill(t0, future, desired_fill_pct,
-                                        demand_exaggerate, rain_exaggerate,
-                                        outflow_open, outflow_closed,
-                                        outflow_capacity)
-
-        if desired_fill_pct == 0:  # first load version
-            desired_fill_pct = prediction['current_fill']
-
+        prediction = model.predict_fill(t0, future, outflow_open,
+                                        outflow_closed, outflow_capacity)
         data = {name: self.series_to_js(scenario['prediction'])
                 for name, scenario in prediction['scenarios'].items()}
         data['history'] = self.series_to_js(prediction['history'])
-        if self.basin.has_own_meter:
-            data['history_own_meter'] = self.series_to_js(
-                prediction['history_own_meter'])
-
         graph_info = {
-            'type': graph_type,
             'data': data,
-            'x0': self.datetime_to_js(t0),
-            'y_marking_min': self.constants.min_storage_pct,
-            'y_marking_max': self.constants.max_storage_pct,
-            'x_marking_omslagpunt': self.datetime_to_js(
-                prediction['scenarios']['mean']['omslagpunt']),
-            'y_marking_desired_fill': desired_fill_pct,
-            'desired_fill': desired_fill_pct,
-            'rain_flood_surface': self.constants.rain_flood_surface,
-            'basin_storage': self.constants.max_storage,
-            'reverse_osmosis': self.constants.reverse_osmosis,
         }
         result = {
             'graph_info': graph_info,
             'overflow_24h': prediction['scenarios']['mean']['overstort_24h'],
             'overflow_5d': prediction['scenarios']['mean']['overstort_5d'],
-            'demand_week': tbl.get_week_demand_on(t0),
-            'demand_24h': tbl.get_total_demand(
-                t0, t0 + datetime.timedelta(hours=24)),
-            'current_fill': prediction['current_fill'],
         }
-        if self.basin.has_own_meter:
-            result['current_fill_own_meter'] = (
-                prediction['current_fill_own_meter'])
         return result
 
-    def advanced(self, t0, desired_fill_pct, demand_exaggerate,
-                 rain_exaggerate, graph_type):  # @TODO: TOO COMPLEX!!!
-        tbl = self.get_demand_table()
-        ds = FewsJdbcDataSource(self.basin, self.constants)
-        model = CalculationModel(tbl, ds)
-        future = t0 + settings.CONTROLNEXT_FILL_PREDICT_FUTURE
-
-        prediction = model.predict_fill(
-            t0, future, desired_fill_pct, demand_exaggerate, rain_exaggerate)
-
-        data = []
-        data_2 = []  # optional secondary dataset
-        unit = ''
-        historic_data = []
-        if graph_type == 'demand':
-            data = prediction['intermediate']['demand']
-            unit = 'm3'
-        elif graph_type == 'max_uitstroom':
-            data = prediction['intermediate']['max_uitstroom']
-            unit = 'm3'
-        elif graph_type == 'toestroom':
-            data = prediction['scenarios']['mean']['intermediate']['toestroom']
-            unit = 'm3'
-        elif graph_type == 'uitstroom':
-            data = prediction['scenarios']['mean']['intermediate']['uitstroom']
-            unit = 'm3'
-            if self.basin.has_discharge_valve:
-                historic_data = ds.get_discharge_valve_data(t0)
-        elif graph_type == 'greenhouse_discharge':
-            unit = 'm3'
-            data_method = ds.get_greenhouse_valve_data
-            if self.basin.has_greenhouse_valve_1:
-                data = data_method(t0, valve_nr=1)
-            if self.basin.has_greenhouse_valve_2:
-                dataset = data_method(t0, valve_nr=2)
-                if len(data):
-                    data_2 = dataset
-                else:
-                    data = dataset
-        elif graph_type == '5day_rain':
-            data = ds.get_5day_rain_data(t0, predicted=True)
-            unit = 'mm'
-            historic_data = ds.get_5day_rain_data(t0)
-
-        result = {
-            'graph_info': {
-                'data': self.series_to_js(data),
-                'x0': self.datetime_to_js(t0),
-                'unit': unit,
-                'type': graph_type
-            }
-        }
-        # need to use len for testing truth value, because it is a pandas
-        # Series instance (numpy array)
-        if len(historic_data):
-            result['graph_info'].update(
-                {'history': self.series_to_js(historic_data)})
-        # if secondary dataset exists, add it to the result
-        if len(data_2):  # need to use len for truth checking (numpy array)
-            result['graph_info'].update(
-                {'data_2': self.series_to_js(data_2)})
-
-        return result
-
-    def rain(self, t0, rain_exaggerate_pct):
+    def rain(self, t0):
         _from = t0 - settings.CONTROLNEXT_FILL_HISTORY
         to = t0 + settings.CONTROLNEXT_FILL_PREDICT_FUTURE
 
@@ -363,12 +251,6 @@ class DataService(APIView):
         mean = ds.get_rain('mean', _from, to)
         sum_ = ds.get_rain('sum', t0, to)
         kwadrant = ds.get_rain('kwadrant', t0, to)
-
-        if rain_exaggerate_pct != 100:
-            rain_exaggerate = rain_exaggerate_pct / 100
-            mean *= rain_exaggerate
-            sum_ *= rain_exaggerate
-            kwadrant *= rain_exaggerate
 
         rain_graph_info = {
             'data': {
@@ -398,7 +280,7 @@ class ControlnextLoginView(LoginView):
             username = form.cleaned_data['username']
             user = User.objects.get(username=username)
             try:
-                grower_url_slug = UserProfile.objects.get(user=user).owner\
+                grower_url_slug = UserProfile.objects.get(user=user).grower\
                     .random_url_slug
                 next_url = "/controlnext/" + grower_url_slug
             except ObjectDoesNotExist:

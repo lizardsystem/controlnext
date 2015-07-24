@@ -6,7 +6,7 @@ demandChart:false, console:false*/
     /* ************************************************************************ */
     var defaultTimeSpan = 96;
     var selectedTimeSpan = defaultTimeSpan;
-    
+
     var nowReal = moment();
     var now = moment(nowReal).startOf('hour');
     var hist = moment(now).subtract({days: 2});
@@ -23,7 +23,7 @@ demandChart:false, console:false*/
     var precipitationmax = null;
 
     var lineWidth = 4;
-    
+
     var convertCapacity = function(capacityPerHour) {
 	var capacityPer15min = parseInt(capacityPerHour);
 		if (capacityPer15min >= 0) {
@@ -38,7 +38,6 @@ demandChart:false, console:false*/
         var data_url = $constants.attr('data-data-url');
         var osmosePer15min = convertCapacity(dashboardViewModel.osmoseCapacity());
         var query_params = "graph_type=demand&format=json&" +
-            "desired_fill=0&demand_exaggerate=100&rain_exaggerate=100&" +
             "reverse_osmosis=" + osmosePer15min + "&" +
             "rain_flood_surface=" + dashboardViewModel.rainFloodSurface() + "&" +
             "basin_storage=" + dashboardViewModel.basinMaxStorage();
@@ -52,7 +51,7 @@ demandChart:false, console:false*/
 		    newDemandMax = (newDemandMax < demandRaw[i][1]) ? demandRaw[i][1]: newDemandMax;
 		    var arg = new Date(demandRaw[i][0]);
 		    data.push({arg: arg, y: demandRaw[i][1]});
-		}	
+		}
 		// add 1 for visualization
 		dashboardViewModel.demandMax(newDemandMax + 1);
 		dashboardViewModel.viewTimespan({start: viewmin, end: viewmax});
@@ -70,7 +69,6 @@ demandChart:false, console:false*/
         var data_url = $constants.attr('data-data-url');
         var osmosePer15min = convertCapacity(dashboardViewModel.osmoseCapacity());
         var query_params = "graph_type=rain&format=json&" +
-            "desired_fill=0&demand_exaggerate=100&rain_exaggerate=100&" +
             "reverse_osmosis=" + osmosePer15min + "&" +
             "rain_flood_surface=" + dashboardViewModel.rainFloodSurface() + "&" +
             "basin_storage=" + dashboardViewModel.basinMaxStorage();
@@ -156,7 +154,6 @@ demandChart:false, console:false*/
         }
 
         var query_params = "graph_type=prediction&format=json&" +
-            "desired_fill=0&demand_exaggerate=100&rain_exaggerate=100&" +
             "reverse_osmosis=" + osmosePer15min + "&" +
             "outflowOpen=" + dashboardViewModel.outflowOpened().toDate()
                 .getTime() + "&" +
@@ -233,16 +230,16 @@ demandChart:false, console:false*/
 
     var setAvailableMM = function(actualwater) {
 	/**
-	   Calculate mm per m2 may fall on the roof of the glass house to 
+	   Calculate mm per m2 may fall on the roof of the glass house to
 	   to reach the threshold of the basin.
 	 */
 	var availableWaterPr = 100 - actualwater;
 	var valueToRainPerMM = 0;
 	if (availableWaterPr > 0) {
 	    var availableValue = (dashboardViewModel.basinMaxStorage() * availableWaterPr / 100);
-	    valueToRainPerMM = (availableValue / dashboardViewModel.rainFloodSurface()) * 1000;	    
+	    valueToRainPerMM = (availableValue / dashboardViewModel.rainFloodSurface()) * 1000;
 	}
-	$("#label-actual-water").text(parseInt(valueToRainPerMM) + " mm opvang capaciteit");	
+	$("#label-actual-water").text(parseInt(valueToRainPerMM) + " mm opvang capaciteit");
     };
 
     // Initialize a bound Knockout.js model.
@@ -568,7 +565,7 @@ demandChart:false, console:false*/
                 console.log(message);
             }
         };
-	
+
         $("#precipitation-chart").dxChart(precipitationChartOptions);
 	    precipitationChart = $("#precipitation-chart").dxChart('instance');
     };
@@ -580,9 +577,9 @@ demandChart:false, console:false*/
             container: 'body',
             placement: 'auto left'
         });
-        
+
         ko.applyBindings(dashboardViewModel);
-	
+
         // Update the Chart.js charts timespans when the model changes.
         dashboardViewModel.viewTimespan.subscribe(function(newValue) {
             console.log('viewTimespan changed', newValue);
@@ -597,11 +594,6 @@ demandChart:false, console:false*/
                     endValue: endValue
                 }
             });
-        });
-
-        // Randomize the vertical fill gauge when outflow changes.
-        dashboardViewModel.outflowOpened.subscribe(function(newValue) {
-            //dashboardViewModel.advisedFill(Math.random() * 100);
         });
 
         // Build a series containing labels only.
@@ -869,12 +861,12 @@ demandChart:false, console:false*/
 	$( "button[data-timespan='" + hoursRel + "']")[0].click();
     }
 
-    $('.datepicker').datepicker(); 
+    $('.datepicker').datepicker();
 
     $(document).ready(function() {
 	$("body").tooltip({ selector: '[data-toggle=tooltip]' });
     });
-        
+
     $(document).ready(function(){init(); setTimeSpan(defaultTimeSpan); loadGraphs(); });
 
 	$('body').on('click', '.btn-group button', function (e) {

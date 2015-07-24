@@ -48,7 +48,7 @@ class Command(BaseCommand):
             self.stdout.write('Update demand.')
         except Exception, ex:
             demand = models.WaterDemand(
-                owner=models.GrowerInfo.objects.get(pk=row['grower_id']),
+                grower=models.Basin.objects.get(pk=row['grower_id']),
                 daynumber=row['day_number'],
                 demand=row['evaporation'],
                 weeknumber=row['week_number'])
