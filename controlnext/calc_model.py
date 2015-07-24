@@ -107,28 +107,15 @@ class CalculationModel(object):
         # numbers
         validate_date(_from)
         validate_date(to)
-        # @TODO remove desired_fill_pct, deactivated with 200.0 up to new
-        # @TODO mission
-        desired_fill_pct = float(200.0)
-
-        # determine desired fill in m^3
-        desired_fill_m3 = (self.constants.max_storage *
-                           (desired_fill_pct / 100))
 
         rain_mean = self.fews_data.get_rain('mean', _from, to)
-        if to < round_date(datetime.datetime.now(tz=pytz.utc)):
-            # HACK: indien data uit het verleden wordt opgevraagd, zit er geen
-            # min en max meer in FEWS
-            rain_min = rain_mean
-        else:
-            rain_min = self.fews_data.get_rain('min', _from, to)
         # gebruik de datum van de laatst beschikbaar regenvoorspelling als
         # from en to waarden
         _from = rain_mean.index[0]
         to = rain_mean.index[-1]
 
         # create a no rain series
-        rain_zero = rain_min.copy()
+        rain_zero = rain_mean.copy()
         rain_zero[...] = 0
         rain_zero.name = 'rain_zero'
 

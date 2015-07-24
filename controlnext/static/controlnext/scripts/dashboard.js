@@ -17,8 +17,8 @@ demandChart:false, console:false*/
     var argmax = moment(future);
     var viewmin = moment(now).subtract({hours: 672});
     var viewmax = moment(now).add({hours: 672});
-    var outflowmin = moment(now).subtract({minutes: 120});
-    var outflowmax = moment(now);
+    var outflowmin = moment(now).subtract({minutes: 130});
+    var outflowmax = moment(now).subtract({minutes: 10});
     var demandmax = null;
     var precipitationmax = null;
 
