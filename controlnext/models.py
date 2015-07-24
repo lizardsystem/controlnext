@@ -77,34 +77,38 @@ def is_valid_crop_type(crop_type):
 class Basin(geomodels.Model):
     """Basin specific model.
     """
-    grower = models.ForeignKey('GrowerInfo')
+    grower = models.ForeignKey('GrowerInfo', verbose_name=_("grower"))
     name = models.CharField(max_length=100, blank=True, null=True,
                             verbose_name=_("name of the basin"),
                             help_text=_("must be unique for grower"))
-    location = geomodels.PointField(blank=True, null=True, srid=SRID)
+    location = geomodels.PointField(blank=True, null=True, srid=SRID,
+                                    verbose_name=_("location"))
 
     # water level meter params
     filter_id = models.CharField(
         max_length=100, blank=True, null=True,
-        help_text=_("e.g. waterstand_basins"))
+        help_text=_("e.g. waterstand_basins"), verbose_name = _("filter id"))
     location_id = models.CharField(
-        max_length=100, blank=True, null=True)
+        max_length=100, blank=True, null=True, verbose_name=_("location id"))
     parameter_id = models.CharField(max_length=100, blank=True,
                                     null=True)
 
     recirculation = models.FloatField(default=float(0.0),
                                       help_text=(
                                           "Water recirculation coefficient " +
-                                          "from 0.0 to 1.0.")
+                                          "from 0.0 to 1.0."),
+                                      verbose_name=_("recirculation")
                                       )
     # rain info
     # rain_filter_id = 'neerslag_combo' # Neerslag gecombimeerd
     rain_filter_id = models.CharField(max_length=100, blank=True, null=True,
-                                      help_text=_("e.g. neerslag_combo"))
+                                      help_text=_("e.g. neerslag_combo"),
+                                      verbose_name=_("rain filter id"))
     # rain_location_id = 'OPP1'  # Oranjebinnenpolder Oost
     rain_location_id = models.CharField(
         max_length=100, blank=True, null=True,
-        help_text=_("e.g. OPP1 (i.e. Oranjebinnenpolder Oost)"))
+        help_text=_("e.g. OPP1 (i.e. Oranjebinnenpolder Oost)"),
+        verbose_name=_("rain location id"))
     # basin parameters
     max_storage = models.IntegerField(
         blank=True, null=True,
@@ -123,17 +127,18 @@ class Basin(geomodels.Model):
     osmose_till_date = models.DateField(blank=True, null=True,
                                         default=datetime.now,
                                         verbose_name=_(
-                                            "reverse osmosis date till (m3/h)")
+                                            "reverse osmosis date till")
                                         )
     # current fill data
     # in m^3
     current_fill = models.DecimalField(
         max_digits=10, decimal_places=2, blank=True, null=True,
         verbose_name=_("current fill (m3)"))
-    current_fill_updated = models.DateTimeField(blank=True, null=True)
-
+    current_fill_updated = models.DateTimeField(blank=True, null=True,
+                                                verbose_name=_(
+                                                    "current fill updated"))
     jdbc_source = models.ForeignKey('lizard_fewsjdbc.JdbcSource', blank=True,
-                                    null=True)
+                                    null=True, verbose_name=_("jdbc source"))
 
     objects = geomodels.GeoManager()
 
@@ -170,10 +175,10 @@ class Basin(geomodels.Model):
 
 class WaterDemand(models.Model):
 
-    daynumber = models.IntegerField()
-    weeknumber = models.IntegerField()
-    demand = models.FloatField()
-    grower = models.ForeignKey(GrowerInfo)
+    daynumber = models.IntegerField(verbose_name=_("day number"))
+    weeknumber = models.IntegerField(verbose_name=_("week number"))
+    demand = models.FloatField(verbose_name=_("demand"))
+    grower = models.ForeignKey(GrowerInfo, verbose_name=_("grower"))
 
     def __unicode__(self):
         return "Demand for {}.".format(self.grower.name)
@@ -200,8 +205,8 @@ class Constants(object):
 
 
 class UserProfile(models.Model):
-    user = models.ForeignKey(User)
-    grower = models.ForeignKey(GrowerInfo)
+    user = models.ForeignKey(User, verbose_name=_("user"))
+    grower = models.ForeignKey(GrowerInfo, verbose_name=_("grower"))
 
     def __unicode__(self):
         identifier = self.user if self.user else self.id

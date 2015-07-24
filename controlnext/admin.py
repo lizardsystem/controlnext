@@ -53,8 +53,18 @@ class BasinAdmin(GeoModelAdmin):
         }),
     )
 
+class UserProfileAdmin(admin.ModelAdmin):
+    fieldsets = (
+        (None, {
+            'classes': ['wide'],
+            'fields': (
+                'grower', 'user'
+            )
+        }),
+    )
 
-admin.site.register(UserProfile)
+
+admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(GrowerInfo, GrowerInfoAdmin)
 admin.site.register(Basin, BasinAdmin)
 admin.site.register(WaterDemand)

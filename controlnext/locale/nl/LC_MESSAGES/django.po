@@ -5,6 +5,7 @@
 # Translators:
 #   <admin@example.com>, 2013.
 #   <sander.smits@nelen-schuurmans.nl>, 2013.
+#   <roel.vandenberg@nelen-schuurmans.nl>, 2015
 msgid ""
 msgstr ""
 "Project-Id-Version: lizardsystem\n"
@@ -18,6 +19,58 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: nl\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#: models.py:178
+msgid "day number"
+msgstr "dagnummer"
+
+#: models.py:179
+msgid "week number"
+msgstr "weeknummer"
+
+#: models.py:180
+msgid "demand"
+msgstr "watervraag"
+
+#: models.py:216
+msgid "user profile"
+msgstr "gebruikersprofiel"
+
+#: models.py:80
+msgid "grower"
+msgstr "tuinder"
+
+#: models.py:95
+msgid "recirculation"
+msgstr "recirculatie"
+
+#: models.py:137
+msgid "current fill updated"
+msgstr "huidige vulling gewijzigd"
+
+#: models.py:135
+msgid "jdbc source"
+msgstr "jdbc bron"
+
+#: models.py:126
+msgid "reverse osmosis capacity (m3/h)"
+msgstr "capaciteit omgekeerde osmose (m3/u)"
+
+#: models.py:127
+msgid "reverse osmosis date till"
+msgstr "einddatum omgekeerde osmose"
+
+#: models.py:108
+msgid "rain location id"
+msgstr "regen locatie-id"
+
+#: models.py:91
+msgid "location id"
+msgstr "locatie-id"
+
+#: models.py:104
+msgid "rain filter id"
+msgstr "regen filter-id"
 
 #: admin.py:27 admin.py:61
 msgid "location"
