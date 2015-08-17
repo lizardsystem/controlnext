@@ -22,8 +22,8 @@ install_requires = [
     'requests',
     'suds',
     'translations',
-    'pysqlite == 2.6.3',
     'pyproj',
+    'matplotlib',
 ],
 
 tests_require = [

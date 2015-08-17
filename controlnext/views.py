@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 import datetime
 import logging
-import os
 
 from django.contrib.auth.models import User
 from django.contrib.auth import login
@@ -44,20 +43,6 @@ def find_basin(random_url_slug):
         return models.Basin.objects.filter(grower=grower)[:1].get()
     except ObjectDoesNotExist:
         raise Http404
-
-
-class BasinDataView(APIView):
-    """Update basin."""
-
-    def post(self, request, random_url_slug):
-        basin = find_basin(random_url_slug)
-        osmose_date = request.POST.get("osmose_till_date")
-        date_format = "%d-%m-%Y"
-        if basin.osmose_till_date.strftime(date_format) != osmose_date:
-            basin.osmose_till_date = datetime.datetime\
-                .strptime(osmose_date, date_format).date()
-            basin.save()
-        return RestResponse({"success": True})
 
 
 class DemandView(APIView):
@@ -106,6 +91,12 @@ class BasinView(UiView):
         table = EvaporationTable(self.basin, None)
         return table.demands_for_gui()
 
+def float_or_none(val):
+    try:
+        return float(val)
+    except TypeError:
+        return None
+
 
 class DataService(APIView):
     JS_EPOCH = datetime.datetime(1970, 1, 1, tzinfo=pytz.utc)
@@ -117,25 +108,8 @@ class DataService(APIView):
     def series_to_js(self, pdseries):
         # bfill because sometimes first element is a NaN
         pdseries = pdseries.fillna(method='bfill')
-        return [(self.datetime_to_js(dt), str(value))
+        return [(self.datetime_to_js(dt), float_or_none(value))
                 for dt, value in pdseries.iterkv()]
-
-    def store_parameters(self, desired_fill, demand_exaggerate,
-                         rain_exaggerate, extra=''):
-        path = settings.REQUESTED_VALUES_CSV_PATH
-        directory = os.path.dirname(path)
-        if not os.path.isdir(directory):
-            os.makedirs(directory)
-        if not os.path.isfile(path):
-            # write column headers
-            with open(path, 'w') as file:
-                file.write(
-                    'desired_fill;demand_exaggerate;rain_exaggerate;extra\n')
-                # write parameter values
-        parameters = [desired_fill, demand_exaggerate, rain_exaggerate, extra]
-        parameters = map(str, parameters)
-        with open(path, 'a') as file:
-            file.write(';'.join(parameters) + '\n')
 
     def get(self, request, random_url_slug, *args, **kwargs):
         self.basin = find_basin(random_url_slug)

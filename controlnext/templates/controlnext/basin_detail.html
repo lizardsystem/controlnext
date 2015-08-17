@@ -61,7 +61,7 @@
 
                         <table class="basin-data-detail-table-2">
 			  <tr><td>
-			      <b>Watervraag</b><br><span data-bind="text: currentDemand"></span><span> l/m<sup>2</sup>/etmaal</span>
+			      <b>Watervraag</b ><br><span data-bind="text: currentDemand"></span><span> l/m<sup>2</sup>/etmaal</span>
 			      <div class="popover-markup"> <a href="#" class="trigger" id="bewerken">Bewerken</a> 
 				<div class="head hide" id="demandTitle">Bewerken</div>
 				<div class="content hide" id="demandPopover">
@@ -341,7 +341,6 @@
     var basinmaxstorage = {{ view.basin.max_storage|default:0 }};
     var currentdemand = {{ view.current_demand|default:0 }};
     var currentweek = moment.utc().isoWeeks();
-    var save_basin_data_url = "{% url controlnext_save_basin_data view.basin.id %}";
 </script>
 <script src="{{ STATIC_URL }}controlnext/lib/ChartJS-13.1.8/dx.chartjs.debug.js"></script>
 <script src="{{ STATIC_URL }}controlnext/widgets/js/actualwater.js"></script>

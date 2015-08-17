@@ -11,7 +11,6 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from lizard_map.coordinates import transform_point
 
 SRID_WGS84 = 4326
 SRID = SRID_WGS84
@@ -153,24 +152,6 @@ class Basin(geomodels.Model):
     def __unicode__(self):
         identifier = self.name if self.name else self.id
         return "%s (%s)" % (self.grower.name, identifier)
-
-    def identifier(self):
-        return {
-            'basin': self.pk,
-            'type': 'basin',
-        }
-
-    def metadata_identifier(self):
-        return {
-            'basin': self.pk,
-            'type': 'metadata',
-        }
-
-    def metadata_identifier_json(self):
-        return json.dumps(self.metadata_identifier())
-
-    def name_metadata(self):
-        return "%s - metadata" % unicode(self)
 
 
 class WaterDemand(models.Model):

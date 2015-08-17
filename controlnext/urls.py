@@ -24,9 +24,6 @@ urlpatterns = patterns(
     url(r'^data_service/(?P<random_url_slug>\w+)/demand/$',
         views.DemandView.as_view(),
         name='controlnext-data-demand'),
-    url(r'^data_service/(?P<random_url_slug>\w+)/save/$',
-        views.BasinDataView.as_view(),
-        name='controlnext_save_basin_data'),
 )
 
 if getattr(settings, 'LIZARD_CONTROLNEXT_STANDALONE', False):

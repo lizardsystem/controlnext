@@ -44,18 +44,18 @@ demandChart:false, console:false*/
         $.ajax({
             url: data_url + '?' + query_params,
             success: function (response) {
-		var data = [];
-		var newDemandMax = 0;
-		var demandRaw = response.graph_info.data;
-		for (var i = 0; i < demandRaw.length; i++){
-		    newDemandMax = (newDemandMax < demandRaw[i][1]) ? demandRaw[i][1]: newDemandMax;
-		    var arg = new Date(demandRaw[i][0]);
-		    data.push({arg: arg, y: demandRaw[i][1]});
-		}
-		// add 1 for visualization
-		dashboardViewModel.demandMax(newDemandMax + 1);
-		dashboardViewModel.viewTimespan({start: viewmin, end: viewmax});
-		initDemandChart(data);
+                var data = [];
+                var newDemandMax = 0;
+                var demandRaw = response.graph_info.data;
+                for (var i = 0; i < demandRaw.length; i++){
+                    newDemandMax = (newDemandMax < demandRaw[i][1]) ? demandRaw[i][1]: newDemandMax;
+                    var arg = new Date(demandRaw[i][0]);
+                    data.push({arg: arg, y: demandRaw[i][1]});
+                }
+                // add 1 for visualization
+                dashboardViewModel.demandMax(newDemandMax + 1);
+                dashboardViewModel.viewTimespan({start: viewmin, end: viewmax});
+                initDemandChart(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 var $error = $('<p>Fout bij het laden van de grafiekdata: ' +
