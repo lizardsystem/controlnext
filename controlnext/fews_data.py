@@ -148,11 +148,11 @@ class FewsJdbcDataSource(object):
                 'and to.')
 
         qw = ("select time, value from "
-              "extimeseries where filterid='%s' and locationid='%s' "
-              "and parameterid='%s' and time between '%s' and '%s'" %
-              (filter_id, location_id, parameter_id,
-               _from.strftime(settings.CONTROLNEXT_JDBC_DATE_FORMAT),
-               to.strftime(settings.CONTROLNEXT_JDBC_DATE_FORMAT)))
+            "extimeseries where filterid='%s' and locationid='%s' "
+            "and parameterid='%s' and time between '%s' and '%s'" %
+            (filter_id, location_id, parameter_id,
+                _from.strftime(settings.CONTROLNEXT_JDBC_DATE_FORMAT),
+                to.strftime(settings.CONTROLNEXT_JDBC_DATE_FORMAT)))
 
         result = self.jdbc_source.query(qw)
 
