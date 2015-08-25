@@ -32,8 +32,8 @@
 			<h4>Dashboard DIG</h4>
 		      </td>
 		      <td  rowspan="2">
-			  {% if view.basin.owner.image %}
-		            <img id="situation-image" src="{{ view.basin.owner.image.url }}" width="80" height="86" align="right" />
+			  {% if view.basin.grower.image %}
+		            <img id="situation-image" src="{{ view.basin.grower.image.url }}" width="80" height="86" align="right" />
 			  {% elif view.crop_type %}
 		             <img id="situation-image" src="{{ STATIC_URL }}controlnext/{{ view.crop_type }}.jpg" width="80" height="86" align="right" />
 	                  {% else %}
@@ -61,7 +61,7 @@
 
                         <table class="basin-data-detail-table-2">
 			  <tr><td>
-			      <b>Watervraag</b><br><span data-bind="text: currentDemand"></span><span> l/m<sup>2</sup>/etmaal</span>
+			      <b>Watervraag</b ><br><span data-bind="text: currentDemand"></span><span> l/m<sup>2</sup>/etmaal</span>
 			      <div class="popover-markup"> <a href="#" class="trigger" id="bewerken">Bewerken</a> 
 				<div class="head hide" id="demandTitle">Bewerken</div>
 				<div class="content hide" id="demandPopover">
@@ -310,9 +310,9 @@
 </div>
 <div id="data-constants"
      data-url-base="{{ STATIC_URL }}controlnext/"
-     data-data-url="{% url controlnext-data-service view.basin.id %}"
-     data-demand-url = "{% url controlnext-data-demand view.basin.id %}"
-     data-oppervlakte="{{ view.basin.owner.rain_flood_surface }}"
+     data-data-url="{% url controlnext-data-service view.random_url_slug %}"
+     data-demand-url = "{% url controlnext-data-demand view.random_url_slug %}"
+     data-oppervlakte="{{ view.basin.rain_flood_surface }}"
      data-max-orraad="{{ view.basin.max_storage }}"
      style="display:none;">
 </div>
@@ -334,14 +334,13 @@
     // Force culture to Dutch.
     Globalize.culture('nl-NL');
     moment.lang('nl');
-    var outflowcapacity = {{ view.basin.owner.max_outflow_per_timeunit|default:0 }};
+    var outflowcapacity = {{ view.basin.max_outflow_per_timeunit|default:0 }};
     var osmosecapacity = {{ view.basin.reverse_osmosis|default:0 }};
     var osmosetilldate = moment("{{ view.basin.osmose_till_date }}").format("DD-MM-YYYY");
-    var rainfloodsurface = {{ view.basin.owner.rain_flood_surface|default:0 }};
+    var rainfloodsurface = {{ view.basin.rain_flood_surface|default:0 }};
     var basinmaxstorage = {{ view.basin.max_storage|default:0 }};
     var currentdemand = {{ view.current_demand|default:0 }};
     var currentweek = moment.utc().isoWeeks();
-    var save_basin_data_url = "{% url controlnext_save_basin_data view.basin.id %}";
 </script>
 <script src="{{ STATIC_URL }}controlnext/lib/ChartJS-13.1.8/dx.chartjs.debug.js"></script>
 <script src="{{ STATIC_URL }}controlnext/widgets/js/actualwater.js"></script>

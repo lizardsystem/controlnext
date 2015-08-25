@@ -17,6 +17,58 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#: models.py:178
+msgid "day number"
+msgstr ""
+
+#: models.py:179
+msgid "week number"
+msgstr ""
+
+#: models.py:180
+msgid "demand"
+msgstr ""
+
+#: models.py:216
+msgid "user profile"
+msgstr ""
+
+#: models.py:80
+msgid "grower"
+msgstr ""
+
+#: models.py:95
+msgid "recirculation"
+msgstr ""
+
+#: models.py:137
+msgid "current fill updated"
+msgstr ""
+
+#: models.py:135
+msgid "jdbc source"
+msgstr ""
+
+#: models.py:126
+msgid "reverse osmosis capacity (m3/h)"
+msgstr ""
+
+#: models.py:127
+msgid "reverse osmosis date till"
+msgstr ""
+
+#: models.py:108
+msgid "rain location id"
+msgstr ""
+
+#: models.py:91
+msgid "location id"
+msgstr ""
+
+#: models.py:104
+msgid "rain filter id"
+msgstr ""
+
 #: admin.py:27 admin.py:61
 msgid "location"
 msgstr ""

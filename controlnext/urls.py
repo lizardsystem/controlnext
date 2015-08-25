@@ -1,31 +1,29 @@
 # (c) Nelen & Schuurmans.  GPL licensed, see LICENSE.rst.
 from django.conf import settings
-from django.conf.urls.defaults import include
-from django.conf.urls.defaults import patterns
-from django.conf.urls.defaults import url
+from django.conf.urls import include
+from django.conf.urls import patterns
+from django.conf.urls import url
 from django.contrib import admin
 from lizard_ui.urls import debugmode_urlpatterns
 
 from controlnext import views
 
+
 admin.autodiscover()
 
 urlpatterns = patterns(
     '',
-    url(r'^$', views.DashboardView.as_view(), name='controlnext-dashboard'),
-    #url(r'^(?P<basin_id>\d+)/$', views.BasinView.as_view(),
-    #    name='controlnext-basin'),
-    url(r'^(?P<basin_id>\d+)/$', views.BasinView.as_view(),
+    url(r'^$', views.ControlnextLoginView.as_view(), name='controlnext-login'),
+    url(r'^login_error/$', views.ControlnextLoginErrorView.as_view(), name='controlnext-login-error'),
+    url(r'^$', views.ControlnextLogoutView.as_view(), name='controlnext-logout'),
+    url(r'^(?P<random_url_slug>\w+)/$', views.BasinView.as_view(),
         name='controlnext-basin'),
-    url(r'^data_service/(?P<basin_id>\d+)/$',
+    url(r'^data_service/(?P<random_url_slug>\w+)/$',
         views.DataService.as_view(),
         name='controlnext-data-service'),
-    url(r'^data_service/(?P<basin_id>\d+)/demand/$',
+    url(r'^data_service/(?P<random_url_slug>\w+)/demand/$',
         views.DemandView.as_view(),
         name='controlnext-data-demand'),
-    url(r'^data_service/(?P<basin_id>\d+)/save/$',
-        views.BasinDataView.as_view(),
-        name='controlnext_save_basin_data')
 )
 
 if getattr(settings, 'LIZARD_CONTROLNEXT_STANDALONE', False):

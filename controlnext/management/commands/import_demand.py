@@ -1,6 +1,4 @@
-import os
 import csv
-import glob
 
 from optparse import make_option
 
@@ -40,15 +38,17 @@ class Command(BaseCommand):
         """."""
         demand = None
         try:
-            demand = models.WaterDemand.objects.get(**{'owner__id': row['grower_id'],
-                                                      'daynumber': row['day_number']})
+            demand = models.WaterDemand.objects.get(
+                **{'owner__id': row['grower_id'],
+                   'daynumber': row['day_number']}
+            )
             demand.demand = row['evaporation']
             demand.weeknumber = row['week_number']
             demand.save()
             self.stdout.write('Update demand.')
         except Exception, ex:
             demand = models.WaterDemand(
-                owner=models.GrowerInfo.objects.get(pk=row['grower_id']),
+                grower=models.Basin.objects.get(pk=row['grower_id']),
                 daynumber=row['day_number'],
                 demand=row['evaporation'],
                 weeknumber=row['week_number'])

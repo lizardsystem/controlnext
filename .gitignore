@@ -41,3 +41,6 @@ etc/*.logrotate
 
 # ipython notebooks
 notebooks
+
+# jsHint config file
+.jshintrc

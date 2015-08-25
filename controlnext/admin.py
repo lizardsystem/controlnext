@@ -5,7 +5,10 @@ from django.contrib import admin
 from django.contrib.gis.admin import GeoModelAdmin
 from django.utils.translation import ugettext_lazy as _
 
-from controlnext.models import GrowerInfo, Basin, WaterDemand
+from controlnext.models import Basin
+from controlnext.models import GrowerInfo
+from controlnext.models import UserProfile
+from controlnext.models import WaterDemand
 
 
 class BasinInline(admin.TabularInline):
@@ -22,11 +25,7 @@ class GrowerInfoAdmin(GeoModelAdmin):
     fieldsets = (
         (None, {
             'classes': ['wide'],
-            'fields': ('name', 'image', 'crop', 'crop_surface', 'jdbc_source')
-        }),
-        (_("location"), {
-            'classes': ['collapse'],
-            'fields': ('location',)
+            'fields': ('name', 'image', 'crop', 'crop_surface')
         }),
     )
     inlines = [BasinInline, ]
@@ -37,31 +36,15 @@ class BasinAdmin(GeoModelAdmin):
         (None, {
             'classes': ['wide'],
             'fields': (
-                'owner', 'name', 'filter_id', 'location_id', 'parameter_id',
-                'own_meter_filter_id', 'own_meter_location_id',
-                'own_meter_parameter_id',
+                'grower', 'name', 'filter_id', 'location_id', 'parameter_id',
                 'recirculation',
-                # discharge valve parameters
-                'discharge_valve_filter_id',
-                'discharge_valve_location_id',
-                'discharge_valve_parameter_id',
-                # greenhouse valve parameters
-                'greenhouse_valve_1_filter_id',
-                'greenhouse_valve_1_location_id',
-                'greenhouse_valve_1_parameter_id',
-                'greenhouse_valve_2_filter_id',
-                'greenhouse_valve_2_location_id',
-                'greenhouse_valve_2_parameter_id',
                 # rain parameters
                 'rain_filter_id', 'rain_location_id',
-                'predicted_5d_rain_filter_id',
-                'predicted_5d_rain_parameter_id',
-                'real_5d_rain_filter_id', 'real_5d_rain_parameter_id',
                 # other basin parameters
-                'max_storage', 'min_storage_pct', 'max_storage_pct',
-                'rain_flood_surface', 'max_outflow_per_timeunit', 'basin_top',
-                'level_indicator_height', 'reverse_osmosis', 'osmose_till_date', 'jdbc_source',
-                'on_main_map'
+                'max_storage', 'current_fill', 'current_fill_updated',
+                'rain_flood_surface', 'max_outflow_per_timeunit',
+                'reverse_osmosis',
+                'osmose_till_date', 'jdbc_source'
             )
         }),
         (_("location"), {
@@ -70,7 +53,18 @@ class BasinAdmin(GeoModelAdmin):
         }),
     )
 
+class UserProfileAdmin(admin.ModelAdmin):
+    fieldsets = (
+        (None, {
+            'classes': ['wide'],
+            'fields': (
+                'grower', 'user'
+            )
+        }),
+    )
 
+
+admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(GrowerInfo, GrowerInfoAdmin)
 admin.site.register(Basin, BasinAdmin)
 admin.site.register(WaterDemand)
