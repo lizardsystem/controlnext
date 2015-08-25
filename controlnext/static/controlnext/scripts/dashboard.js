@@ -377,6 +377,7 @@ demandChart:false, console:false*/
             },
             valueAxis: [
                 {
+                    placeholderSize: 70,
                     title: {
                         text: 'Watervraag (l/m&sup2;/etmaal)',
                         font: {
@@ -493,6 +494,7 @@ demandChart:false, console:false*/
             },
             valueAxis: [
                 {
+                    placeholderSize: 70,
                     title: {
                         text: 'Neerslag (mm/uur)',
                         font: { size: 14, color: 'rgb(151, 183, 199)',
@@ -687,6 +689,7 @@ demandChart:false, console:false*/
             },
             valueAxis: [
                 {
+                    placeholderSize: 70,
                     title: {
                         text: 'Vullingsgraad (%)',
                         font: { size: 14, color: 'rgb(151, 183, 199)', weight:'bold', opacity: 1 }

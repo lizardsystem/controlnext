@@ -5,7 +5,9 @@ Changelog of controlnext
 0.15 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- Total code cleanup. Controlnext site is now more up to date. Altered about
+  10.000 lines of code.
+- Added login with slug functionality
 
 
 0.14 (2015-06-11)
