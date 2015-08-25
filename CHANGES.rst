@@ -2,7 +2,7 @@ Changelog of controlnext
 ===================================================
 
 
-0.15 (unreleased)
+0.15 (2015-08-25)
 -----------------
 
 - Total code cleanup. Controlnext site is now more up to date. Altered about
