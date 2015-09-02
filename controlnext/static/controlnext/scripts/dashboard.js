@@ -267,17 +267,6 @@ demandChart:false, console:false*/
 			var data = {};
 			data.osmose_till_date = $('.datepicker')[0].value;
 			setTimeSpan(selectedTimeSpan);
-			$.ajax({
-                url: save_basin_data_url,
-                type: "POST",
-                data: data,
-                dataType: 'json',
-                contentType: 'application/json; charset=utf-8',
-                error: function (jqXHR, textStatus, errorThrown) {
-                            var $error = $('<p>Fout bij het updaten van de ' +
-                                'demand tabel: ' + errorThrown + '</p>');
-                }
-            });
 			loadGraphs();
 		},
 		updateDemand: function(model, event) {
