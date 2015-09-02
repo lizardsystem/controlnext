@@ -5,7 +5,7 @@ Changelog of controlnext
 0.16 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- Regression bugfix that stopped the calculate ('bereken') button from working.
 
 
 0.15 (2015-08-25)
