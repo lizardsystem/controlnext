@@ -109,15 +109,20 @@ class CalculationModel(object):
         validate_date(to)
 
         rain_mean = self.fews_data.get_rain('mean', _from, to)
-        # gebruik de datum van de laatst beschikbaar regenvoorspelling als
-        # from en to waarden
-        _from = rain_mean.index[0]
-        to = rain_mean.index[-1]
+        print _from, to
 
         # create a no rain series
-        rain_zero = rain_mean.copy()
-        rain_zero[...] = 0
-        rain_zero.name = 'rain_zero'
+        periods = (to - _from).days() * 4 * 24
+        values = np.zeros(periods)
+        dates = pd.date_range(_from, periods=periods, freq='15min',
+                              tz=pytz.utc)
+        rain_zero = pd.Series(values, dates, name='uitstroom')
+
+        # gebruik de datum van de laatst beschikbaar regenvoorspelling als
+        # from en to waarden
+        _from_rain = rain_mean.index[0]
+        to_rain = rain_mean.index[-1]
+
 
         # retrieve fill: just take any data we have,
         # so we can compare measurements with predictions
@@ -125,13 +130,15 @@ class CalculationModel(object):
         current_fill_m3 = current_fill['current_fill_m3']
 
         # bereken watervraag over deze periode
-        demand_m3 = self.demand_table.get_demand(_from, to)
+        demand_m3_rain = self.demand_table.get_demand(_from_rain, to_rain)
+        demand_m3_zero_rain = self.demand_table.get_demand(_from_rain, to_rain)
+
 
         # leidt aantal periodes af uit een vd 'input' tijdreeksen
-        periods = len(rain_mean)
+        periods_rain = len(rain_mean)
 
         # bereken uitstroom
-        max_uitstroom_m3 = self.calc_max_uitstroom(_from, periods)
+        max_uitstroom_m3 = self.calc_max_uitstroom(_from_rain, periods_rain)
         if len(max_uitstroom_m3) != len(rain_mean):
             raise Exception('%s != %s' % (len(max_uitstroom_m3),
                                           len(rain_mean)))
@@ -147,18 +154,18 @@ class CalculationModel(object):
             'intermediate': {
                 'rain_mean': rain_mean,
                 'max_uitstroom': max_uitstroom_m3,
-                'demand': demand_m3,
+                'demand': demand_m3_rain,
             }
         }
 
         # bereken de drie scenarios
         calc_scenarios = {
-            'no_rain': rain_zero,
-            'mean': rain_mean,
+            'no_rain': (rain_zero, demand_m3_zero_rain),
+            'mean': (rain_mean, demand_m3_rain),
         }
-        for scenario, rain in calc_scenarios.items():
+        for scenario, (rain, demand_m3_) in calc_scenarios.items():
             result['scenarios'][scenario] = self.predict_scenario(
-                _from, current_fill_m3, demand_m3, rain, outflow_open,
+                _from, current_fill_m3, demand_m3_, rain, outflow_open,
                 outflow_closed, outflow_capacity)
 
         return result
