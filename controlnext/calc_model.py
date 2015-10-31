@@ -131,7 +131,7 @@ class CalculationModel(object):
 
         # bereken watervraag over deze periode
         demand_m3_rain = self.demand_table.get_demand(_from_rain, to_rain)
-        demand_m3_zero_rain = self.demand_table.get_demand(_from_rain, to_rain)
+        demand_m3_zero_rain = self.demand_table.get_demand(_from, to)
 
 
         # leidt aantal periodes af uit een vd 'input' tijdreeksen
