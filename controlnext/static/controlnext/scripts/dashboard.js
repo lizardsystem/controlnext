@@ -167,6 +167,7 @@ demandChart:false, console:false*/
         $.ajax({
                 url: data_url + '?' + query_params,
             success: function (response) {
+            console.log('loadPredictedData');
             var predictedData = [];
             var measuredData = [];
             var predictedNoRainData = [];
@@ -220,7 +221,9 @@ demandChart:false, console:false*/
     var loadGraphs = function() {
         loadDemandData();
         loadRainData();
+        console.log('before loadPredictedData');
         loadPredictedData();
+        console.log('after loadPredictedData');
     };
 
     var emptyAllCharts = function() {
@@ -574,7 +577,6 @@ demandChart:false, console:false*/
 
         // Update the Chart.js charts timespans when the model changes.
         dashboardViewModel.viewTimespan.subscribe(function(newValue) {
-            console.log('viewTimespan changed', newValue);
             var startValue = newValue.start.toDate();
             var endValue = newValue.end.toDate();
             demandChart.zoomArgument(startValue, endValue);
