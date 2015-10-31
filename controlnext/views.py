@@ -201,7 +201,6 @@ class DataService(APIView):
         ds = FewsJdbcDataSource(self.basin, self.constants)
         model = CalculationModel(tbl, ds)
         future = t0 + settings.CONTROLNEXT_FILL_PREDICT_FUTURE
-        print('future', future)
 
         prediction = model.predict_fill(t0, future, outflow_open,
                                         outflow_closed, outflow_capacity)

@@ -173,6 +173,7 @@ demandChart:false, console:false*/
             var mean_predicted = response.graph_info.data.mean;
             var measured = response.graph_info.data.history;
             var no_rain = response.graph_info.data.no_rain;
+            console.log('no_rain', no_rain);
             var actualwaterValue = 0;
             for (var i = 0; i < no_rain.length; i++) {
                 var dt = no_rain[i][0];

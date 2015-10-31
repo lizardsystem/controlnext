@@ -123,7 +123,6 @@ class CalculationModel(object):
         _from_rain = rain_mean.index[0]
         to_rain = rain_mean.index[-1]
 
-
         # retrieve fill: just take any data we have,
         # so we can compare measurements with predictions
         current_fill = self.fews_data.get_current_fill(to)
@@ -132,7 +131,6 @@ class CalculationModel(object):
         # bereken watervraag over deze periode
         demand_m3_rain = self.demand_table.get_demand(_from_rain, to_rain)
         demand_m3_zero_rain = self.demand_table.get_demand(_from, to)
-
 
         # leidt aantal periodes af uit een vd 'input' tijdreeksen
         periods_rain = len(rain_mean)
