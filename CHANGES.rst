@@ -2,10 +2,10 @@ Changelog of controlnext
 ===================================================
 
 
-0.17 (unreleased)
+0.17 (2015-10-31)
 -----------------
 
-- Nothing changed yet.
+- Longer graphs.
 
 
 0.16 (2015-09-02)
