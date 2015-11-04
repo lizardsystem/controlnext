@@ -2,10 +2,11 @@ Changelog of controlnext
 ===================================================
 
 
-0.19 (unreleased)
+0.19 (2015-11-04)
 -----------------
 
-- Nothing changed yet.
+- Bugfixes for longer no-rain prediction graph.
+- Limits the labels for the precipitation graph.
 
 
 0.18 (2015-10-31)
