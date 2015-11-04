@@ -109,10 +109,9 @@ class CalculationModel(object):
         validate_date(to)
 
         rain_mean = self.fews_data.get_rain('mean', _from, to)
-        print _from, to
 
         # create a no rain series
-        periods = (to - _from).days() * 4 * 24
+        periods = (to - _from).days * 4 * 24 + 1
         values = np.zeros(periods)
         dates = pd.date_range(_from, periods=periods, freq='15min',
                               tz=pytz.utc)
@@ -123,16 +122,14 @@ class CalculationModel(object):
         _from_rain = rain_mean.index[0]
         to_rain = rain_mean.index[-1]
 
-
         # retrieve fill: just take any data we have,
         # so we can compare measurements with predictions
-        current_fill = self.fews_data.get_current_fill(to)
+        current_fill = self.fews_data.get_current_fill(to_rain)
         current_fill_m3 = current_fill['current_fill_m3']
 
         # bereken watervraag over deze periode
         demand_m3_rain = self.demand_table.get_demand(_from_rain, to_rain)
         demand_m3_zero_rain = self.demand_table.get_demand(_from, to)
-
 
         # leidt aantal periodes af uit een vd 'input' tijdreeksen
         periods_rain = len(rain_mean)

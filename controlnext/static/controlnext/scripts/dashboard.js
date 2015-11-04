@@ -173,7 +173,6 @@ demandChart:false, console:false*/
             var mean_predicted = response.graph_info.data.mean;
             var measured = response.graph_info.data.history;
             var no_rain = response.graph_info.data.no_rain;
-            console.log(no_rain);
             var actualwaterValue = 0;
             for (var i = 0; i < no_rain.length; i++) {
                 var dt = no_rain[i][0];
@@ -213,6 +212,7 @@ demandChart:false, console:false*/
             error: function (jqXHR, textStatus, errorThrown) {
                     var $error = $('<p>Fout bij het laden van de grafiekdata: ' +
                        errorThrown + '</p>');
+                    console.log($error);
                 }
         });
     };
@@ -444,14 +444,16 @@ demandChart:false, console:false*/
 	/* ************************************************************************ */
         /* ************************** Precipitation Chart ************************* */
         /* ************************************************************************ */
+        console.log(sumData);
         var precipitationChartSeries = [
             {
                 valueField: 'sum',
                 name: 'opgeteld',
                 type: 'stepArea',
-                data: sumData,
+                data: sumData.slice(0, 2),
                 color: 'rgb(70, 180, 255)',
-                opacity: 0.07,
+                opacity: 0.0001,
+                showInLegend: false,
                 label: {
                     visible: true,
                     format: 'fixedPoint',
@@ -466,6 +468,14 @@ demandChart:false, console:false*/
                     verticalOffset: -20,
                     alignment: 'center'
                 }
+            },
+            {
+                valueField: 'sum',
+                name: 'opgeteld',
+                type: 'stepArea',
+                data: sumData.slice(0, 3),
+                color: 'rgb(70, 180, 255)',
+                opacity: 0.07
             },
             {
                 valueField: 'mean',
