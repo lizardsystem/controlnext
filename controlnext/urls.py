@@ -13,9 +13,8 @@ admin.autodiscover()
 
 urlpatterns = patterns(
     '',
-    url(r'^$', views.ControlnextLoginView.as_view(), name='controlnext-login'),
-    url(r'^login_error/$', views.ControlnextLoginErrorView.as_view(), name='controlnext-login-error'),
-    url(r'^$', views.ControlnextLogoutView.as_view(), name='controlnext-logout'),
+    url(r'^redirect/$', views.RedirectAfterLoginView.as_view(),
+        name='controlnext-login'),
     url(r'^(?P<random_url_slug>\w+)/$', views.BasinView.as_view(),
         name='controlnext-basin'),
     url(r'^data_service/(?P<random_url_slug>\w+)/$',

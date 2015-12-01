@@ -240,31 +240,13 @@ class DataService(APIView):
         }
 
 
-class ControlnextLoginView(LoginView):
-    default_redirect = "/controlnext/"
-    template_name = 'controlnext/controlnextlogin.html'
+class RedirectAfterLoginView(LoginView):
 
-    def post(self, request, *args, **kwargs):
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
-        if form.is_valid():
-            login(self.request, form.get_user())
-            if request.session.test_cookie_worked():
-                request.session.delete_test_cookie()
-            username = form.cleaned_data['username']
-            user = User.objects.get(username=username)
-            try:
-                grower_url_slug = UserProfile.objects.get(user=user).grower\
-                    .random_url_slug
-                next_url = "/controlnext/" + grower_url_slug
-            except ObjectDoesNotExist:
-                next_url = "/controlnext/login_error"
-            return HttpResponseRedirect(next_url)
-        return self.form_invalid(form)
-
-
-class ControlnextLoginErrorView(ControlnextLoginView):
-    template_name = 'controlnext/loginerror.html'
+    def get(self, request, *args, **kwargs):
+        grower_url_slug = UserProfile.objects.get(user=request.user).grower\
+            .random_url_slug
+        next_url = "/controlnext/" + grower_url_slug
+        return HttpResponseRedirect(next_url)
 
 
 class ControlnextLogoutView(LogoutView):
