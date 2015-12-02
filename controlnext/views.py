@@ -2,16 +2,13 @@
 from __future__ import unicode_literals
 import datetime
 import logging
+import re
 
-from django.contrib.auth.models import User
-from django.contrib.auth import login
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import MultipleObjectsReturned
 from django.http import Http404
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext as _
-from lizard_ui.views import LoginView
-from lizard_ui.views import LogoutView
 from lizard_ui.views import UiView
 from rest_framework.response import Response as RestResponse
 from rest_framework.views import APIView
@@ -45,6 +42,35 @@ def find_basin(random_url_slug):
         raise Http404
 
 
+def get_referer_view(request, default=None):
+    '''
+    Return the referer view of the current request
+
+    Code taken from: https://djangosnippets.org/snippets/1474/
+
+    Example:
+
+        def some_view(request):
+            ...
+            referer_view = get_referer_view(request)
+            return HttpResponseRedirect(referer_view, '/accounts/login/')
+    '''
+
+    # if the user typed the url directly in the browser's address bar
+    referer = request.META.get('HTTP_REFERER')
+    if not referer:
+        return default
+
+    # remove the protocol and split the url at the slashes
+    referer = re.sub('^https?:\/\/', '', referer).split('/')
+    if referer[0] != request.META.get('SERVER_NAME'):
+        return default
+
+    # add the slash at the relative path's view and finished
+    referer = u'/' + u'/'.join(referer[1:])
+    return HttpResponseRedirect(referer)
+
+
 class DemandView(APIView):
     """Update demands."""
 
@@ -72,12 +98,17 @@ class BasinView(UiView):
     page_title = _('ControlNEXT')
 
     def get(self, request, random_url_slug, *args, **kwargs):
-        self.basin = find_basin(random_url_slug)
-        self.random_url_slug = random_url_slug
-        if (self.basin.grower.crop and
-                is_valid_crop_type(self.basin.grower.crop)):
-            self.crop_type = self.basin.grower.crop
-        return super(BasinView, self).get(request, *args, **kwargs)
+        growers = UserProfile.objects.get(user=request.user).grower.all()
+        slugs = [str(g.random_url_slug) for g in growers]
+        if random_url_slug in slugs:
+            self.basin = find_basin(random_url_slug)
+            self.random_url_slug = random_url_slug
+            if (self.basin.grower.crop and
+                    is_valid_crop_type(self.basin.grower.crop)):
+                self.crop_type = self.basin.grower.crop
+            return super(BasinView, self).get(request, *args, **kwargs)
+        else:
+            return get_referer_view(request, default='/accounts/login')
 
     def current_demand(self):
         return self.demand_table.get(self.current_week())
@@ -240,15 +271,37 @@ class DataService(APIView):
         }
 
 
-class RedirectAfterLoginView(LoginView):
+class RedirectAfterLoginView(APIView):
 
     def get(self, request, *args, **kwargs):
-        grower_url_slug = UserProfile.objects.get(user=request.user).grower\
-            .random_url_slug
-        next_url = "/controlnext/" + grower_url_slug
-        return HttpResponseRedirect(next_url)
+        next_url = request.GET.get('next', False)
+        if next_url:
+            return HttpResponseRedirect(next_url)
+        try:
+            growers = UserProfile.objects.get(
+            user=request.user).grower.all()
+        except (ObjectDoesNotExist, TypeError):
+            return get_referer_view(request, default='/accounts/login')
+
+        if len(growers) == 0:
+            return get_referer_view(request, default='/accounts/login')
+
+        if len(growers) == 1:
+            grower_url_slug = growers[0].random_url_slug
+            next_url = "/controlnext/" + grower_url_slug
+            return HttpResponseRedirect(next_url)
+
+        return HttpResponseRedirect('/controlnext/selectgrower/')
 
 
-class ControlnextLogoutView(LogoutView):
-    template_name = 'controlnext/controlnextlogout.html'
-    default_redirect = "/controlnext/"
+class SelectGrowerView(UiView):
+    template_name = 'controlnext/selectgrower.html'
+    page_title = _('ControlNEXT')
+
+    def get(self, request, *args, **kwargs):
+        growers = UserProfile.objects.get(
+            user=request.user).grower.all()
+        self.buttons = [
+            (str(g.random_url_slug), str(g.name)) for g in growers
+        ]
+        return super(SelectGrowerView, self).get(request, *args, **kwargs)

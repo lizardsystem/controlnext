@@ -14,7 +14,9 @@ admin.autodiscover()
 urlpatterns = patterns(
     '',
     url(r'^redirect/$', views.RedirectAfterLoginView.as_view(),
-        name='controlnext-login'),
+        name='controlnext-redirect'),
+    url(r'^selectgrower/$', views.SelectGrowerView.as_view(),
+        name='controlnext-selectgrower'),
     url(r'^(?P<random_url_slug>\w+)/$', views.BasinView.as_view(),
         name='controlnext-basin'),
     url(r'^data_service/(?P<random_url_slug>\w+)/$',

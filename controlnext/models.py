@@ -187,13 +187,14 @@ class Constants(object):
 
 class UserProfile(models.Model):
     user = models.ForeignKey(User, verbose_name=_("user"))
-    grower = models.ForeignKey(GrowerInfo, verbose_name=_("grower"))
+    grower = models.ManyToManyField(GrowerInfo, verbose_name=_("grower"))
 
     def __unicode__(self):
         identifier = self.user if self.user else self.id
-        return "{} ({})".format(self.grower, identifier)
+        return "{} ({})".format(identifier, ', '.join([str(x) for x in
+                                                      self.grower.all()]))
 
     class Meta:
-        ordering = ("grower",)
+        ordering = ("user",)
         verbose_name = _("user profile")
         verbose_name_plural = _("user profile")

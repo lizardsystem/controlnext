@@ -54,14 +54,8 @@ class BasinAdmin(GeoModelAdmin):
     )
 
 class UserProfileAdmin(admin.ModelAdmin):
-    fieldsets = (
-        (None, {
-            'classes': ['wide'],
-            'fields': (
-                'grower', 'user'
-            )
-        }),
-    )
+    list_display = ('user', )
+    filter_horizontal = ('grower', )
 
 
 admin.site.register(UserProfile, UserProfileAdmin)
