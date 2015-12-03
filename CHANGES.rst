@@ -4,8 +4,14 @@ Changelog of controlnext
 
 0.20 (unreleased)
 -----------------
-
-- Nothing changed yet.
+- Added SSO
+- Changed UserProfile model relation to grower to many to many
+- Updated model and views to allow for a many to one relation between grower and
+  basin
+- Added logout buttons
+- Added login selector
+- Only link to url_slug when authorized
+- Added 403 when unauthorized instead of redirect to referer
 
 
 0.19 (2015-11-04)
