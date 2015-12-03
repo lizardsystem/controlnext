@@ -2,26 +2,27 @@
 from __future__ import unicode_literals
 import datetime
 import logging
-import re
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.exceptions import MultipleObjectsReturned
+from django.core.urlresolvers import reverse
 from django.http import Http404
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext as _
+from django.views.generic.base import TemplateView
 from lizard_ui.views import UiView
 from rest_framework.response import Response as RestResponse
 from rest_framework.views import APIView
 import pytz
 
-from controlnext import models
 from controlnext.calc_model import CalculationModel
 from controlnext.conf import settings
 from controlnext.evaporation_table import EvaporationTable
 from controlnext.fews_data import FewsJdbcDataSource
+from controlnext.models import Basin
 from controlnext.models import Constants
-from controlnext.models import UserProfile
+from controlnext.models import GrowerInfo
 from controlnext.models import is_valid_crop_type
+from controlnext.models import WaterDemand
 from controlnext.utils import round_date
 
 
@@ -30,60 +31,21 @@ logger = logging.getLogger(__name__)
 
 def find_basin(random_url_slug):
     try:
-        grower = models.GrowerInfo.objects.get(
-            random_url_slug=random_url_slug)
-        basin = models.Basin.objects.get(grower=grower)
+        basin = Basin.objects.get(random_url_slug=random_url_slug)
         return basin
-    except MultipleObjectsReturned:
-        logger.error("Multiple basins found for one grower ({grower}), "
-                     "redirected to first.".format(grower=grower.name))
-        return models.Basin.objects.filter(grower=grower)[:1].get()
     except ObjectDoesNotExist:
         raise Http404
-
-
-def get_referer_view(request, default=None):
-    '''
-    Return the referer view of the current request
-
-    Code taken from: https://djangosnippets.org/snippets/1474/
-
-    Example:
-
-        def some_view(request):
-            ...
-            referer_view = get_referer_view(request)
-            return HttpResponseRedirect(referer_view, '/accounts/login/')
-    '''
-
-    # if the user typed the url directly in the browser's address bar
-    referer = request.META.get('HTTP_REFERER')
-    if not referer:
-        return default
-
-    # remove the protocol and split the url at the slashes
-    referer = re.sub('^https?:\/\/', '', referer).split('/')
-    if referer[0] != request.META.get('SERVER_NAME'):
-        return default
-
-    # add the slash at the relative path's view and finished
-    referer = u'/' + u'/'.join(referer[1:])
-    return HttpResponseRedirect(referer)
 
 
 class DemandView(APIView):
     """Update demands."""
 
     def post(self, request, random_url_slug):
-        try:
-            grower = models.GrowerInfo.objects.get(
-                random_url_slug=random_url_slug)
-        except ObjectDoesNotExist:
-            raise Http404
         data = request.POST
         for key in sorted(data.iterkeys()):
-            demands = models.WaterDemand.objects.filter(
-                **{'grower': grower, 'weeknumber': key})
+            basin_query = Basin.objects.filter(random_url_slug=random_url_slug)
+            demands = WaterDemand.objects.filter(
+                grower__in=basin_query, weeknumber=key)
             for demand in demands:
                 if data.get(key) is None:
                     continue
@@ -93,13 +55,20 @@ class DemandView(APIView):
         return RestResponse(request.POST)
 
 
+class Http403View(TemplateView):
+    template_name = '403.html'
+    page_title = '403 Error'
+
+
 class BasinView(UiView):
     template_name = 'controlnext/basin_detail.html'
     page_title = _('ControlNEXT')
 
     def get(self, request, random_url_slug, *args, **kwargs):
-        growers = UserProfile.objects.get(user=request.user).grower.all()
-        slugs = [str(g.random_url_slug) for g in growers]
+        basins_query = GrowerInfo.objects.filter(
+            userprofile__user=request.user)
+        basins = Basin.objects.filter(grower__in=basins_query)
+        slugs = [str(b.random_url_slug) for b in basins]
         if random_url_slug in slugs:
             self.basin = find_basin(random_url_slug)
             self.random_url_slug = random_url_slug
@@ -108,7 +77,7 @@ class BasinView(UiView):
                 self.crop_type = self.basin.grower.crop
             return super(BasinView, self).get(request, *args, **kwargs)
         else:
-            return get_referer_view(request, default='/accounts/login')
+            return HttpResponseRedirect(reverse('controlnext-403error'))
 
     def current_demand(self):
         return self.demand_table.get(self.current_week())
@@ -121,6 +90,7 @@ class BasinView(UiView):
     def demand_table(self):
         table = EvaporationTable(self.basin, None)
         return table.demands_for_gui()
+
 
 def float_or_none(val):
     try:
@@ -278,30 +248,33 @@ class RedirectAfterLoginView(APIView):
         if next_url:
             return HttpResponseRedirect(next_url)
         try:
-            growers = UserProfile.objects.get(
-            user=request.user).grower.all()
+            basins_query = GrowerInfo.objects.filter(
+                userprofile__user=request.user)
+            basins = Basin.objects.filter(grower__in=basins_query)
         except (ObjectDoesNotExist, TypeError):
-            return get_referer_view(request, default='/accounts/login')
+            return HttpResponseRedirect(reverse('controlnext-403error'))
 
-        if len(growers) == 0:
-            return get_referer_view(request, default='/accounts/login')
+        if len(basins) == 0:
+            raise Http404
 
-        if len(growers) == 1:
-            grower_url_slug = growers[0].random_url_slug
-            next_url = "/controlnext/" + grower_url_slug
+        if len(basins) == 1:
+            basin_url_slug = basins[0].random_url_slug
+            next_url = "/controlnext/" + basin_url_slug
             return HttpResponseRedirect(next_url)
 
-        return HttpResponseRedirect('/controlnext/selectgrower/')
+        return HttpResponseRedirect(reverse('controlnext-selectbasin'))
 
 
-class SelectGrowerView(UiView):
-    template_name = 'controlnext/selectgrower.html'
+class SelectBasinView(UiView):
+    template_name = 'controlnext/selectbasin.html'
     page_title = _('ControlNEXT')
 
     def get(self, request, *args, **kwargs):
-        growers = UserProfile.objects.get(
-            user=request.user).grower.all()
+        basins_query = GrowerInfo.objects.filter(
+                userprofile__user=request.user)
+        basins = Basin.objects.filter(grower__in=basins_query)
         self.buttons = [
-            (str(g.random_url_slug), str(g.name)) for g in growers
+            (str(b.random_url_slug), str(b.name) + ' (' + str(b.grower) + ')')
+            for b in basins if b.name
         ]
-        return super(SelectGrowerView, self).get(request, *args, **kwargs)
+        return super(SelectBasinView, self).get(request, *args, **kwargs)

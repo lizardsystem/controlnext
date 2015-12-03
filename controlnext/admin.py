@@ -32,12 +32,13 @@ class GrowerInfoAdmin(GeoModelAdmin):
 
 
 class BasinAdmin(GeoModelAdmin):
+    readonly_fields = ('random_url_slug', )
     fieldsets = (
         (None, {
             'classes': ['wide'],
             'fields': (
-                'grower', 'name', 'filter_id', 'location_id', 'parameter_id',
-                'recirculation',
+                'grower', 'name', 'random_url_slug', 'filter_id',
+                'location_id', 'parameter_id', 'recirculation',
                 # rain parameters
                 'rain_filter_id', 'rain_location_id',
                 # other basin parameters

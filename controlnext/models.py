@@ -24,7 +24,7 @@ def random_slug(length=20):
         slug = ''.join(random.choice(string.ascii_lowercase + string.digits)
                        for _ in range(length))
         try:
-            GrowerInfo.objects.get(random_url_slug=slug)
+            Basin.objects.get(random_url_slug=slug)
         except:
             return slug
 
@@ -41,8 +41,6 @@ class GrowerInfo(models.Model):
     # general info
     name = models.CharField(max_length=100, blank=True, null=True,
                             verbose_name=_("name of the grower"))
-    random_url_slug = models.CharField(max_length=20, unique=True,
-                                       default=random_slug)
     crop = models.CharField(max_length=100, blank=True, null=True,
                             verbose_name=_("type of crop"),
                             choices=CROP_CHOICES)
@@ -82,7 +80,8 @@ class Basin(geomodels.Model):
                             help_text=_("must be unique for grower"))
     location = geomodels.PointField(blank=True, null=True, srid=SRID,
                                     verbose_name=_("location"))
-
+    random_url_slug = models.CharField(max_length=20, unique=True,
+                                       default=random_slug)
     # water level meter params
     filter_id = models.CharField(
         max_length=100, blank=True, null=True,
