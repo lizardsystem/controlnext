@@ -39,15 +39,30 @@ class GrowerInfo(models.Model):
         (CHRYSANT, _("chrysant")),
     )
     # general info
-    name = models.CharField(max_length=100, blank=True, null=True,
-                            verbose_name=_("name of the grower"))
-    crop = models.CharField(max_length=100, blank=True, null=True,
-                            verbose_name=_("type of crop"),
-                            choices=CROP_CHOICES)
+    name = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name=_("name of the grower")
+    )
+    crop = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name=_("type of crop"),
+        choices=CROP_CHOICES
+    )
     crop_surface = models.IntegerField(
-        blank=True, null=True, verbose_name=_("crop surface area (m2)"))
-    image = models.ImageField(verbose_name=_("image"), blank=True, null=True,
-                              upload_to='grower_images')
+        blank=True,
+        null=True,
+        verbose_name=_("crop surface area (m2)")
+    )
+    image = models.ImageField(
+        verbose_name=_("image"),
+        blank=True,
+        null=True,
+        upload_to='grower_images'
+    )
 
     class Meta:
         ordering = ('name',)
@@ -74,69 +89,120 @@ def is_valid_crop_type(crop_type):
 class Basin(geomodels.Model):
     """Basin specific model.
     """
-    grower = models.ForeignKey('GrowerInfo', verbose_name=_("grower"))
-    name = models.CharField(max_length=100, blank=True, null=True,
-                            verbose_name=_("name of the basin"),
-                            help_text=_("must be unique for grower"))
-    location = geomodels.PointField(blank=True, null=True, srid=SRID,
-                                    verbose_name=_("location"))
-    random_url_slug = models.CharField(max_length=20, unique=True,
-                                       default=random_slug)
+    grower = models.ForeignKey(
+        'GrowerInfo',
+        verbose_name=_("grower")
+    )
+    name = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name=_("name of the basin"),
+        help_text=_("must be unique for grower")
+    )
+    location = geomodels.PointField(
+        blank=True,
+        null=True,
+        srid=SRID,
+        verbose_name=_("location")
+    )
+    random_url_slug = models.CharField(
+        max_length=20,
+        unique=True,
+        default=random_slug
+    )
     # water level meter params
     filter_id = models.CharField(
-        max_length=100, blank=True, null=True,
-        help_text=_("e.g. waterstand_basins"), verbose_name = _("filter id"))
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text=_("e.g. waterstand_basins"),
+        verbose_name = _("filter id")
+    )
     location_id = models.CharField(
-        max_length=100, blank=True, null=True, verbose_name=_("location id"))
-    parameter_id = models.CharField(max_length=100, blank=True,
-                                    null=True)
-
-    recirculation = models.FloatField(default=float(0.0),
-                                      help_text=(
-                                          "Water recirculation coefficient " +
-                                          "from 0.0 to 1.0."),
-                                      verbose_name=_("recirculation")
-                                      )
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name=_("location id")
+    )
+    parameter_id = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
+    recirculation = models.FloatField(
+        default=float(0.0),
+        help_text=("Water recirculation coefficient from 0.0 to 1.0."),
+        verbose_name=_("recirculation")
+    )
     # rain info
     # rain_filter_id = 'neerslag_combo' # Neerslag gecombimeerd
-    rain_filter_id = models.CharField(max_length=100, blank=True, null=True,
-                                      help_text=_("e.g. neerslag_combo"),
-                                      verbose_name=_("rain filter id"))
+    rain_filter_id = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text=_("e.g. neerslag_combo"),
+        verbose_name=_("rain filter id")
+    )
     # rain_location_id = 'OPP1'  # Oranjebinnenpolder Oost
     rain_location_id = models.CharField(
-        max_length=100, blank=True, null=True,
+        max_length=100,
+        blank=True,
+        null=True,
         help_text=_("e.g. OPP1 (i.e. Oranjebinnenpolder Oost)"),
-        verbose_name=_("rain location id"))
+        verbose_name=_("rain location id")
+    )
     # basin parameters
     max_storage = models.IntegerField(
-        blank=True, null=True,
-        verbose_name=_("maximum storage capacity (m3)"))
+        blank=True,
+        null=True,
+        verbose_name=_("maximum storage capacity (m3)")
+    )
     rain_flood_surface = models.IntegerField(
-        blank=True, null=True,
-        verbose_name=_("rain flood surface (m2)"))
+        blank=True,
+        null=True,
+        verbose_name=_("rain flood surface (m2)")
+    )
     # max_uitstroom_per_tijdstap_m3 = 4.5 # in m^3
     max_outflow_per_timeunit = models.DecimalField(
-        max_digits=10, decimal_places=2, blank=True, null=True,
-        verbose_name=_("maximum outflow per time unit (m3)"))
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        verbose_name=_("maximum outflow per time unit (m3)")
+    )
     # reverse_osmosis field
     reverse_osmosis = models.IntegerField(
-        blank=True, null=True,
-        verbose_name=_("reverse osmosis capacity (m3/h)"))
-    osmose_till_date = models.DateField(blank=True, null=True,
-                                        default=datetime.now,
-                                        verbose_name=_(
-                                            "reverse osmosis date till")
-                                        )
+        blank=True,
+        null=True,
+        verbose_name=_("reverse osmosis capacity (m3/h)")
+    )
+    osmose_till_date = models.DateField(
+        blank=True,
+        null=True,
+        default=datetime.now,
+        verbose_name=_("reverse osmosis date till")
+    )
     # current fill data
     # in m^3
     current_fill = models.DecimalField(
-        max_digits=10, decimal_places=2, blank=True, null=True,
-        verbose_name=_("current fill (m3)"))
-    current_fill_updated = models.DateTimeField(blank=True, null=True,
-                                                verbose_name=_(
-                                                    "current fill updated"))
-    jdbc_source = models.ForeignKey('lizard_fewsjdbc.JdbcSource', blank=True,
-                                    null=True, verbose_name=_("jdbc source"))
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        verbose_name=_("current fill (m3)")
+    )
+    current_fill_updated = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name=_("current fill updated")
+    )
+    jdbc_source = models.ForeignKey(
+        'lizard_fewsjdbc.JdbcSource',
+        blank=True,
+        null=True,
+        verbose_name=_("jdbc source")
+    )
 
     objects = geomodels.GeoManager()
 
@@ -185,15 +251,23 @@ class Constants(object):
 
 
 class UserProfile(models.Model):
-    user = models.ForeignKey(User, verbose_name=_("user"))
-    grower = models.ManyToManyField(GrowerInfo, verbose_name=_("grower"))
+    user = models.ForeignKey(
+        User,
+        verbose_name=_("user"),
+        # related_name='users'
+    )
+    grower = models.ManyToManyField(
+        GrowerInfo,
+        verbose_name=_("grower"),
+        # related_name='growers'
+    )
 
     def __unicode__(self):
         identifier = self.user if self.user else self.id
-        return "{} ({})".format(identifier, ', '.join([str(x) for x in
+        return "{} ({})".format(identifier, ', '.join([unicode(x) for x in
                                                       self.grower.all()]))
 
     class Meta:
         ordering = ("user",)
         verbose_name = _("user profile")
-        verbose_name_plural = _("user profile")
+        verbose_name_plural = _("user profiles")

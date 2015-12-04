@@ -29,12 +29,11 @@ from controlnext.utils import round_date
 logger = logging.getLogger(__name__)
 
 
-def find_basin(random_url_slug):
+def float_or_none(val):
     try:
-        basin = Basin.objects.get(random_url_slug=random_url_slug)
-        return basin
-    except ObjectDoesNotExist:
-        raise Http404
+        return float(val)
+    except TypeError:
+        return None
 
 
 class DemandView(APIView):
@@ -59,25 +58,31 @@ class Http403View(TemplateView):
     template_name = '403.html'
     page_title = '403 Error'
 
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context, status=403)
+
 
 class BasinView(UiView):
     template_name = 'controlnext/basin_detail.html'
     page_title = _('ControlNEXT')
 
     def get(self, request, random_url_slug, *args, **kwargs):
-        basins_query = GrowerInfo.objects.filter(
+        # Get all basins for this user
+        growers_belonging_to_user = GrowerInfo.objects.filter(
             userprofile__user=request.user)
-        basins = Basin.objects.filter(grower__in=basins_query)
-        slugs = [str(b.random_url_slug) for b in basins]
-        if random_url_slug in slugs:
-            self.basin = find_basin(random_url_slug)
+        basins = Basin.objects.filter(
+            grower__in=growers_belonging_to_user).filter(
+            random_url_slug=random_url_slug)
+        if basins:
+            self.basin = basins[0]
             self.random_url_slug = random_url_slug
-            if (self.basin.grower.crop and
-                    is_valid_crop_type(self.basin.grower.crop)):
+            if (self.basin.grower.crop and is_valid_crop_type(
+                    self.basin.grower.crop)):
                 self.crop_type = self.basin.grower.crop
             return super(BasinView, self).get(request, *args, **kwargs)
-        else:
-            return HttpResponseRedirect(reverse('controlnext-403error'))
+        # slug is invalid so return 403 Error
+        return HttpResponseRedirect(reverse('controlnext-403error'))
 
     def current_demand(self):
         return self.demand_table.get(self.current_week())
@@ -90,13 +95,6 @@ class BasinView(UiView):
     def demand_table(self):
         table = EvaporationTable(self.basin, None)
         return table.demands_for_gui()
-
-
-def float_or_none(val):
-    try:
-        return float(val)
-    except TypeError:
-        return None
 
 
 class DataService(APIView):
@@ -248,10 +246,10 @@ class RedirectAfterLoginView(APIView):
         if next_url:
             return HttpResponseRedirect(next_url)
         try:
-            basins_query = GrowerInfo.objects.filter(
+            growers_belonging_to_user = GrowerInfo.objects.filter(
                 userprofile__user=request.user)
-            basins = Basin.objects.filter(grower__in=basins_query)
-        except (ObjectDoesNotExist, TypeError):
+            basins = Basin.objects.filter(grower__in=growers_belonging_to_user)
+        except ObjectDoesNotExist:
             return HttpResponseRedirect(reverse('controlnext-403error'))
 
         if len(basins) == 0:
@@ -262,6 +260,7 @@ class RedirectAfterLoginView(APIView):
             next_url = "/controlnext/" + basin_url_slug
             return HttpResponseRedirect(next_url)
 
+        # More than one basins available so one has to choose.
         return HttpResponseRedirect(reverse('controlnext-selectbasin'))
 
 

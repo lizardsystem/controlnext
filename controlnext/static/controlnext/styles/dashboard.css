@@ -395,3 +395,11 @@ table.basin-data-detail-table-3 tr td {
     height: 20px;
     width: 100px;
 }
+
+.full-width {
+    width: 100%;
+}
+
+.empty-block {
+    height: 150px;
+}
