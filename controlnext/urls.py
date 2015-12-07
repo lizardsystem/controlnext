@@ -27,6 +27,8 @@ urlpatterns = patterns(
     url(r'^data_service/(?P<random_url_slug>\w+)/demand/$',
         views.DemandView.as_view(),
         name='controlnext-data-demand'),
+    url(r'^$', views.RedirectAfterLoginView.as_view(),
+        name='controlnext-redirect'),
 )
 
 if getattr(settings, 'LIZARD_CONTROLNEXT_STANDALONE', False):
