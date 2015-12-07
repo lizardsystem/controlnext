@@ -111,7 +111,12 @@ class DataService(APIView):
                 for dt, value in pdseries.iterkv()]
 
     def get(self, request, random_url_slug, *args, **kwargs):
-        self.basin = find_basin(random_url_slug)
+        try:
+            self.basin = Basin.objects.filter(
+                random_url_slug=random_url_slug)[0]
+        except IndexError:
+            raise Http404
+
         self.constants = Constants(self.basin)
         graph_type = request.GET.get('graph_type', None)
         hours_diff = request.GET.get('hours_diff', None)  # debug param
