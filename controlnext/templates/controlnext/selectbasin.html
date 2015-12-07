@@ -1,0 +1,33 @@
+{% extends 'controlnext/basin_detail.html' %}
+{% load i18n %}
+
+{% block content %}
+  <div class="empty-block"></div>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4">
+      </div>
+      <div class="col-md-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            Meerdere bassins beschikbaar. Kies het gewenste Bassin.
+          </div>
+          <div class="btn-group-vertical panel-body full-width" role="group">
+            {% for random_url_slug, basin_name in view.buttons %}
+              <a class="btn btn-default"
+                 href="{% url controlnext-basin random_url_slug %}">{{ basin_name }}</a>
+            {% endfor %}
+          </div>
+        </div>
+        <a class="btn btn-info full-width" role="button"
+           href="/logout/?next=/">logout</a>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block constants %}
+{% endblock constants %}
+
+{% block javascript_parameters %}
+{% endblock javascript_parameters %}
