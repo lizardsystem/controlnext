@@ -258,7 +258,7 @@ class RedirectAfterLoginView(APIView):
             return HttpResponseRedirect(reverse('controlnext-403error'))
 
         if len(basins) == 0:
-            raise Http404
+            return HttpResponseRedirect(reverse('controlnext-403error'))
 
         if len(basins) == 1:
             basin_url_slug = basins[0].random_url_slug
