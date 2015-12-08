@@ -2,7 +2,7 @@ Changelog of controlnext
 ===================================================
 
 
-0.22 (unreleased)
+0.22 (2015-12-08)
 -----------------
 
 - Added configurability for userprofiles. Now userprofiles can be preset with
