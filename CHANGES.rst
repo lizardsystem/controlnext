@@ -2,7 +2,7 @@ Changelog of controlnext
 ===================================================
 
 
-0.21 (unreleased)
+0.21 (2015-12-08)
 -----------------
 
 - Bugfix changed 404 error into 403 error.
