@@ -2,7 +2,7 @@ Changelog of controlnext
 ===================================================
 
 
-0.20 (unreleased)
+0.20 (2015-12-08)
 -----------------
 - Added SSO.
 - Changed UserProfile model relation to grower to many to many.
