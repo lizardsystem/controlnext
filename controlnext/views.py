@@ -22,6 +22,7 @@ from controlnext.models import Basin
 from controlnext.models import Constants
 from controlnext.models import GrowerInfo
 from controlnext.models import is_valid_crop_type
+from controlnext.models import UserProfile
 from controlnext.models import WaterDemand
 from controlnext.utils import round_date
 
@@ -244,22 +245,34 @@ class DataService(APIView):
         }
 
 
-class RedirectAfterLoginView(APIView):
+class RedirectAfterLoginView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         next_url = request.GET.get('next', False)
         if next_url:
             return HttpResponseRedirect(next_url)
-        try:
-            growers_belonging_to_user = GrowerInfo.objects.filter(
-                userprofile__user=request.user)
-            basins = Basin.objects.filter(grower__in=growers_belonging_to_user)
-        except ObjectDoesNotExist:
-            return HttpResponseRedirect(reverse('controlnext-403error'))
+
+        growers_belonging_to_user = GrowerInfo.objects.filter(
+            userprofile__user=request.user)
+        basins = Basin.objects.filter(grower__in=growers_belonging_to_user)
 
         if len(basins) == 0:
-            return HttpResponseRedirect(reverse('controlnext-403error'))
+            alt_userprofile = UserProfile.objects.filter(
+                temp_username=request.user.username)
+            query_length = len(alt_userprofile)
+            if query_length == 1:
+                update_profile = alt_userprofile[0]
+                update_profile.user = request.user
+                update_profile.save()
+                growers_belonging_to_user = GrowerInfo.objects.filter(
+                    userprofile__user=request.user)
+                basins = Basin.objects.filter(grower__in=growers_belonging_to_user)
+            elif query_length == 0:
+                return HttpResponseRedirect(reverse('controlnext-403error'))
+            else:
+                raise Http404
 
+        # no elif since basins can change in previous if-statement
         if len(basins) == 1:
             basin_url_slug = basins[0].random_url_slug
             next_url = "/controlnext/" + basin_url_slug

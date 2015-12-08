@@ -5,7 +5,9 @@ Changelog of controlnext
 0.22 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- Added configurability for userprofiles. Now userprofiles can be preset with
+ a temp_username, without users having to log in before setting their
+ UserProfile.
 
 
 0.21 (2015-12-08)

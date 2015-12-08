@@ -55,7 +55,6 @@ class BasinAdmin(GeoModelAdmin):
     )
 
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', )
     filter_horizontal = ('grower', )
 
 

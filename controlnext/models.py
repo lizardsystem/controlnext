@@ -254,7 +254,18 @@ class UserProfile(models.Model):
     user = models.ForeignKey(
         User,
         verbose_name=_("user"),
+        null=True,
+        blank=True,
+        default=None,
         # related_name='users'
+    )
+    temp_username = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text=_("Tijdelijke gebruikersnaam voor als een gebruiker nog niet "
+                    "is ingelogd, maar wel al in de SSO als gebruiker is "
+                    "aangemaakt."),
+        verbose_name="Tijdelijke gebruikersnaam"
     )
     grower = models.ManyToManyField(
         GrowerInfo,
@@ -263,7 +274,7 @@ class UserProfile(models.Model):
     )
 
     def __unicode__(self):
-        identifier = self.user if self.user else self.id
+        identifier = self.user if self.user else self.temp_username
         return "{} ({})".format(identifier, ', '.join([unicode(x) for x in
                                                       self.grower.all()]))
 
