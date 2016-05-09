@@ -5,7 +5,8 @@ Changelog of controlnext
 0.23 (unreleased)
 -----------------
 
-- Nothing changed yet.
+- Fixed management script import_demand to conform to current model
+- Buildout dependency errors
 
 
 0.22 (2015-12-08)
