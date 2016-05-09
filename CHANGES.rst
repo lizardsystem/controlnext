@@ -2,7 +2,7 @@ Changelog of controlnext
 ===================================================
 
 
-0.23 (unreleased)
+0.23 (2016-05-09)
 -----------------
 
 - Fixed management script import_demand to conform to current model
